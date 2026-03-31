@@ -22,7 +22,7 @@
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as limited planar dissolve or a delete/cleanup pass.
+- Port another narrow mesh operation such as a delete/cleanup pass or bevel-like growth.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

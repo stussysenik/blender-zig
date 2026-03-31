@@ -30,13 +30,14 @@ Current ops in tree:
 - inset
 - shared-edge dissolve
 - individual-face extrude
+- limited planar dissolve
 - mesh-to-curve and curve-to-mesh conversions
 
 Next high-value ports:
 
-- limited planar dissolve
 - delete/cleanup passes
 - simple subdivision or bevel-like topology growth
+- region-style operations that go beyond individual-face processing
 
 ## Stage 3: Scene and evaluation layer
 

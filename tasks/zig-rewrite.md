@@ -87,7 +87,8 @@
 - [x] port a bounded individual-face inset path with UV-preserving face generation
 - [x] port a bounded dissolve-edge pass that merges two manifold faces into one ngon
 - [x] port a bounded individual-face extrude along the face normal
-- [ ] port another narrow mesh op such as extrude or limited planar dissolve
+- [x] port a limited planar dissolve pass for coplanar shared edges
+- [ ] port another narrow mesh op such as a delete/cleanup pass or bevel-like growth
 
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet
