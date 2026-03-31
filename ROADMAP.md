@@ -23,7 +23,7 @@
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Add parameterized pipeline steps so local authoring is not locked to fixed defaults.
+- Add a persisted scene or recipe format beyond argv tokens so authoring sessions can be resumed directly.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

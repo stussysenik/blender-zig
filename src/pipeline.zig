@@ -47,9 +47,19 @@ pub const Step = enum {
     }
 };
 
+pub const StepSpec = struct {
+    step: Step,
+    repeat: usize = 1,
+    extrude_distance: ?f32 = null,
+    inset_factor: ?f32 = null,
+    merge_distance: ?f32 = null,
+    planar_normal_epsilon: ?f32 = null,
+    planar_plane_epsilon: ?f32 = null,
+};
+
 pub const ParsedArgs = struct {
     seed: Seed,
-    steps: std.ArrayList(Step),
+    steps: std.ArrayList(StepSpec),
     output_path: ?[]const u8,
 
     pub fn deinit(self: *ParsedArgs, allocator: std.mem.Allocator) void {
@@ -79,7 +89,7 @@ pub fn parseArgs(allocator: std.mem.Allocator, args: []const []const u8) !*Parse
             index += 1;
             continue;
         }
-        try parsed.steps.append(allocator, try Step.parse(token));
+        try parsed.steps.append(allocator, try parseStepSpec(token));
     }
 
     return parsed;
@@ -88,15 +98,17 @@ pub fn parseArgs(allocator: std.mem.Allocator, args: []const []const u8) !*Parse
 pub fn runMeshPipeline(
     allocator: std.mem.Allocator,
     seed: Seed,
-    steps: []const Step,
+    steps: []const StepSpec,
 ) !mesh_mod.Mesh {
     var mesh = try buildSeedMesh(allocator, seed);
     errdefer mesh.deinit();
 
     for (steps) |step| {
-        const next_mesh = try applyStep(allocator, &mesh, step);
-        mesh.deinit();
-        mesh = next_mesh;
+        for (0..step.repeat) |_| {
+            const next_mesh = try applyStep(allocator, &mesh, step);
+            mesh.deinit();
+            mesh = next_mesh;
+        }
     }
 
     return mesh;
@@ -114,25 +126,36 @@ fn buildSeedMesh(allocator: std.mem.Allocator, seed: Seed) !mesh_mod.Mesh {
 fn applyStep(
     allocator: std.mem.Allocator,
     mesh: *const mesh_mod.Mesh,
-    step: Step,
+    step_spec: StepSpec,
 ) !mesh_mod.Mesh {
-    return switch (step) {
+    return switch (step_spec.step) {
         .subdivide => mesh_subdivide.subdivideFaces(allocator, mesh, .{}),
-        .extrude => mesh_extrude.extrudeIndividual(allocator, mesh, .{ .distance = 0.5 }),
-        .inset => mesh_inset.insetIndividual(allocator, mesh, .{ .factor = 0.2 }),
+        .extrude => mesh_extrude.extrudeIndividual(allocator, mesh, .{
+            .distance = step_spec.extrude_distance orelse 0.5,
+        }),
+        .inset => mesh_inset.insetIndividual(allocator, mesh, .{
+            .factor = step_spec.inset_factor orelse 0.2,
+        }),
         .triangulate => mesh_triangulate.triangulateMesh(allocator, mesh),
-        .dissolve => mesh_dissolve.dissolveEdges(allocator, mesh, pickFirstSharedEdge(mesh)),
-        .planar_dissolve => mesh_dissolve.dissolvePlanar(allocator, mesh, .{}),
-        .merge_by_distance => mesh_merge.mergeByDistance(allocator, mesh, .{ .distance = 0.01 }),
+        .dissolve => {
+            if (pickFirstSharedEdge(mesh)) |edge| {
+                const edges = [_]mesh_mod.Edge{edge};
+                return mesh_dissolve.dissolveEdges(allocator, mesh, &edges);
+            }
+            return try mesh.clone(allocator);
+        },
+        .planar_dissolve => mesh_dissolve.dissolvePlanar(allocator, mesh, .{
+            .normal_epsilon = step_spec.planar_normal_epsilon orelse 1e-4,
+            .plane_epsilon = step_spec.planar_plane_epsilon orelse 1e-4,
+        }),
+        .merge_by_distance => mesh_merge.mergeByDistance(allocator, mesh, .{
+            .distance = step_spec.merge_distance orelse 0.01,
+        }),
     };
 }
 
-fn pickFirstSharedEdge(mesh: *const mesh_mod.Mesh) []const mesh_mod.Edge {
-    const Static = struct {
-        var edge: [1]mesh_mod.Edge = .{.{ .a = 0, .b = 0 }};
-    };
-
-    var uses = std.AutoHashMap(u64, u8).init(std.heap.page_allocator);
+fn pickFirstSharedEdge(mesh: *const mesh_mod.Mesh) ?mesh_mod.Edge {
+    var uses = std.AutoHashMap(u64, u8).init(mesh.allocator);
     defer uses.deinit();
 
     for (0..mesh.faceCount()) |face_index| {
@@ -147,13 +170,86 @@ fn pickFirstSharedEdge(mesh: *const mesh_mod.Mesh) []const mesh_mod.Edge {
             }
             entry.value_ptr.* += 1;
             if (entry.value_ptr.* == 2) {
-                Static.edge[0] = unpackUndirectedEdge(key);
-                return &Static.edge;
+                return unpackUndirectedEdge(key);
             }
         }
     }
 
-    return &[_]mesh_mod.Edge{};
+    return null;
+}
+
+fn parseStepSpec(token: []const u8) !StepSpec {
+    var iterator = std.mem.splitScalar(u8, token, ':');
+    const step_name = iterator.first();
+    const params_text = iterator.next();
+    if (iterator.next() != null) return error.InvalidPipelineStepSyntax;
+
+    var spec = StepSpec{
+        .step = try Step.parse(step_name),
+    };
+
+    if (params_text) |raw_params| {
+        var params = std.mem.splitScalar(u8, raw_params, ',');
+        while (params.next()) |assignment| {
+            if (assignment.len == 0) continue;
+
+            var pair = std.mem.splitScalar(u8, assignment, '=');
+            const key = pair.first();
+            const value_text = pair.next() orelse return error.InvalidPipelineStepSyntax;
+            if (pair.next() != null) return error.InvalidPipelineStepSyntax;
+
+            if (std.mem.eql(u8, key, "repeat")) {
+                spec.repeat = try parsePositiveInt(value_text);
+                continue;
+            }
+
+            switch (spec.step) {
+                .extrude => {
+                    if (std.mem.eql(u8, key, "distance")) {
+                        spec.extrude_distance = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .inset => {
+                    if (std.mem.eql(u8, key, "factor")) {
+                        spec.inset_factor = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .merge_by_distance => {
+                    if (std.mem.eql(u8, key, "distance")) {
+                        spec.merge_distance = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .planar_dissolve => {
+                    if (std.mem.eql(u8, key, "normal-epsilon")) {
+                        spec.planar_normal_epsilon = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "plane-epsilon")) {
+                        spec.planar_plane_epsilon = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                else => return error.UnsupportedPipelineParameter,
+            }
+        }
+    }
+
+    return spec;
+}
+
+fn parseFloat(text: []const u8) !f32 {
+    return std.fmt.parseFloat(f32, text);
+}
+
+fn parsePositiveInt(text: []const u8) !usize {
+    const value = try std.fmt.parseUnsigned(usize, text, 10);
+    if (value == 0) return error.InvalidPipelineRepeat;
+    return value;
 }
 
 fn packUndirectedEdge(a: u32, b: u32) u64 {
@@ -169,29 +265,41 @@ fn unpackUndirectedEdge(key: u64) mesh_mod.Edge {
     };
 }
 
-test "pipeline can parse seed, steps, and output path" {
+test "pipeline can parse parameterized steps and output path" {
     var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{
         "grid",
-        "subdivide",
-        "extrude",
+        "subdivide:repeat=2",
+        "extrude:distance=0.75",
+        "inset:factor=0.1",
         "--write",
         "zig-out/pipeline.obj",
     });
     defer parsed.deinit(std.testing.allocator);
 
     try std.testing.expectEqual(Seed.grid, parsed.seed);
-    try std.testing.expectEqual(@as(usize, 2), parsed.steps.items.len);
-    try std.testing.expectEqual(Step.subdivide, parsed.steps.items[0]);
-    try std.testing.expectEqual(Step.extrude, parsed.steps.items[1]);
+    try std.testing.expectEqual(@as(usize, 3), parsed.steps.items.len);
+    try std.testing.expectEqual(Step.subdivide, parsed.steps.items[0].step);
+    try std.testing.expectEqual(@as(usize, 2), parsed.steps.items[0].repeat);
+    try std.testing.expectEqual(Step.extrude, parsed.steps.items[1].step);
+    try std.testing.expectEqual(@as(f32, 0.75), parsed.steps.items[1].extrude_distance.?);
+    try std.testing.expectEqual(Step.inset, parsed.steps.items[2].step);
+    try std.testing.expectEqual(@as(f32, 0.1), parsed.steps.items[2].inset_factor.?);
     try std.testing.expectEqualStrings("zig-out/pipeline.obj", parsed.output_path.?);
 }
 
-test "pipeline can build a subdivided and extruded mesh" {
-    const steps = [_]Step{ .subdivide, .extrude };
+test "pipeline can build a parameterized modeling stack" {
+    const steps = [_]StepSpec{
+        .{ .step = .subdivide, .repeat = 2 },
+        .{ .step = .extrude, .extrude_distance = 0.75 },
+    };
     var mesh = try runMeshPipeline(std.testing.allocator, .grid, &steps);
     defer mesh.deinit();
 
-    try std.testing.expect(mesh.vertexCount() > 6);
-    try std.testing.expect(mesh.faceCount() > 2);
+    try std.testing.expect(mesh.vertexCount() > 20);
+    try std.testing.expect(mesh.faceCount() > 20);
     try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "pipeline rejects unsupported parameters for a step" {
+    try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
 }

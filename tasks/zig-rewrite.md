@@ -93,7 +93,7 @@
 
 ## Phase 14: Composable local authoring
 - [x] add a bounded mesh pipeline CLI that chains existing primitives and ops
-- [ ] add parameterized pipeline steps instead of fixed defaults
+- [x] add parameterized pipeline steps instead of fixed defaults
 - [ ] add a persisted scene or recipe format beyond argv tokens
 
 ## Explicit deferrals

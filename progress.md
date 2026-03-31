@@ -53,7 +53,7 @@ Open phases:
 - `zig build run -- mesh-extrude zig-out/mesh-extrude.obj`
 - `zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj`
 - `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
-- `zig build run -- mesh-pipeline grid subdivide extrude --write zig-out/pipeline.obj`
+- `zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -62,7 +62,7 @@ Open phases:
 ## Next Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Add parameterized pipeline steps so local authoring is not locked to fixed defaults.
+- Add a persisted scene or recipe format beyond argv tokens so authoring sessions can be resumed directly.
 - Add notarization only after Apple credentials exist.
 
 ## Readout

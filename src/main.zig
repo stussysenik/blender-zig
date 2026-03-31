@@ -97,7 +97,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-extrude zig-out/mesh-extrude.obj
         \\  zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj
         \\  zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
-        \\  zig build run -- mesh-pipeline grid subdivide extrude --write zig-out/pipeline.obj
+        \\  zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -502,11 +502,14 @@ test "mesh subdivide command builds smaller connected quads" {
 }
 
 test "mesh pipeline command can build a chained modeling stack" {
-    const steps = [_]blendzig.pipeline.Step{ .subdivide, .extrude };
+    const steps = [_]blendzig.pipeline.StepSpec{
+        .{ .step = .subdivide, .repeat = 2 },
+        .{ .step = .extrude, .extrude_distance = 0.75 },
+    };
     var mesh = try blendzig.pipeline.runMeshPipeline(std.testing.allocator, .grid, &steps);
     defer mesh.deinit();
 
-    try std.testing.expect(mesh.vertexCount() > 10);
-    try std.testing.expect(mesh.faceCount() > 8);
+    try std.testing.expect(mesh.vertexCount() > 20);
+    try std.testing.expect(mesh.faceCount() > 20);
     try std.testing.expect(mesh.hasCornerUvs());
 }
