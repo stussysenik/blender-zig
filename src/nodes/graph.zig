@@ -28,6 +28,13 @@ pub const LineNode = struct {
     count: usize = 8,
 };
 
+pub const CurveLineNode = struct {
+    start: math.Vec3 = math.Vec3.init(0, 0, 0),
+    delta: math.Vec3 = math.Vec3.init(1, 0, 0),
+    count: usize = 8,
+    cyclic: bool = false,
+};
+
 pub const GridNode = struct {
     verts_x: usize = 8,
     verts_y: usize = 5,
@@ -57,6 +64,7 @@ pub const TranslateNode = struct {
 
 pub const NodeOp = union(enum) {
     line: LineNode,
+    curve_line: CurveLineNode,
     grid: GridNode,
     cuboid: CuboidNode,
     uv_sphere: UvSphereNode,
@@ -66,7 +74,7 @@ pub const NodeOp = union(enum) {
 
     pub fn role(self: NodeOp) NodeRole {
         return switch (self) {
-            .line, .grid, .cuboid, .uv_sphere => .source,
+            .line, .curve_line, .grid, .cuboid, .uv_sphere => .source,
             .vector_constant => .value,
             .translate => .transform,
             .join_geometry => .merge,
@@ -317,6 +325,9 @@ pub const Graph = struct {
                     params.count,
                 )),
             },
+            .curve_line => |params| .{
+                .geometry = geometry_mod.GeometrySet.fromCurvesOwned(allocator, try createCurveLineGeometry(allocator, params)),
+            },
             .grid => |params| .{
                 .geometry = geometry_mod.GeometrySet.fromMeshOwned(allocator, try grid_primitive.createGridMesh(
                     allocator,
@@ -428,6 +439,26 @@ pub const Graph = struct {
     }
 };
 
+fn createCurveLineGeometry(allocator: std.mem.Allocator, params: CurveLineNode) !curves_mod.CurvesGeometry {
+    if (params.count == 0) return error.InvalidResolution;
+
+    var curves = try curves_mod.CurvesGeometry.init(allocator);
+    errdefer curves.deinit();
+
+    const positions = try allocator.alloc(math.Vec3, params.count);
+    defer allocator.free(positions);
+    const test_indices = try allocator.alloc(i32, params.count);
+    defer allocator.free(test_indices);
+
+    for (0..params.count) |index| {
+        positions[index] = params.start.add(params.delta.scale(@as(f32, @floatFromInt(index))));
+        test_indices[index] = @intCast(index);
+    }
+
+    try curves.appendCurve(positions, params.cyclic, test_indices);
+    return curves;
+}
+
 test "graph topological order is stable for a simple pipeline" {
     var graph = Graph.init(std.testing.allocator);
     defer graph.deinit();
@@ -506,6 +537,28 @@ test "graph evaluation stores geometry values" {
     const geometry = evaluation.geometry(line).?;
     try std.testing.expect(geometry.mesh != null);
     try std.testing.expectEqual(@as(usize, 2), geometry.mesh.?.vertexCount());
+}
+
+test "graph evaluates a curve source node" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const curve = try graph.addNode(Node.init("curve-line", .{
+        .curve_line = .{
+            .start = math.Vec3.init(1, 2, 0),
+            .delta = math.Vec3.init(0.5, 0, 0),
+            .count = 4,
+        },
+    }));
+
+    var evaluation = try graph.evaluate(std.testing.allocator);
+    defer evaluation.deinit();
+
+    const curves = evaluation.curves(curve).?;
+    try std.testing.expectEqual(@as(usize, 4), curves.pointsNum());
+    try std.testing.expectEqual(@as(usize, 1), curves.curvesNum());
+    try std.testing.expect(math.vec3ApproxEq(curves.positions.items[0], math.Vec3.init(1, 2, 0), 0.0001));
+    try std.testing.expect(math.vec3ApproxEq(curves.positions.items[3], math.Vec3.init(2.5, 2, 0), 0.0001));
 }
 
 test "graph joins primitive meshes in edge order" {
@@ -607,4 +660,39 @@ test "translate nodes can consume vector inputs" {
     try std.testing.expectEqual(@as(usize, 1), mesh.faceCount());
     try std.testing.expect(math.vec3ApproxEq(mesh.positions.items[0], math.Vec3.init(2, 3, 5), 0.0001));
     try std.testing.expect(math.vec3ApproxEq(mesh.positions.items[3], math.Vec3.init(4, 5, 5), 0.0001));
+}
+
+test "join geometry keeps mesh and curve components together" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const grid = try graph.addNode(Node.init("grid", .{
+        .grid = .{
+            .verts_x = 2,
+            .verts_y = 2,
+            .size_x = 2,
+            .size_y = 2,
+            .with_uvs = false,
+        },
+    }));
+    const curve = try graph.addNode(Node.init("curve-line", .{
+        .curve_line = .{
+            .start = math.Vec3.init(10, 0, 0),
+            .delta = math.Vec3.init(1, 0, 0),
+            .count = 3,
+        },
+    }));
+    const join = try graph.addNode(Node.init("join", .{ .join_geometry = {} }));
+
+    try graph.addEdge(grid, join);
+    try graph.addEdge(curve, join);
+
+    var evaluation = try graph.evaluate(std.testing.allocator);
+    defer evaluation.deinit();
+
+    const geometry_value = evaluation.geometry(join).?;
+    try std.testing.expect(geometry_value.mesh != null);
+    try std.testing.expect(geometry_value.curves != null);
+    try std.testing.expectEqual(@as(usize, 4), geometry_value.mesh.?.vertexCount());
+    try std.testing.expectEqual(@as(usize, 3), geometry_value.curves.?.pointsNum());
 }

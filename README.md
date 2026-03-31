@@ -19,7 +19,8 @@ Current status:
 - the curves-first instances and realization slice is now in
 - executable node evaluation for primitive meshes is now in
 - the shared `GeometrySet` bridge between nodes, meshes, and curves is now in
-- the next recommended slice is curve-producing nodes plus a narrow realization op
+- curve-producing geometry nodes are now starting to land
+- the next recommended slice is a narrow realization node op plus node-level realization tests
 - the OMX-native role prompts live in `.codex/prompts/` and are used by `scripts/ralph-loop.sh`
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:

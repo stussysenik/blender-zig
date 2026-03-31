@@ -136,3 +136,5 @@ Next:
 11. Add a minimal curve-producing node that emits `GeometrySet`.
 12. Add a narrow `realize_instances` node op over the existing curve-first path.
 13. Port node-level realization tests without widening into a full dependency-graph model.
+
+Item 11 is now in the local rewrite. The next direct target is item 12.

@@ -54,7 +54,7 @@
 - [x] add mixed mesh and curves regression tests around realization boundaries
 
 ## Phase 8: Curves In Nodes
-- [ ] add a minimal curve-producing node that outputs `GeometrySet`
+- [x] add a minimal curve-producing node that outputs `GeometrySet`
 - [ ] add a narrow `realize_instances` node op for curve-first geometry
 - [ ] port node-level mixed mesh and curves realization tests
 
