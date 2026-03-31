@@ -19,6 +19,8 @@ pub fn main() !void {
     const stdout = &stdout_writer.interface;
 
     const command = args[1];
+    // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
+    // regression path for contributors who want to validate one feature in isolation.
     if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip")) {
         var mesh = try buildCurveCommand(allocator, command);
         defer mesh.deinit();
@@ -243,7 +245,8 @@ fn buildGraphDemo(allocator: std.mem.Allocator) !blendzig.geometry.GeometrySet {
     try graph.addEdge(realize, out);
     try graph.addEdge(sphere_translate, out);
 
-    // Keep the CLI demo fixed for now so it exercises the graph runtime without needing a parser layer yet.
+    // Keep the CLI demo fixed for now so it exercises the graph runtime without needing
+    // a scene parser layer. Direct geometry commands are still the main contributor path.
     var evaluation = try graph.evaluate(allocator);
     defer evaluation.deinit();
 

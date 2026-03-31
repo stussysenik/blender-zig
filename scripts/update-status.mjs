@@ -48,6 +48,8 @@ function phaseLine(phase) {
   return `- ${marker} Phase ${phase.id}: ${phase.title}`;
 }
 
+// Generated status docs come from versioned hyperdata plus live git state so the
+// repo can auto-refresh progress surfaces without hiding the source of truth.
 const data = JSON.parse(readText("status/hyperdata.json"));
 const head = git("git rev-parse HEAD");
 const shortHead = head.slice(0, 8);

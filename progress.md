@@ -5,7 +5,7 @@
 ## Hypertime Snapshot
 
 - branch: `main`
-- head: `fd883e59`
+- head: `dd7c539f`
 - source: `status/hyperdata.json`
 
 Artifacts:
@@ -39,6 +39,7 @@ Open phases:
 
 ## Pushed Commits
 
+- `dd7c539f` feat: automate status docs and roundtrip cli
 - `fd883e59` fix: repair direct geometry modeling build
 - `13b13a86` feat: add direct curve sweep modeling
 - `e455c279` feat: add mesh edges to curves conversion
@@ -46,7 +47,6 @@ Open phases:
 - `e9f4aaec` feat: add curves to mesh conversion
 - `b1f931fc` docs: add rewrite progress surfaces
 - `20b6d834` feat: add graph demo cli export path
-- `18f16c6d` ci: add macos artifact workflow
 
 ## What Runs Today
 

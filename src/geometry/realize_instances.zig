@@ -19,6 +19,8 @@ pub const GeometrySet = struct {
     allocator: std.mem.Allocator,
     mesh: ?mesh_mod.Mesh = null,
     curves: ?curves_mod.CurvesGeometry = null,
+    // Instances stay lazy until a realization step asks for concrete geometry so the
+    // mixed container can model Blender-like joins without materializing everything.
     instances: ?Instances = null,
 
     pub fn init(allocator: std.mem.Allocator) GeometrySet {

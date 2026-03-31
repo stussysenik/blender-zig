@@ -14,6 +14,8 @@ pub const Mesh = struct {
     allocator: std.mem.Allocator,
     positions: std.ArrayList(Vec3) = .empty,
     edges: std.ArrayList(Edge) = .empty,
+    // Faces are stored as slices into the flat corner arrays so face data, edge data,
+    // and per-corner attributes stay aligned during ports and remaps.
     face_offsets: std.ArrayList(u32) = .empty,
     corner_verts: std.ArrayList(u32) = .empty,
     corner_edges: std.ArrayList(u32) = .empty,
@@ -67,6 +69,8 @@ pub const Mesh = struct {
         const edge_offset: u32 = @intCast(self.edges.items.len);
         const corner_offset: u32 = @intCast(self.corner_verts.items.len);
 
+        // Append in topology order so the face/corner arrays remain index-compatible
+        // after the source mesh is rebased into the destination mesh.
         try self.positions.ensureUnusedCapacity(self.allocator, other.positions.items.len);
         for (other.positions.items) |position| {
             self.positions.appendAssumeCapacity(position);
@@ -166,6 +170,8 @@ pub const Mesh = struct {
         var lookup = std.AutoHashMap(u64, u32).init(self.allocator);
         defer lookup.deinit();
 
+        // Rebuild a unique undirected edge table from the face corners so ports can
+        // author faces first and derive edge connectivity afterwards.
         for (0..self.faceCount()) |face_index| {
             const range = self.faceVertexRange(face_index);
             const face_corners = self.corner_verts.items[range.start..range.end];

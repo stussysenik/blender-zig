@@ -4,6 +4,11 @@ A companion Zig rewrite that lifts a realistic first slice out of Blender instea
 
 The status sections in this file, [progress.md](/Users/s3nik/Desktop/blender-zig/progress.md), and [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md) are generated from `status/hyperdata.json` via `npm run status:update`.
 
+Contributor surfaces:
+- [ARCHITECTURE.md](/Users/s3nik/Desktop/blender-zig/ARCHITECTURE.md)
+- [CONTRIBUTING.md](/Users/s3nik/Desktop/blender-zig/CONTRIBUTING.md)
+- [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md)
+
 Current focus:
 <!-- status:auto:focus:start -->
 - `blenlib`-style core utilities: disjoint sets and offset indices
@@ -78,6 +83,14 @@ Defaults are intentionally opinionated:
 - `grid`: `8 x 5`
 - `cuboid`: `4 x 3 x 2`
 - `sphere`: `16 segments x 8 rings`
+
+## Contributing
+
+If you want to work in the repo instead of just run it:
+- read [ARCHITECTURE.md](/Users/s3nik/Desktop/blender-zig/ARCHITECTURE.md) first
+- follow [CONTRIBUTING.md](/Users/s3nik/Desktop/blender-zig/CONTRIBUTING.md) for the dev loop
+- treat [status/hyperdata.json](/Users/s3nik/Desktop/blender-zig/status/hyperdata.json) as the source of truth for generated status docs
+- keep new work narrow, tested, and wired to a real CLI path when practical
 
 ## What This Is Not
 
