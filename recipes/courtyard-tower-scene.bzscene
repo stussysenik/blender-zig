@@ -1,0 +1,8 @@
+# blender-zig scene v1
+# A composed scene that pairs the open courtyard ground plane with the tower
+# stack study. The scene file now owns the placement, so contributors can move
+# or rotate the tower without mutating the source study itself.
+
+part=courtyard-plaza-study.bzrecipe
+part=tower-stack-study.bzrecipe|translate:x=1.1,y=-0.2,z=0.0|rotate-z:degrees=18
+write=../zig-out/courtyard-tower-scene.obj

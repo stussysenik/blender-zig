@@ -19,7 +19,8 @@ If you are new here:
 5. Run `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`.
 6. Run one inline override example such as `zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75`.
 7. Run one scene-style recipe such as `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`.
-8. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and the module behind the step you want to study.
+8. Run one composed scene such as `zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene` and inspect how the scene file places reused parts without rewriting their source studies.
+9. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig).
 
 That gets you from zero to a concrete, debuggable feature slice quickly.
 
@@ -42,6 +43,8 @@ zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 su
 zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
 zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe
 zig build run -- mesh-pipeline --recipe recipes/tower-stack-study.bzrecipe
+zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene
+zig build run -- mesh-scene --recipe recipes/walkway-plaza-scene.bzscene
 zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
 zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
@@ -66,6 +69,7 @@ Use `npm run status:live` when you want the current git branch and commit instea
 - mesh or curve ops: `src/geometry/`
 - mixed geometry behavior: `src/geometry/realize_instances.zig`
 - mesh-space transforms and array composition: `src/geometry/mesh_transform.zig`
+- multi-part mesh scene composition: `src/scene.zig`
 - export paths: `src/io/`
 - runnable demos or CLI surfaces: `src/main.zig`
 - public exports: `src/lib.zig`

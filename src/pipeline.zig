@@ -381,7 +381,7 @@ fn pickFirstSharedEdge(mesh: *const mesh_mod.Mesh) ?mesh_mod.Edge {
     return null;
 }
 
-fn parseStepSpec(token: []const u8) !StepSpec {
+pub fn parseStepSpec(token: []const u8) !StepSpec {
     var iterator = std.mem.splitScalar(u8, token, ':');
     const step_name = iterator.first();
     const params_text = iterator.next();

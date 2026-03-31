@@ -61,6 +61,8 @@ Open phases:
 - `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`
 - `zig build run -- mesh-pipeline --recipe recipes/walkway-bays-study.bzrecipe`
 - `zig build run -- mesh-pipeline --recipe recipes/tower-stack-study.bzrecipe`
+- `zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene`
+- `zig build run -- mesh-scene --recipe recipes/walkway-plaza-scene.bzscene`
 - `zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe`
 - `zig build run -- mesh-pipeline --recipe recipes/cylinder-panel-study.bzrecipe`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
@@ -71,8 +73,8 @@ Open phases:
 
 ## Next Targets
 
-- Add multi-part scene composition so authoring can combine more than one seed or imported asset in a single saved study.
 - Port another narrow mesh op such as a delete/cleanup pass or bevel-like growth to strengthen direct modeling.
+- Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.
@@ -81,6 +83,7 @@ Open phases:
 
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
 Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides, bounded transforms, and array composition.
+Composed scene files can now combine multiple `.bzrecipe` studies or imported `.obj` meshes through `mesh-scene`, with scene-level translate, scale, and rotate-z placement tokens on each part.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

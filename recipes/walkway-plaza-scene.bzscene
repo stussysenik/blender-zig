@@ -1,0 +1,8 @@
+# blender-zig scene v1
+# A composed scene that combines the staggered walkway study with the tiled
+# plaza study. The walkway is offset and rotated here so the source recipe can
+# stay reusable instead of baking this scene-specific placement into the study.
+
+part=walkway-bays-study.bzrecipe|translate:x=-1.6,y=1.25,z=0.15|rotate-z:degrees=-12
+part=courtyard-plaza-study.bzrecipe
+write=../zig-out/walkway-plaza-scene.obj

@@ -23,8 +23,8 @@
 
 ## Current Targets
 
-- Add multi-part scene composition so authoring can combine more than one seed or imported asset in a single saved study.
 - Port another narrow mesh op such as a delete/cleanup pass or bevel-like growth to strengthen direct modeling.
+- Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.

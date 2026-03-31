@@ -24,6 +24,21 @@ pub fn main() !void {
     const stderr = &stderr_writer.interface;
 
     const command = args[1];
+    if (std.mem.eql(u8, command, "mesh-scene")) {
+        var parsed = try blendzig.scene.parseArgs(allocator, args[2..]);
+        defer parsed.deinit(allocator);
+
+        var mesh = try blendzig.scene.runMeshScene(allocator, parsed);
+        defer mesh.deinit();
+
+        try printMeshSummary(stdout, command, &mesh);
+        if (parsed.output_path) |output_path| {
+            try writeMeshOutput(&mesh, output_path);
+            try stdout.print("wrote {s}\n", .{output_path});
+        }
+        try stdout.flush();
+        return;
+    }
     if (std.mem.eql(u8, command, "geometry-import")) {
         if (args.len < 3 or args.len > 4) {
             try printUsage();
@@ -153,7 +168,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -174,6 +189,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-pipeline grid:verts-x=5,verts-y=4,size-x=4.0,size-y=2.5 scale:x=0.45,y=0.45,z=1.0 array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95 rotate-z:degrees=12 translate:x=-2.0,y=-1.3,z=0.0 --write zig-out/plaza.obj
         \\  zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
         \\  zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe
+        \\  zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene
         \\  zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
         \\  zig build run -- cylinder zig-out/cylinder.ply
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
@@ -647,6 +663,46 @@ test "mesh pipeline command can build a chained modeling stack" {
 
     try std.testing.expect(mesh.vertexCount() > 20);
     try std.testing.expect(mesh.faceCount() > 20);
+    try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "mesh scene command can build a composed recipe" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "floor.bzrecipe",
+        .data =
+        \\seed=grid:verts-x=3,verts-y=2,size-x=2.0,size-y=1.0,uvs=true
+        \\step=triangulate
+        ,
+    });
+    try temp.dir.writeFile(.{
+        .sub_path = "block.bzrecipe",
+        .data =
+        \\seed=cuboid:size-x=1.0,size-y=1.0,size-z=1.0,verts-x=2,verts-y=2,verts-z=2,uvs=true
+        \\step=translate:x=3.0,y=0.0,z=0.0
+        ,
+    });
+    try temp.dir.writeFile(.{
+        .sub_path = "scene.bzscene",
+        .data =
+        \\part=floor.bzrecipe
+        \\part=block.bzrecipe
+        ,
+    });
+
+    const scene_path = try temp.dir.realpathAlloc(std.testing.allocator, "scene.bzscene");
+    defer std.testing.allocator.free(scene_path);
+
+    var parsed = try blendzig.scene.parseArgs(std.testing.allocator, &[_][]const u8{ "--recipe", scene_path });
+    defer parsed.deinit(std.testing.allocator);
+
+    var mesh = try blendzig.scene.runMeshScene(std.testing.allocator, parsed);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 14), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 10), mesh.faceCount());
     try std.testing.expect(mesh.hasCornerUvs());
 }
 

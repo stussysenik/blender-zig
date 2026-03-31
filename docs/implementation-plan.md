@@ -93,4 +93,4 @@ The nearest credible milestone is not "replace Blender." It is:
 
 Once those are in place, `blender-zig` becomes a serious standalone geometry application rather than only a rewrite experiment.
 
-The new short-term bridge between 1 and 2 is a composable mesh pipeline CLI: one seed mesh plus a bounded, parameterized stack of existing ops, now runnable either inline or from saved recipe files with explicit seed overrides for primitive size and resolution, plus bounded transform and array composition for scene-style studies, still without pretending we already have Blender's full scene model.
+The new short-term bridge between 1 and 2 is a composable mesh pipeline CLI plus a small scene-composition layer: one seed mesh plus a bounded, parameterized stack of existing ops, now runnable either inline or from saved recipe files with explicit seed overrides for primitive size and resolution, plus bounded transform and array composition for scene-style studies, and then multi-part saved scenes that combine authored recipes or imported OBJ meshes with per-part translate, scale, and rotate-z placement, still without pretending we already have Blender's full scene model.

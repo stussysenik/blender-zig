@@ -98,6 +98,8 @@
 - [x] add multiple recipe studies that cover different direct-ops authoring patterns
 - [x] add recipe-level seed overrides so saved studies can vary primitive resolution and size
 - [x] add bounded transform and array composition steps so scene-style studies can assemble repeated forms
+- [x] add multi-part scene composition so authoring can combine more than one seed or imported asset in a single saved study
+- [x] add part-level scene placement so composed studies can offset or rotate reused parts without mutating their source recipes
 
 ## Phase 15: Mesh IO surfaces
 - [x] add ASCII PLY mesh export alongside OBJ

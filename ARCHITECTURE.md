@@ -14,6 +14,7 @@ If you want the fastest path into the code, read files in this order:
 6. One concrete op under [src/geometry/](/Users/s3nik/Desktop/blender-zig/src/geometry)
 7. [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig) and [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig)
 8. [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig)
+9. [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig)
 
 That path gives you the executable entrypoint, the public surface, the core mesh model, the curve model, the mixed geometry container, one feature slice, and the export path.
 
@@ -80,7 +81,7 @@ The default runtime path is:
 1. [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig) parses a command.
 2. It builds a mesh or `GeometrySet` using a function in `src/geometry/`.
 3. It prints a summary so the CLI is also a smoke test surface.
-4. It optionally writes an OBJ or ASCII PLY, `mesh-import` reads a narrow ASCII OBJ mesh subset, `geometry-import` reads mixed face-plus-line OBJ geometry, and `mesh-pipeline` now covers bounded transform and array composition via [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig), [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig), and [src/geometry/mesh_transform.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_transform.zig).
+4. It optionally writes an OBJ or ASCII PLY, `mesh-import` reads a narrow ASCII OBJ mesh subset, `geometry-import` reads mixed face-plus-line OBJ geometry, `mesh-pipeline` covers bounded transform and array composition, and `mesh-scene` composes multiple authored or imported mesh parts with scene-level placement via [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig), [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig), [src/geometry/mesh_transform.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_transform.zig), and [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig).
 
 This is the shortest path for new work. If a feature can be demonstrated directly, prefer adding a CLI route before routing it through the node runtime.
 
@@ -101,6 +102,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/math.zig](/Users/s3nik/Desktop/blender-zig/src/math.zig): vector math and bounds
 - [src/mesh.zig](/Users/s3nik/Desktop/blender-zig/src/mesh.zig): mesh topology container
 - [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline, seed/step parser, and recipe loader
+- [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig): multi-part scene recipe parser and mesh composition runtime
 - [src/geometry/mesh_transform.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_transform.zig): bounded mesh-space translate, scale, rotate-z, and array helpers
 - [src/geometry/primitives/](/Users/s3nik/Desktop/blender-zig/src/geometry/primitives): primitive mesh builders
 - [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig): curve kernel
@@ -112,7 +114,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig): OBJ export plus narrow mesh and mixed-geometry import
 - [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig): ASCII PLY export for mesh-only output
 - [src/nodes/graph.zig](/Users/s3nik/Desktop/blender-zig/src/nodes/graph.zig): optional typed graph evaluator
-- [recipes/](/Users/s3nik/Desktop/blender-zig/recipes): saved authoring studies for `mesh-pipeline --recipe`
+- [recipes/](/Users/s3nik/Desktop/blender-zig/recipes): saved authoring studies for `mesh-pipeline --recipe` and composed scenes for `mesh-scene --recipe`
 - [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md): checked backlog
 - [status/hyperdata.json](/Users/s3nik/Desktop/blender-zig/status/hyperdata.json): source of truth for generated status docs
 - [scripts/update-status.mjs](/Users/s3nik/Desktop/blender-zig/scripts/update-status.mjs): generator for `README.md`, `progress.md`, and `ROADMAP.md`
