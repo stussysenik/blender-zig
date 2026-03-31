@@ -55,25 +55,25 @@
   <text x="969" y="302" class="t muted" font-size="12">done</text>
 
   <rect x="1120" y="250" width="124" height="66" class="node"/>
-  <text x="1134" y="282" class="t" font-size="18">6-10 graph</text>
-  <text x="1134" y="302" class="t muted" font-size="12">bridge, dist, demo</text>
+  <text x="1134" y="282" class="t" font-size="18">6-11 geom</text>
+  <text x="1134" y="302" class="t muted" font-size="12">bridge, demo, modeling</text>
 
   <rect x="1218" y="330" width="146" height="66" class="node"/>
-  <text x="1236" y="362" class="t" font-size="18">11 release</text>
+  <text x="1236" y="362" class="t" font-size="18">12 release</text>
   <text x="1236" y="382" class="t muted" font-size="12">open</text>
 
   <rect x="60" y="430" width="612" height="250" class="node"/>
   <text x="88" y="472" class="t" font-size="22" font-weight="700">Today</text>
   <text x="88" y="508" class="t" font-size="16">zig build test</text>
   <text x="88" y="536" class="t" font-size="16">zig build -Doptimize=ReleaseFast</text>
-  <text x="88" y="564" class="t" font-size="16">zig build run -- sphere</text>
-  <text x="88" y="592" class="t" font-size="16">zig build run -- graph-demo zig-out/graph-demo.obj</text>
+  <text x="88" y="564" class="t" font-size="16">zig build run -- curve-wire zig-out/curve-wire.obj</text>
+  <text x="88" y="592" class="t" font-size="16">zig build run -- curve-tube zig-out/curve-tube.obj</text>
   <text x="88" y="620" class="t" font-size="16">npm run dist -- &lt;version&gt;</text>
-  <text x="88" y="656" class="t muted" font-size="14">Local state: runnable CLI, graph demo, packaging path</text>
+  <text x="88" y="656" class="t muted" font-size="14">Local state: runnable CLI, curve modeling, packaging path</text>
 
   <rect x="720" y="430" width="620" height="250" class="node"/>
   <text x="748" y="472" class="t" font-size="22" font-weight="700">Next</text>
-  <text x="748" y="508" class="t" font-size="16">scene recipe layer over the fixed graph demo</text>
+  <text x="748" y="508" class="t" font-size="16">mesh-to-curve and curves-to-mesh roundtrip CLI</text>
   <text x="748" y="536" class="t" font-size="16">another export path once GeometrySet stabilizes</text>
   <text x="748" y="564" class="t" font-size="16">macOS notarization after credentials exist</text>
   <text x="748" y="592" class="t" font-size="16">keep runtime smaller than release tooling</text>

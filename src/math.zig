@@ -26,6 +26,14 @@ pub const Vec3 = struct {
         };
     }
 
+    pub fn sub(self: Vec3, other: Vec3) Vec3 {
+        return .{
+            .x = self.x - other.x,
+            .y = self.y - other.y,
+            .z = self.z - other.z,
+        };
+    }
+
     pub fn scale(self: Vec3, scalar: f32) Vec3 {
         return .{
             .x = self.x * scalar,
@@ -48,6 +56,32 @@ pub const Vec3 = struct {
             .y = @max(self.y, other.y),
             .z = @max(self.z, other.z),
         };
+    }
+
+    pub fn dot(self: Vec3, other: Vec3) f32 {
+        return self.x * other.x + self.y * other.y + self.z * other.z;
+    }
+
+    pub fn cross(self: Vec3, other: Vec3) Vec3 {
+        return .{
+            .x = self.y * other.z - self.z * other.y,
+            .y = self.z * other.x - self.x * other.z,
+            .z = self.x * other.y - self.y * other.x,
+        };
+    }
+
+    pub fn lengthSquared(self: Vec3) f32 {
+        return self.dot(self);
+    }
+
+    pub fn length(self: Vec3) f32 {
+        return @sqrt(self.lengthSquared());
+    }
+
+    pub fn normalizedOr(self: Vec3, fallback: Vec3) Vec3 {
+        const len_sq = self.lengthSquared();
+        if (len_sq <= 1e-12) return fallback;
+        return self.scale(1.0 / @sqrt(len_sq));
     }
 };
 
@@ -78,4 +112,13 @@ test "vec3 helpers work" {
     const delta = Vec3.init(0.5, -2, 1);
     const actual = start.add(delta).scale(2);
     try std.testing.expect(vec3ApproxEq(actual, Vec3.init(3, 0, 8), 0.0001));
+}
+
+test "vec3 cross and normalize helpers work" {
+    const x = Vec3.init(1, 0, 0);
+    const y = Vec3.init(0, 1, 0);
+    const z = x.cross(y).normalizedOr(Vec3.init(0, 0, -1));
+
+    try std.testing.expect(vec3ApproxEq(z, Vec3.init(0, 0, 1), 0.0001));
+    try std.testing.expect(approxEq(Vec3.init(3, 4, 0).length(), 5.0, 0.0001));
 }

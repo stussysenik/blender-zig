@@ -70,7 +70,12 @@
 - [x] add a fixed `graph-demo` CLI command that exercises the node runtime end to end
 - [x] add reader-facing progress artifacts and screenshot-style status surfaces
 
-## Phase 11: Release and governance
+## Phase 11: Direct Curve Modeling
+- [x] extend curves-to-mesh beyond loose wires with a bounded sweep path
+- [x] add direct `curve-wire` and `curve-tube` CLI commands that do not depend on the graph demo
+- [ ] expose mesh-to-curve and curves-to-mesh roundtrips through the CLI
+
+## Phase 12: Release and governance
 - [ ] add conventional commit examples
 - [x] wire semantic-release in CI
 - [x] document signed-commit expectations and limitations

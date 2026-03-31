@@ -16,6 +16,12 @@ pub const geometry = struct {
     pub const curvesMergeEndpoints = @import("geometry/curves.zig").curvesMergeEndpoints;
     pub const sampleCurvePadded = @import("geometry/curves.zig").sampleCurvePadded;
     pub const sampleCurvePaddedForCurve = @import("geometry/curves.zig").sampleCurvePaddedForCurve;
+    pub const CurvesToMeshOptions = @import("geometry/curves_to_mesh.zig").Options;
+    pub const convertCurvesToPolylineMesh = @import("geometry/curves_to_mesh.zig").convertCurvesToPolylineMesh;
+    pub const CurveToMeshOptions = @import("geometry/curve_to_mesh.zig").CurveToMeshOptions;
+    pub const curveToWireMesh = @import("geometry/curve_to_mesh.zig").curveToWireMesh;
+    pub const curveToMeshSweep = @import("geometry/curve_to_mesh.zig").curveToMeshSweep;
+    pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
     pub const GeometrySet = @import("geometry/realize_instances.zig").GeometrySet;
     pub const Instances = @import("geometry/realize_instances.zig").Instances;
     pub const InstanceTransform = @import("geometry/realize_instances.zig").InstanceTransform;
@@ -24,6 +30,8 @@ pub const geometry = struct {
     pub const createLineMesh = @import("geometry/primitives/line.zig").createLineMesh;
     pub const createGridMesh = @import("geometry/primitives/grid.zig").createGridMesh;
     pub const createCuboidMesh = @import("geometry/primitives/cuboid.zig").createCuboidMesh;
+    pub const createCylinderMesh = @import("geometry/primitives/cylinder_cone.zig").createCylinderMesh;
+    pub const createConeMesh = @import("geometry/primitives/cylinder_cone.zig").createConeMesh;
     pub const createUvSphereMesh = @import("geometry/primitives/uv_sphere.zig").createUvSphereMesh;
 };
 
@@ -46,10 +54,14 @@ test {
     _ = @import("blenlib/offset_indices.zig");
     _ = @import("mesh.zig");
     _ = @import("geometry/curves.zig");
+    _ = @import("geometry/curves_to_mesh.zig");
+    _ = @import("geometry/curve_to_mesh.zig");
+    _ = @import("geometry/mesh_to_curve.zig");
     _ = @import("geometry/realize_instances.zig");
     _ = @import("geometry/primitives/line.zig");
     _ = @import("geometry/primitives/grid.zig");
     _ = @import("geometry/primitives/cuboid.zig");
+    _ = @import("geometry/primitives/cylinder_cone.zig");
     _ = @import("geometry/primitives/uv_sphere.zig");
     _ = @import("io/obj.zig");
     _ = @import("nodes/graph.zig");

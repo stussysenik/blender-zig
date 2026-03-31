@@ -6,6 +6,7 @@ Current focus:
 - `blenlib`-style core utilities: disjoint sets and offset indices
 - mesh topology and bounds
 - geometry primitive generation: line, grid, cuboid, UV sphere
+- curves-to-mesh wire conversion and swept mesh generation
 - a small executable node-graph kernel for geometry-pipeline planning
 - curves-first instances realization and regression coverage
 - OBJ export so generated geometry can be inspected immediately
@@ -23,6 +24,7 @@ Current status:
 - curve-producing geometry nodes and curve-first realization nodes are now in
 - reference setup, optimized packaging, and a macOS CLI artifact workflow are now in
 - `GeometrySet` OBJ export and a graph-driven CLI demo are now in
+- direct `curve-wire` and `curve-tube` CLI modeling paths are now in
 - the next recommended slice is notarization plus broader distribution hardening once Apple credentials exist
 - the OMX-native role prompts live in `.codex/prompts/` and are used by `scripts/ralph-loop.sh`
 
@@ -52,6 +54,8 @@ Reference and distribution helpers:
 ```bash
 zig build test
 zig build run -- sphere
+zig build run -- curve-wire zig-out/curve-wire.obj
+zig build run -- curve-tube zig-out/curve-tube.obj
 zig build run -- cuboid zig-out/cuboid.obj
 zig build run -- grid zig-out/grid.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
@@ -61,7 +65,7 @@ npm run dist
 CLI usage:
 
 ```text
-blender-zig <line|grid|cuboid|sphere|graph-demo> [output.obj]
+blender-zig <line|grid|cuboid|sphere|curve-wire|curve-tube|graph-demo> [output.obj]
 ```
 
 Defaults are intentionally opinionated:

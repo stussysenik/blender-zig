@@ -23,9 +23,10 @@ Completed phases:
 - Phase 8: curves in nodes
 - Phase 9: distribution and references
 - Phase 10: runnable graph demo surface
+- Phase 11: direct curve modeling
 
 Open phase:
-- Phase 11: release and governance
+- Phase 12: release and governance
 
 ## Pushed Commits
 
@@ -41,6 +42,8 @@ Open phase:
 - `zig build test`
 - `zig build -Doptimize=ReleaseFast`
 - `zig build run -- sphere`
+- `zig build run -- curve-wire zig-out/curve-wire.obj`
+- `zig build run -- curve-tube zig-out/curve-tube.obj`
 - `zig build run -- cuboid zig-out/cuboid.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -52,10 +55,11 @@ Observed local outputs:
 - `npm run dist` writes a zip archive under `dist/` and a SHA-256 sidecar.
 - `npm run reference:setup` adds and fetches the `blender-reference` remote.
 - `graph-demo` builds a real `GeometrySet` from the node graph and can export it as one OBJ.
+- `curve-tube` builds a swept mesh with faces directly from curves and exports it as one OBJ.
 
 ## Next Targets
 
-- Broaden the graph-demo recipe into a small scene recipe surface instead of one fixed graph.
+- Expose the existing mesh-to-curve and curves-to-mesh roundtrip directly in the CLI.
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
 - Add notarization only after Apple credentials exist.
 - Keep the Zig runtime slice smaller than the release/tooling surface.

@@ -19,8 +19,23 @@ pub fn main() !void {
     const stdout = &stdout_writer.interface;
 
     const command = args[1];
-    if (std.mem.eql(u8, command, "graph-demo")) {
-        var geometry = try buildGraphDemo(allocator);
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube")) {
+        var mesh = try buildCurveCommand(allocator, command);
+        defer mesh.deinit();
+
+        try printMeshSummary(stdout, command, &mesh);
+        if (args.len >= 3) {
+            try blendzig.io.obj.writeFile(&mesh, args[2]);
+            try stdout.print("wrote {s}\n", .{args[2]});
+        }
+        try stdout.flush();
+        return;
+    }
+    if (std.mem.eql(u8, command, "mesh-edges") or std.mem.eql(u8, command, "graph-demo")) {
+        var geometry = if (std.mem.eql(u8, command, "mesh-edges"))
+            try buildGeometryCommand(allocator, command)
+        else
+            try buildGraphDemo(allocator);
         defer geometry.deinit();
 
         try printGeometrySummary(stdout, command, &geometry);
@@ -35,17 +50,7 @@ pub fn main() !void {
     var mesh = try buildPrimitive(allocator, command);
     defer mesh.deinit();
 
-    try stdout.print(
-        "primitive={s} vertices={d} edges={d} faces={d}\n",
-        .{ command, mesh.vertexCount(), mesh.edges.items.len, mesh.faceCount() },
-    );
-    if (mesh.bounds) |bounds| {
-        try stdout.print(
-            "bounds min=({}, {}, {}) max=({}, {}, {})\n",
-            .{ bounds.min.x, bounds.min.y, bounds.min.z, bounds.max.x, bounds.max.y, bounds.max.z },
-        );
-    }
-
+    try printMeshSummary(stdout, command, &mesh);
     if (args.len >= 3) {
         try blendzig.io.obj.writeFile(&mesh, args[2]);
         try stdout.print("wrote {s}\n", .{args[2]});
@@ -58,9 +63,14 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|sphere|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-edges|graph-demo> [output.obj]
         \\examples:
         \\  zig build run -- sphere
+        \\  zig build run -- cylinder zig-out/cylinder.obj
+        \\  zig build run -- cone zig-out/cone.obj
+        \\  zig build run -- curve-wire zig-out/curve-wire.obj
+        \\  zig build run -- curve-tube zig-out/curve-tube.obj
+        \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
         \\
@@ -90,6 +100,12 @@ fn buildPrimitive(allocator: std.mem.Allocator, primitive: []const u8) !blendzig
             true,
         );
     }
+    if (std.mem.eql(u8, primitive, "cylinder")) {
+        return blendzig.geometry.createCylinderMesh(allocator, 1.25, 3.0, 24, true, true, true);
+    }
+    if (std.mem.eql(u8, primitive, "cone")) {
+        return blendzig.geometry.createConeMesh(allocator, 1.25, 3.0, 24, true, true);
+    }
     if (std.mem.eql(u8, primitive, "sphere")) {
         return blendzig.geometry.createUvSphereMesh(allocator, 1.5, 16, 8, true);
     }
@@ -98,6 +114,19 @@ fn buildPrimitive(allocator: std.mem.Allocator, primitive: []const u8) !blendzig
 
 test "build primitive rejects unknown names" {
     try std.testing.expectError(error.UnknownPrimitive, buildPrimitive(std.testing.allocator, "teapot"));
+}
+
+fn printMeshSummary(writer: anytype, label: []const u8, mesh: *const blendzig.mesh.Mesh) !void {
+    try writer.print(
+        "command={s} vertices={d} edges={d} faces={d}\n",
+        .{ label, mesh.vertexCount(), mesh.edges.items.len, mesh.faceCount() },
+    );
+    if (mesh.bounds) |bounds| {
+        try writer.print(
+            "bounds min=({}, {}, {}) max=({}, {}, {})\n",
+            .{ bounds.min.x, bounds.min.y, bounds.min.z, bounds.max.x, bounds.max.y, bounds.max.z },
+        );
+    }
 }
 
 fn printGeometrySummary(writer: anytype, label: []const u8, geometry: *const blendzig.geometry.GeometrySet) !void {
@@ -120,6 +149,35 @@ fn printGeometrySummary(writer: anytype, label: []const u8, geometry: *const ble
             );
         }
     }
+}
+
+fn buildCurveCommand(allocator: std.mem.Allocator, command: []const u8) !blendzig.mesh.Mesh {
+    if (std.mem.eql(u8, command, "curve-wire")) {
+        var path = try createHelixCurve(allocator, 3, 18, 1.2, 0.1);
+        defer path.deinit();
+        return blendzig.geometry.convertCurvesToPolylineMesh(allocator, &path, .{});
+    }
+    if (std.mem.eql(u8, command, "curve-tube")) {
+        var path = try createHelixCurve(allocator, 4, 18, 1.4, 0.1);
+        defer path.deinit();
+        var profile = try createCircleProfile(allocator, 0.18, 10);
+        defer profile.deinit();
+        return blendzig.geometry.curveToMeshSweep(allocator, &path, &profile, .{ .fill_caps = true });
+    }
+    return error.UnknownPrimitive;
+}
+
+fn buildGeometryCommand(allocator: std.mem.Allocator, command: []const u8) !blendzig.geometry.GeometrySet {
+    if (std.mem.eql(u8, command, "mesh-edges")) {
+        var source_mesh = try blendzig.geometry.createCylinderMesh(allocator, 1.2, 2.8, 12, true, true, false);
+        defer source_mesh.deinit();
+
+        var geometry = try blendzig.geometry.GeometrySet.fromMeshClone(allocator, &source_mesh);
+        errdefer geometry.deinit();
+        geometry.curves = try blendzig.geometry.meshEdgesToCurves(allocator, &source_mesh);
+        return geometry;
+    }
+    return error.UnknownPrimitive;
 }
 
 fn buildGraphDemo(allocator: std.mem.Allocator) !blendzig.geometry.GeometrySet {
@@ -193,4 +251,68 @@ test "graph demo builds realized geometry" {
     try std.testing.expect(geometry.instances == null);
     try std.testing.expectEqual(@as(usize, 20), geometry.curves.?.pointsNum());
     try std.testing.expectEqual(@as(usize, 4), geometry.curves.?.curvesNum());
+}
+
+fn createHelixCurve(
+    allocator: std.mem.Allocator,
+    turns: usize,
+    points_per_turn: usize,
+    radius: f32,
+    rise_per_point: f32,
+) !blendzig.geometry.CurvesGeometry {
+    const point_count = turns * points_per_turn + 1;
+    const positions = try allocator.alloc(blendzig.math.Vec3, point_count);
+    defer allocator.free(positions);
+
+    for (0..point_count) |point_index| {
+        const turn = @as(f32, @floatFromInt(point_index)) / @as(f32, @floatFromInt(points_per_turn));
+        const angle = 2.0 * std.math.pi * turn;
+        positions[point_index] = blendzig.math.Vec3.init(
+            @cos(angle) * radius,
+            @sin(angle) * radius,
+            @as(f32, @floatFromInt(point_index)) * rise_per_point,
+        );
+    }
+
+    var curves = try blendzig.geometry.CurvesGeometry.init(allocator);
+    errdefer curves.deinit();
+    try curves.appendCurve(positions, false, null);
+    return curves;
+}
+
+fn createCircleProfile(
+    allocator: std.mem.Allocator,
+    radius: f32,
+    point_count: usize,
+) !blendzig.geometry.CurvesGeometry {
+    const positions = try allocator.alloc(blendzig.math.Vec3, point_count);
+    defer allocator.free(positions);
+
+    for (0..point_count) |point_index| {
+        const angle = 2.0 * std.math.pi * @as(f32, @floatFromInt(point_index)) / @as(f32, @floatFromInt(point_count));
+        positions[point_index] = blendzig.math.Vec3.init(@cos(angle) * radius, @sin(angle) * radius, 0.0);
+    }
+
+    var curves = try blendzig.geometry.CurvesGeometry.init(allocator);
+    errdefer curves.deinit();
+    try curves.appendCurve(positions, true, null);
+    return curves;
+}
+
+test "curve tube command builds faces" {
+    var mesh = try buildCurveCommand(std.testing.allocator, "curve-tube");
+    defer mesh.deinit();
+
+    try std.testing.expect(mesh.faceCount() > 0);
+    try std.testing.expect(mesh.vertexCount() > 0);
+}
+
+test "mesh edges command builds a mixed geometry view" {
+    var geometry = try buildGeometryCommand(std.testing.allocator, "mesh-edges");
+    defer geometry.deinit();
+
+    try std.testing.expect(geometry.mesh != null);
+    try std.testing.expect(geometry.curves != null);
+    try std.testing.expect(geometry.curves.?.curvesNum() > 0);
+    try std.testing.expect(geometry.curves.?.pointsNum() > 0);
 }
