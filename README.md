@@ -18,7 +18,7 @@ Current focus:
 - geometry primitive generation: line, grid, cuboid, cylinder, cone, UV sphere
 - curves-to-mesh wire conversion and swept mesh generation
 - bounded direct mesh ops beginning with triangulation
-- mesh cleanup ops beginning with merge-by-distance
+- mesh cleanup ops beginning with merge-by-distance and delete-loose
 - individual-face inset modeling on the face-corner mesh
 - bounded shared-edge dissolve that merges two faces into one ngon
 - bounded individual-face extrusion along the face normal
@@ -39,7 +39,7 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-planar-dissolve`, and `mesh-subdivide`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-planar-dissolve`, and `mesh-subdivide`
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
@@ -87,6 +87,7 @@ zig build run -- curve-wire zig-out/curve-wire.obj
 zig build run -- curve-tube zig-out/curve-tube.obj
 zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
 zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
+zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj
 zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
 zig build run -- mesh-inset zig-out/mesh-inset.obj
 zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
@@ -113,7 +114,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
 ```
 <!-- status:auto:cli-usage:end -->
 

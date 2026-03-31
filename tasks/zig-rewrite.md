@@ -89,7 +89,8 @@
 - [x] port a bounded individual-face extrude along the face normal
 - [x] port a limited planar dissolve pass for coplanar shared edges
 - [x] port a bounded face subdivision pass with shared edge midpoints
-- [ ] port another narrow mesh op such as a delete/cleanup pass or bevel-like growth
+- [x] port a bounded delete-loose cleanup pass that removes loose edges and isolated points
+- [ ] port another narrow mesh op such as bevel-like growth or a region-style mesh edit
 
 ## Phase 14: Composable local authoring
 - [x] add a bounded mesh pipeline CLI that chains existing primitives and ops

@@ -67,6 +67,7 @@ Use `npm run status:live` when you want the current git branch and commit instea
 
 - new primitive generators: `src/geometry/primitives/`
 - mesh or curve ops: `src/geometry/`
+- mesh cleanup passes: `src/geometry/mesh_delete_loose.zig` and `src/geometry/mesh_merge_by_distance.zig`
 - mixed geometry behavior: `src/geometry/realize_instances.zig`
 - mesh-space transforms and array composition: `src/geometry/mesh_transform.zig`
 - multi-part mesh scene composition: `src/scene.zig`

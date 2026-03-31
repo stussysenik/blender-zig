@@ -4,6 +4,7 @@ const cuboid = @import("geometry/primitives/cuboid.zig");
 const cylinder_cone = @import("geometry/primitives/cylinder_cone.zig");
 const grid = @import("geometry/primitives/grid.zig");
 const uv_sphere = @import("geometry/primitives/uv_sphere.zig");
+const mesh_delete_loose = @import("geometry/mesh_delete_loose.zig");
 const mesh_dissolve = @import("geometry/mesh_dissolve.zig");
 const mesh_extrude = @import("geometry/mesh_extrude.zig");
 const mesh_inset = @import("geometry/mesh_inset.zig");
@@ -49,6 +50,7 @@ pub const Step = enum {
     extrude,
     inset,
     triangulate,
+    delete_loose,
     dissolve,
     planar_dissolve,
     merge_by_distance,
@@ -62,6 +64,7 @@ pub const Step = enum {
         if (std.mem.eql(u8, name, "extrude")) return .extrude;
         if (std.mem.eql(u8, name, "inset")) return .inset;
         if (std.mem.eql(u8, name, "triangulate")) return .triangulate;
+        if (std.mem.eql(u8, name, "delete-loose")) return .delete_loose;
         if (std.mem.eql(u8, name, "dissolve")) return .dissolve;
         if (std.mem.eql(u8, name, "planar-dissolve")) return .planar_dissolve;
         if (std.mem.eql(u8, name, "merge-by-distance")) return .merge_by_distance;
@@ -227,6 +230,7 @@ fn applyStep(
             .factor = step_spec.inset_factor orelse 0.2,
         }),
         .triangulate => mesh_triangulate.triangulateMesh(allocator, mesh),
+        .delete_loose => mesh_delete_loose.deleteLoose(allocator, mesh),
         .dissolve => {
             if (pickFirstSharedEdge(mesh)) |edge| {
                 const edges = [_]mesh_mod.Edge{edge};
@@ -841,6 +845,7 @@ test "pipeline can parse transform and array steps" {
     const translate = try parseStepSpec("translate:x=1.5,y=-0.25,z=2.0");
     const scale = try parseStepSpec("scale:x=0.5,y=2.0,z=1.0");
     const rotate = try parseStepSpec("rotate-z:degrees=22.5");
+    const cleanup = try parseStepSpec("delete-loose:repeat=2");
     const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
     const grid_array = try parseStepSpec("array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95");
 
@@ -851,6 +856,8 @@ test "pipeline can parse transform and array steps" {
     try std.testing.expectEqual(@as(f32, 2.0), scale.scale_y.?);
     try std.testing.expectEqual(Step.rotate_z, rotate.step);
     try std.testing.expectEqual(@as(f32, 22.5), rotate.rotate_degrees.?);
+    try std.testing.expectEqual(Step.delete_loose, cleanup.step);
+    try std.testing.expectEqual(@as(usize, 2), cleanup.repeat);
     try std.testing.expectEqual(Step.array, linear_array.step);
     try std.testing.expectEqual(@as(usize, 6), linear_array.array_count.?);
     try std.testing.expectEqual(@as(f32, 1.5), linear_array.array_offset_x.?);
@@ -976,6 +983,7 @@ test "pipeline seed overrides build the same mesh inline and from recipe text" {
 
 test "pipeline rejects unsupported parameters for a step" {
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
+    try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("delete-loose:distance=1"));
 }
 
 test "pipeline rejects unsupported or duplicate seed parameters" {

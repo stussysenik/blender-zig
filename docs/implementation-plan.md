@@ -26,6 +26,7 @@ This is where `blender-zig` starts to feel like a modeling tool instead of a geo
 Current ops in tree:
 
 - triangulate
+- delete loose
 - merge by distance
 - inset
 - shared-edge dissolve
@@ -36,7 +37,6 @@ Current ops in tree:
 
 Next high-value ports:
 
-- delete/cleanup passes
 - bevel-like topology growth
 - region-style operations that go beyond individual-face processing
 

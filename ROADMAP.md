@@ -23,7 +23,7 @@
 
 ## Current Targets
 
-- Port another narrow mesh op such as a delete/cleanup pass or bevel-like growth to strengthen direct modeling.
+- Port a bevel-like or region-growth mesh op to strengthen direct modeling beyond cleanup passes.
 - Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.

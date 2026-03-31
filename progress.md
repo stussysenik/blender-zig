@@ -50,6 +50,7 @@ Open phases:
 - `zig build run -- curve-tube zig-out/curve-tube.obj`
 - `zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj`
 - `zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj`
+- `zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj`
 - `zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj`
 - `zig build run -- mesh-inset zig-out/mesh-inset.obj`
 - `zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj`
@@ -73,7 +74,7 @@ Open phases:
 
 ## Next Targets
 
-- Port another narrow mesh op such as a delete/cleanup pass or bevel-like growth to strengthen direct modeling.
+- Port a bevel-like or region-growth mesh op to strengthen direct modeling beyond cleanup passes.
 - Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
@@ -84,6 +85,7 @@ Open phases:
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
 Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides, bounded transforms, and array composition.
 Composed scene files can now combine multiple `.bzrecipe` studies or imported `.obj` meshes through `mesh-scene`, with scene-level translate, scale, and rotate-z placement tokens on each part.
+Direct cleanup now includes `mesh-delete-loose`, which removes loose edges and isolated points while compacting the surviving face mesh deterministically.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.
