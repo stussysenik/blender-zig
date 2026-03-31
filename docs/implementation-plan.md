@@ -27,6 +27,7 @@ Current ops in tree:
 
 - triangulate
 - face delete with boundary wire preservation
+- fill hole for one simple planar loose loop
 - delete loose
 - merge by distance
 - inset
@@ -40,8 +41,12 @@ Current ops in tree:
 
 Next high-value ports:
 
+- `mesh-fill-hole` as the first repair/edit recovery op after `mesh-delete-face`
 - bevel-like topology growth
 - constrained edge or face selection edits that pair well with the current region stack
+- repeatable phase execution over a dedicated backlog such as `tasks/phase-16.md`
+
+The next short-term bridge after the current mesh IO work is Phase 16: bounded edit ops for selected/open boundaries, saved studies that replay multi-step modeling stacks, and a manifest-based mixed mesh-plus-curve bundle path. That phase should stay concrete and testable before it widens into any broader scene system.
 
 ## Stage 3: Scene and evaluation layer
 
@@ -97,3 +102,5 @@ The nearest credible milestone is not "replace Blender." It is:
 Once those are in place, `blender-zig` becomes a serious standalone geometry application rather than only a rewrite experiment.
 
 The new short-term bridge between 1 and 2 is a composable mesh pipeline CLI plus a small scene-composition layer: one seed mesh plus a bounded, parameterized stack of existing ops, now runnable either inline or from saved recipe files with explicit seed overrides for primitive size and resolution, plus bounded transform and array composition for scene-style studies, and then multi-part saved scenes that combine authored recipes or imported OBJ meshes with per-part translate, scale, and rotate-z placement, still without pretending we already have Blender's full scene model.
+
+The next deliberate bridge after that is Phase 16 in [docs/phase-16-plan.md](/Users/s3nik/Desktop/blender-zig/docs/phase-16-plan.md): deepen direct modeling with bounded bevel-like and constrained selection edits, add edit-heavy studies and scenes, and run those slices against a dedicated phase backlog instead of only the global rewrite list.

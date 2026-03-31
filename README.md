@@ -22,6 +22,7 @@ Current focus:
 - curves-to-mesh wire conversion and swept mesh generation
 - bounded direct mesh ops beginning with triangulation
 - bounded face deletion that keeps the deleted region border as loose wire
+- bounded hole fill that turns one simple planar loose loop back into one ngon cap
 - mesh cleanup ops beginning with merge-by-distance and delete-loose
 - individual-face inset modeling on the face-corner mesh
 - bounded shared-edge dissolve that merges two faces into one ngon
@@ -45,9 +46,10 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-face`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-inset-region`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-face`, `mesh-fill-hole`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-inset-region`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import
+- phase 16 is now defined in `docs/phase-16-plan.md` and `tasks/phase-16.md`, and `mesh-fill-hole` is the first landed repair/edit recovery slice
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
 - the next recommended slices are broader direct modeling coverage, deeper mesh-plus-curves IO, and richer saved scene studies, not UI or rendering
@@ -94,6 +96,7 @@ zig build run -- curve-tube zig-out/curve-tube.obj
 zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
 zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
 zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj
+zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj
 zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj
 zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
 zig build run -- mesh-inset zig-out/mesh-inset.obj
@@ -115,6 +118,8 @@ zig build run -- mesh-pipeline --recipe recipes/cylinder-panel-study.bzrecipe
 zig build run -- mesh-edges zig-out/mesh-edges.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
 zig build run -- geometry-import zig-out/graph-demo.obj zig-out/graph-demo-roundtrip.obj
+bash scripts/ralph-loop.sh --phase 16 --dry-run --once
+bash scripts/team-loop.sh --task-file tasks/phase-16.md --dry-run
 npm run dist
 ```
 <!-- status:auto:quick-start:end -->
@@ -123,7 +128,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-face|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
 ```
 <!-- status:auto:cli-usage:end -->
 

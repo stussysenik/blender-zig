@@ -20,13 +20,13 @@
 - [~] Phase 13: Direct mesh ops
 - [x] Phase 14: Composable local authoring
 - [~] Phase 15: Mesh IO surfaces
+- [~] Phase 16: Directed modeling and phase execution
 
 ## Current Targets
 
 - Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current delete/inset/extrude stack.
-- Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
+- Add edit-heavy saved studies and one composed scene for the phase-16 stack.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
-- Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

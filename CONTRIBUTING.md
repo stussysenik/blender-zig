@@ -19,9 +19,10 @@ If you are new here:
 5. Run `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`.
 6. Run one inline override example such as `zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75`.
 7. Run one direct edit-style op such as `zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj`.
-8. Run one scene-style recipe such as `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`.
-9. Run one composed scene such as `zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene` and inspect how the scene file places reused parts without rewriting their source studies.
-10. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig).
+8. Run the paired repair op `zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj`.
+9. Run one scene-style recipe such as `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`.
+10. Run one composed scene such as `zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene` and inspect how the scene file places reused parts without rewriting their source studies.
+11. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig).
 
 That gets you from zero to a concrete, debuggable feature slice quickly.
 
@@ -41,6 +42,7 @@ The standard local loop is:
 zig build test
 zig build run -- <command> [output.obj]
 zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj
+zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj
 zig build run -- mesh-inset-region zig-out/mesh-inset-region.obj
 zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75
 zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe

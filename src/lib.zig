@@ -32,6 +32,8 @@ pub const geometry = struct {
     pub const curveToMeshSweep = @import("geometry/curves_to_mesh.zig").curveToMeshSweep;
     pub const DeleteFacesOptions = @import("geometry/mesh_delete_faces.zig").DeleteFacesOptions;
     pub const deleteFaces = @import("geometry/mesh_delete_faces.zig").deleteFaces;
+    pub const FillHoleOptions = @import("geometry/mesh_fill_hole.zig").FillHoleOptions;
+    pub const fillHole = @import("geometry/mesh_fill_hole.zig").fillHole;
     pub const deleteLoose = @import("geometry/mesh_delete_loose.zig").deleteLoose;
     pub const DissolveOptions = @import("geometry/mesh_dissolve.zig").DissolveOptions;
     pub const dissolveEdges = @import("geometry/mesh_dissolve.zig").dissolveEdges;
@@ -88,6 +90,7 @@ test {
     _ = @import("geometry/curves.zig");
     _ = @import("geometry/curves_to_mesh.zig");
     _ = @import("geometry/mesh_delete_faces.zig");
+    _ = @import("geometry/mesh_fill_hole.zig");
     _ = @import("geometry/mesh_delete_loose.zig");
     _ = @import("geometry/mesh_dissolve.zig");
     _ = @import("geometry/mesh_extrude.zig");

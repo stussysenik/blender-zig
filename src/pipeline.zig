@@ -5,6 +5,7 @@ const cylinder_cone = @import("geometry/primitives/cylinder_cone.zig");
 const grid = @import("geometry/primitives/grid.zig");
 const uv_sphere = @import("geometry/primitives/uv_sphere.zig");
 const mesh_delete_faces = @import("geometry/mesh_delete_faces.zig");
+const mesh_fill_hole = @import("geometry/mesh_fill_hole.zig");
 const mesh_delete_loose = @import("geometry/mesh_delete_loose.zig");
 const mesh_dissolve = @import("geometry/mesh_dissolve.zig");
 const mesh_extrude = @import("geometry/mesh_extrude.zig");
@@ -56,6 +57,7 @@ pub const Step = enum {
     inset_region,
     triangulate,
     delete_face,
+    fill_hole,
     delete_loose,
     dissolve,
     planar_dissolve,
@@ -73,6 +75,7 @@ pub const Step = enum {
         if (std.mem.eql(u8, name, "inset-region")) return .inset_region;
         if (std.mem.eql(u8, name, "triangulate")) return .triangulate;
         if (std.mem.eql(u8, name, "delete-face")) return .delete_face;
+        if (std.mem.eql(u8, name, "fill-hole")) return .fill_hole;
         if (std.mem.eql(u8, name, "delete-loose")) return .delete_loose;
         if (std.mem.eql(u8, name, "dissolve")) return .dissolve;
         if (std.mem.eql(u8, name, "planar-dissolve")) return .planar_dissolve;
@@ -252,6 +255,7 @@ fn applyStep(
             const faces = [_]usize{face_index};
             return mesh_delete_faces.deleteFaces(allocator, mesh, &faces, .{});
         },
+        .fill_hole => mesh_fill_hole.fillHole(allocator, mesh, .{}),
         .delete_loose => mesh_delete_loose.deleteLoose(allocator, mesh),
         .dissolve => {
             if (pickFirstSharedEdge(mesh)) |edge| {
@@ -888,6 +892,7 @@ test "pipeline can parse transform and array steps" {
     const rotate = try parseStepSpec("rotate-z:degrees=22.5");
     const cleanup = try parseStepSpec("delete-loose:repeat=2");
     const delete_face = try parseStepSpec("delete-face:index=0");
+    const fill_hole = try parseStepSpec("fill-hole");
     const extrude_region = try parseStepSpec("extrude-region:distance=0.8");
     const inset_region = try parseStepSpec("inset-region:width=0.2");
     const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
@@ -904,6 +909,7 @@ test "pipeline can parse transform and array steps" {
     try std.testing.expectEqual(@as(usize, 2), cleanup.repeat);
     try std.testing.expectEqual(Step.delete_face, delete_face.step);
     try std.testing.expectEqual(@as(usize, 0), delete_face.delete_face_index.?);
+    try std.testing.expectEqual(Step.fill_hole, fill_hole.step);
     try std.testing.expectEqual(Step.extrude_region, extrude_region.step);
     try std.testing.expectEqual(@as(f32, 0.8), extrude_region.extrude_distance.?);
     try std.testing.expectEqual(Step.inset_region, inset_region.step);
@@ -981,6 +987,28 @@ test "pipeline can delete a face and keep the exposed border wire" {
     try std.testing.expectEqual(@as(usize, 1), mesh.faceCount());
     try std.testing.expectEqual(@as(usize, 7), mesh.edges.items.len);
     try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "pipeline can fill one loose hole loop after face deletion" {
+    const steps = [_]StepSpec{
+        .{ .step = .delete_face, .delete_face_index = 0 },
+        .{ .step = .fill_hole },
+    };
+
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 2,
+        .verts_y = 2,
+        .size_x = 2.0,
+        .size_y = 2.0,
+        .with_uvs = true,
+    }, &steps);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 4), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 1), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 4), mesh.edges.items.len);
+    try std.testing.expect(!mesh.hasCornerUvs());
 }
 
 test "pipeline can build region inset border rings" {
@@ -1098,6 +1126,7 @@ test "pipeline rejects unsupported parameters for a step" {
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("delete-loose:distance=1"));
     try std.testing.expectError(error.MissingPipelineFaceIndex, parseStepSpec("delete-face"));
+    try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("fill-hole:index=0"));
 }
 
 test "pipeline rejects unsupported or duplicate seed parameters" {

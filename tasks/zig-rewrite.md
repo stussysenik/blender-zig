@@ -112,6 +112,26 @@
 - [ ] add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear
 - [ ] widen import beyond the narrow OBJ subset only when a concrete modeling need appears
 
+## Phase 16: Directed modeling and phase execution
+- [x] define the exact `mesh-fill-hole` scope and regression matrix for one simple planar boundary loop
+- [x] port `mesh-fill-hole` with direct CLI and pipeline coverage
+- [ ] define the exact bounded bevel-like growth slice and regression matrix for the current face-corner mesh
+- [ ] port one bounded bevel-like topology-growth op with direct CLI and pipeline coverage
+- [ ] port one constrained selection edit that pairs with the current delete/inset/extrude stack
+- [ ] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
+- [ ] add one `.bzscene` composition that reuses the new edit-heavy studies
+- [ ] allow the Ralph/operator workflow to target `tasks/phase-16.md` as an intentional phase run surface
+- [ ] refresh generated status surfaces once the phase-16 slices land
+
+## Phase 16: Modeling studies and mixed-geometry packaging
+- [ ] add one boundary-aware growth or bevel-like edit op for selected edges and open boundaries
+- [ ] add one repair or fill op for deleted-face regions so open areas can be recovered into usable surfaces
+- [ ] extend saved recipes so selections, operator parameters, and part-level transforms survive replay
+- [ ] add a study file path that replays a small stack of modeling steps from disk
+- [ ] add a manifest-based bundle format for mixed mesh-plus-curve scenes with explicit roundtrip semantics
+- [ ] add roundtrip regression tests for mesh-only, curve-only, and mixed scenes
+- [ ] keep the phase documented and runnable through the existing CLI/status tooling
+
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet
 - [ ] do not port DNA/RNA, asset systems, or the full dependency graph yet
