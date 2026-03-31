@@ -9,6 +9,7 @@ const mesh_dissolve = @import("geometry/mesh_dissolve.zig");
 const mesh_extrude = @import("geometry/mesh_extrude.zig");
 const mesh_extrude_region = @import("geometry/mesh_extrude_region.zig");
 const mesh_inset = @import("geometry/mesh_inset.zig");
+const mesh_inset_region = @import("geometry/mesh_inset_region.zig");
 const mesh_merge = @import("geometry/mesh_merge_by_distance.zig");
 const mesh_subdivide = @import("geometry/mesh_subdivide.zig");
 const mesh_transform = @import("geometry/mesh_transform.zig");
@@ -51,6 +52,7 @@ pub const Step = enum {
     extrude,
     extrude_region,
     inset,
+    inset_region,
     triangulate,
     delete_loose,
     dissolve,
@@ -66,6 +68,7 @@ pub const Step = enum {
         if (std.mem.eql(u8, name, "extrude")) return .extrude;
         if (std.mem.eql(u8, name, "extrude-region")) return .extrude_region;
         if (std.mem.eql(u8, name, "inset")) return .inset;
+        if (std.mem.eql(u8, name, "inset-region")) return .inset_region;
         if (std.mem.eql(u8, name, "triangulate")) return .triangulate;
         if (std.mem.eql(u8, name, "delete-loose")) return .delete_loose;
         if (std.mem.eql(u8, name, "dissolve")) return .dissolve;
@@ -84,6 +87,7 @@ pub const StepSpec = struct {
     repeat: usize = 1,
     extrude_distance: ?f32 = null,
     inset_factor: ?f32 = null,
+    inset_region_width: ?f32 = null,
     merge_distance: ?f32 = null,
     planar_normal_epsilon: ?f32 = null,
     planar_plane_epsilon: ?f32 = null,
@@ -234,6 +238,9 @@ fn applyStep(
         }),
         .inset => mesh_inset.insetIndividual(allocator, mesh, .{
             .factor = step_spec.inset_factor orelse 0.2,
+        }),
+        .inset_region => mesh_inset_region.insetRegion(allocator, mesh, .{
+            .width = step_spec.inset_region_width orelse 0.2,
         }),
         .triangulate => mesh_triangulate.triangulateMesh(allocator, mesh),
         .delete_loose => mesh_delete_loose.deleteLoose(allocator, mesh),
@@ -427,6 +434,13 @@ pub fn parseStepSpec(token: []const u8) !StepSpec {
                 .inset => {
                     if (std.mem.eql(u8, key, "factor")) {
                         spec.inset_factor = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .inset_region => {
+                    if (std.mem.eql(u8, key, "width")) {
+                        spec.inset_region_width = try parseFloat(value_text);
                     } else {
                         return error.UnsupportedPipelineParameter;
                     }
@@ -853,6 +867,7 @@ test "pipeline can parse transform and array steps" {
     const rotate = try parseStepSpec("rotate-z:degrees=22.5");
     const cleanup = try parseStepSpec("delete-loose:repeat=2");
     const extrude_region = try parseStepSpec("extrude-region:distance=0.8");
+    const inset_region = try parseStepSpec("inset-region:width=0.2");
     const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
     const grid_array = try parseStepSpec("array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95");
 
@@ -867,6 +882,8 @@ test "pipeline can parse transform and array steps" {
     try std.testing.expectEqual(@as(usize, 2), cleanup.repeat);
     try std.testing.expectEqual(Step.extrude_region, extrude_region.step);
     try std.testing.expectEqual(@as(f32, 0.8), extrude_region.extrude_distance.?);
+    try std.testing.expectEqual(Step.inset_region, inset_region.step);
+    try std.testing.expectEqual(@as(f32, 0.2), inset_region.inset_region_width.?);
     try std.testing.expectEqual(Step.array, linear_array.step);
     try std.testing.expectEqual(@as(usize, 6), linear_array.array_count.?);
     try std.testing.expectEqual(@as(f32, 1.5), linear_array.array_offset_x.?);
@@ -918,6 +935,27 @@ test "pipeline can build region extrude shells" {
     try std.testing.expectEqual(@as(usize, 12), mesh.vertexCount());
     try std.testing.expectEqual(@as(usize, 10), mesh.faceCount());
     try std.testing.expectEqual(@as(usize, 20), mesh.edges.items.len);
+    try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "pipeline can build region inset border rings" {
+    const steps = [_]StepSpec{
+        .{ .step = .inset_region, .inset_region_width = 0.2 },
+    };
+
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 3,
+        .verts_y = 2,
+        .size_x = 2.0,
+        .size_y = 1.0,
+        .with_uvs = true,
+    }, &steps);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 12), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 8), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 19), mesh.edges.items.len);
     try std.testing.expect(mesh.hasCornerUvs());
 }
 

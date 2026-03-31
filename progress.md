@@ -53,6 +53,7 @@ Open phases:
 - `zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj`
 - `zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj`
 - `zig build run -- mesh-inset zig-out/mesh-inset.obj`
+- `zig build run -- mesh-inset-region zig-out/mesh-inset-region.obj`
 - `zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj`
 - `zig build run -- mesh-extrude zig-out/mesh-extrude.obj`
 - `zig build run -- mesh-extrude-region zig-out/mesh-extrude-region.obj`
@@ -75,7 +76,7 @@ Open phases:
 
 ## Next Targets
 
-- Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current extrude and inset stack.
+- Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current individual and region inset/extrude stack.
 - Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
@@ -88,6 +89,7 @@ Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as
 Composed scene files can now combine multiple `.bzrecipe` studies or imported `.obj` meshes through `mesh-scene`, with scene-level translate, scale, and rotate-z placement tokens on each part.
 Direct cleanup now includes `mesh-delete-loose`, which removes loose edges and isolated points while compacting the surviving face mesh deterministically.
 Direct modeling now includes `mesh-extrude-region`, which extrudes the mesh-wide open face region as one shell and bridges only the boundary instead of building per-face internal walls.
+Direct modeling now includes `mesh-inset-region`, which offsets one planar open face region inward, preserves the source cap layout, and fills the new border ring with quads.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

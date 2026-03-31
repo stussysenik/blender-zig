@@ -26,6 +26,7 @@ Current focus:
 - bounded shared-edge dissolve that merges two faces into one ngon
 - bounded individual-face extrusion along the face normal
 - bounded open-region extrusion along averaged vertex normals
+- bounded planar region inset that offsets one open face region inward and fills the border ring with quads
 - limited planar dissolve for coplanar shared edges
 - bounded face subdivision with shared edge midpoints
 - parameterized mesh pipeline CLI over existing primitives and ops
@@ -43,7 +44,7 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-inset-region`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
@@ -94,6 +95,7 @@ zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
 zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj
 zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
 zig build run -- mesh-inset zig-out/mesh-inset.obj
+zig build run -- mesh-inset-region zig-out/mesh-inset-region.obj
 zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
 zig build run -- mesh-extrude zig-out/mesh-extrude.obj
 zig build run -- mesh-extrude-region zig-out/mesh-extrude-region.obj
@@ -119,7 +121,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
 ```
 <!-- status:auto:cli-usage:end -->
 

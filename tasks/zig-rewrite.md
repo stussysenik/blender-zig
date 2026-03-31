@@ -88,10 +88,11 @@
 - [x] port a bounded dissolve-edge pass that merges two manifold faces into one ngon
 - [x] port a bounded individual-face extrude along the face normal
 - [x] port a bounded open-region extrude that bridges only the outer boundary
+- [x] port a bounded planar region inset that offsets one open face region inward
 - [x] port a limited planar dissolve pass for coplanar shared edges
 - [x] port a bounded face subdivision pass with shared edge midpoints
 - [x] port a bounded delete-loose cleanup pass that removes loose edges and isolated points
-- [ ] port another narrow mesh op such as bevel-like growth or a region-style mesh edit
+- [ ] port another narrow mesh op such as bevel-like growth or a bounded face deletion/edit cleanup
 
 ## Phase 14: Composable local authoring
 - [x] add a bounded mesh pipeline CLI that chains existing primitives and ops

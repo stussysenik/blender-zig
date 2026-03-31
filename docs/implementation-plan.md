@@ -29,6 +29,7 @@ Current ops in tree:
 - delete loose
 - merge by distance
 - inset
+- region inset
 - shared-edge dissolve
 - individual-face extrude
 - open-region extrude
@@ -39,7 +40,7 @@ Current ops in tree:
 Next high-value ports:
 
 - bevel-like topology growth
-- region-style operations that go beyond individual-face processing
+- bounded face deletion or cleanup edits that pair well with the current region stack
 
 ## Stage 3: Scene and evaluation layer
 

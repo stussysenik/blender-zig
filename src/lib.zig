@@ -41,6 +41,8 @@ pub const geometry = struct {
     pub const extrudeRegion = @import("geometry/mesh_extrude_region.zig").extrudeRegion;
     pub const InsetOptions = @import("geometry/mesh_inset.zig").InsetOptions;
     pub const insetIndividual = @import("geometry/mesh_inset.zig").insetIndividual;
+    pub const InsetRegionOptions = @import("geometry/mesh_inset_region.zig").InsetRegionOptions;
+    pub const insetRegion = @import("geometry/mesh_inset_region.zig").insetRegion;
     pub const SubdivideOptions = @import("geometry/mesh_subdivide.zig").SubdivideOptions;
     pub const subdivideFaces = @import("geometry/mesh_subdivide.zig").subdivideFaces;
     pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
@@ -88,6 +90,7 @@ test {
     _ = @import("geometry/mesh_extrude.zig");
     _ = @import("geometry/mesh_extrude_region.zig");
     _ = @import("geometry/mesh_inset.zig");
+    _ = @import("geometry/mesh_inset_region.zig");
     _ = @import("geometry/mesh_transform.zig");
     _ = @import("geometry/mesh_subdivide.zig");
     _ = @import("geometry/mesh_to_curve.zig");
