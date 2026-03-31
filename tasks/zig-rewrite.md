@@ -65,7 +65,12 @@
 - [x] add a macOS artifact workflow that validates optimized builds in CI
 - [ ] add notarization once Apple credentials exist
 
-## Phase 10: Release and governance
+## Phase 10: Runnable Graph Demo
+- [x] export mixed mesh and curves `GeometrySet` values as a single OBJ
+- [x] add a fixed `graph-demo` CLI command that exercises the node runtime end to end
+- [x] add reader-facing progress artifacts and screenshot-style status surfaces
+
+## Phase 11: Release and governance
 - [ ] add conventional commit examples
 - [x] wire semantic-release in CI
 - [x] document signed-commit expectations and limitations

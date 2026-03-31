@@ -9,6 +9,7 @@ Current focus:
 - a small executable node-graph kernel for geometry-pipeline planning
 - curves-first instances realization and regression coverage
 - OBJ export so generated geometry can be inspected immediately
+- a fixed graph-demo CLI that runs the node pipeline end to end
 - OMX/Ralphy-inspired team/release scaffolding around the rewrite effort
 
 Current status:
@@ -21,6 +22,7 @@ Current status:
 - the shared `GeometrySet` bridge between nodes, meshes, and curves is now in
 - curve-producing geometry nodes and curve-first realization nodes are now in
 - reference setup, optimized packaging, and a macOS CLI artifact workflow are now in
+- `GeometrySet` OBJ export and a graph-driven CLI demo are now in
 - the next recommended slice is notarization plus broader distribution hardening once Apple credentials exist
 - the OMX-native role prompts live in `.codex/prompts/` and are used by `scripts/ralph-loop.sh`
 
@@ -33,6 +35,11 @@ This repo is intentionally narrow. It is inspired by Blender subsystems like:
 - `source/blender/geometry/intern/mesh_primitive_uv_sphere.cc`
 
 For the upstream scan and the next port targets, see `docs/blender-repo-scan.md`.
+
+Progress surfaces:
+- [hypertime progress log](/Users/s3nik/Desktop/blender-zig/progress.md)
+- [current state snapshot](/Users/s3nik/Desktop/blender-zig/docs/screenshots/current-state.svg)
+- [phase map](/Users/s3nik/Desktop/blender-zig/docs/assets/phase-map.svg)
 
 Reference and distribution helpers:
 - `npm run reference:setup`
@@ -47,13 +54,14 @@ zig build test
 zig build run -- sphere
 zig build run -- cuboid zig-out/cuboid.obj
 zig build run -- grid zig-out/grid.obj
+zig build run -- graph-demo zig-out/graph-demo.obj
 npm run dist
 ```
 
 CLI usage:
 
 ```text
-blender-zig <line|grid|cuboid|sphere> [output.obj]
+blender-zig <line|grid|cuboid|sphere|graph-demo> [output.obj]
 ```
 
 Defaults are intentionally opinionated:

@@ -147,3 +147,12 @@ Next practical track:
 
 Items 14 and 15 are now in the local rewrite, a macOS artifact workflow is in place, and basic signing scaffolding exists.
 The next practical ops target is notarization once Apple credentials exist.
+
+Current runtime track:
+
+17. Export mixed mesh and curves `GeometrySet` values as one OBJ artifact.
+18. Add a fixed `graph-demo` CLI path that exercises the node runtime end to end.
+19. Keep the demo narrow and code-driven until a scene recipe surface exists.
+
+Items 17 and 18 are now in the local rewrite.
+The next runtime target is a small scene recipe layer that can build more than one canned graph without pretending to be Blender's full dependency graph.
