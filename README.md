@@ -1,5 +1,8 @@
 # blender-zig
 
+![Demo](demo.gif)
+
+
 A companion Zig rewrite that lifts a realistic first slice out of Blender instead of pretending the whole codebase can be transliterated in one shot.
 
 The status sections in this file, [progress.md](/Users/s3nik/Desktop/blender-zig/progress.md), and [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md) are generated from versioned `status/hyperdata.json` via `npm run status:update`.
