@@ -20,7 +20,8 @@ Current status:
 - executable node evaluation for primitive meshes is now in
 - the shared `GeometrySet` bridge between nodes, meshes, and curves is now in
 - curve-producing geometry nodes and curve-first realization nodes are now in
-- the next recommended slice is distribution hardening: reference setup, optimized packaging, and macOS signing scaffolding
+- reference setup, optimized packaging, and local macOS signing scaffolding are now in
+- the next recommended slice is notarization plus broader distribution hardening once Apple credentials exist
 - the OMX-native role prompts live in `.codex/prompts/` and are used by `scripts/ralph-loop.sh`
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:
@@ -33,6 +34,12 @@ This repo is intentionally narrow. It is inspired by Blender subsystems like:
 
 For the upstream scan and the next port targets, see `docs/blender-repo-scan.md`.
 
+Reference and distribution helpers:
+- `npm run reference:setup`
+- `npm run dist`
+- `npm run sign:macos -- zig-out/bin/blender-zig "Developer ID Application: Your Name"`
+- [reference and distribution notes](/Users/s3nik/Desktop/blender-zig/docs/reference-and-distribution.md)
+
 ## Quick Start
 
 ```bash
@@ -40,6 +47,7 @@ zig build test
 zig build run -- sphere
 zig build run -- cuboid zig-out/cuboid.obj
 zig build run -- grid zig-out/grid.obj
+npm run dist
 ```
 
 CLI usage:

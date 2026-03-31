@@ -6,6 +6,9 @@
   "scripts": {
     "ralph": "bash scripts/ralph-loop.sh",
     "team": "bash scripts/team-loop.sh",
+    "reference:setup": "bash scripts/add-reference-remote.sh",
+    "dist": "bash scripts/package-release.sh",
+    "sign:macos": "bash scripts/sign-macos-release.sh",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
     "commitlint": "commitlint --from HEAD~1 --to HEAD"

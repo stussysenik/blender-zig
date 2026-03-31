@@ -59,9 +59,10 @@
 - [x] port node-level mixed mesh and curves realization tests
 
 ## Phase 9: Distribution And References
-- [ ] document and automate the local `blender-reference` remote setup
-- [ ] add release packaging scripts for optimized native artifacts
-- [ ] add macOS signing and notarization scaffolding without requiring secrets locally
+- [x] document and automate the local `blender-reference` remote setup
+- [x] add release packaging scripts for optimized native artifacts
+- [x] add macOS signing scaffolding without requiring secrets locally
+- [ ] add notarization once Apple credentials exist
 
 ## Phase 10: Release and governance
 - [ ] add conventional commit examples

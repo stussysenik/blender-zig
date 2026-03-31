@@ -144,3 +144,6 @@ Next practical track:
 14. Automate reference-remote setup against the Blender fork.
 15. Add optimized packaging steps for native release artifacts.
 16. Add macOS signing and notarization scaffolding without pretending secrets already exist.
+
+Items 14 and 15 are now in the local rewrite, and basic macOS signing scaffolding is in place.
+The next practical ops target is notarization once Apple credentials exist.
