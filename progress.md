@@ -1,11 +1,9 @@
 # Progress
 
-> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
+> Generated from `status/hyperdata.json`. Refresh with `npm run status:update`.
 
 ## Hypertime Snapshot
 
-- branch: `main`
-- head: `9e82115e`
 - source: `status/hyperdata.json`
 
 Artifacts:
@@ -38,17 +36,6 @@ Active phases:
 Open phases:
 - none
 
-## Pushed Commits
-
-- `9e82115e` fix: restore hypertime git metadata
-- `42828047` feat: add mesh triangulation slice
-- `9815107f` docs: add contributor architecture surfaces
-- `dd7c539f` feat: automate status docs and roundtrip cli
-- `fd883e59` fix: repair direct geometry modeling build
-- `13b13a86` feat: add direct curve sweep modeling
-- `e455c279` feat: add mesh edges to curves conversion
-- `e100adcb` feat: add cylinder and cone primitive mesh
-
 ## What Runs Today
 
 - `zig build test`
@@ -60,6 +47,7 @@ Open phases:
 - `zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj`
 - `zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj`
 - `zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj`
+- `zig build run -- mesh-inset zig-out/mesh-inset.obj`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -68,7 +56,7 @@ Open phases:
 ## Next Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as dissolve or inset.
+- Port another narrow mesh operation such as dissolve.
 - Add notarization only after Apple credentials exist.
 
 ## Readout

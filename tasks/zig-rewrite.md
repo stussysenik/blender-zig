@@ -84,7 +84,8 @@
 - [x] add a bounded triangulate op for the current face-corner mesh model
 - [x] expose `mesh-triangulate` through the CLI
 - [x] port a bounded `merge-by-distance` cleanup pass with face and loose-edge remapping
-- [ ] port another narrow mesh op such as dissolve or inset
+- [x] port a bounded individual-face inset path with UV-preserving face generation
+- [ ] port another narrow mesh op such as dissolve
 
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet

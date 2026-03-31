@@ -23,7 +23,7 @@ pub fn main() !void {
     const command = args[1];
     // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
     // regression path for contributors who want to validate one feature in isolation.
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-merge-by-distance")) {
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset")) {
         var mesh = try buildDerivedMeshCommand(allocator, command);
         defer mesh.deinit();
 
@@ -67,7 +67,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-edges|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-edges|graph-demo> [output.obj]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -77,6 +77,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
         \\  zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
         \\  zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
+        \\  zig build run -- mesh-inset zig-out/mesh-inset.obj
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -187,6 +188,11 @@ fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !b
         var source_mesh = try createDuplicatedSeamMesh(allocator);
         defer source_mesh.deinit();
         return blendzig.geometry.mergeByDistance(allocator, &source_mesh, .{ .distance = 0.01 });
+    }
+    if (std.mem.eql(u8, command, "mesh-inset")) {
+        var source_mesh = try blendzig.geometry.createGridMesh(allocator, 4, 3, 6.0, 4.0, true);
+        defer source_mesh.deinit();
+        return blendzig.geometry.insetIndividual(allocator, &source_mesh, .{ .factor = 0.2 });
     }
     return error.UnknownPrimitive;
 }
@@ -399,4 +405,13 @@ test "mesh merge by distance command welds duplicated seam vertices" {
     try std.testing.expectEqual(@as(usize, 2), mesh.faceCount());
     try std.testing.expectEqual(@as(usize, 7), mesh.edges.items.len);
     try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "mesh inset command builds inset faces with preserved uvs" {
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-inset");
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 30), mesh.faceCount());
+    try std.testing.expect(mesh.hasCornerUvs());
+    try std.testing.expect(mesh.vertexCount() > 0);
 }

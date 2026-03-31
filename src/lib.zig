@@ -23,6 +23,8 @@ pub const geometry = struct {
     pub const CurveToMeshOptions = @import("geometry/curves_to_mesh.zig").CurveToMeshOptions;
     pub const curveToWireMesh = @import("geometry/curves_to_mesh.zig").curveToWireMesh;
     pub const curveToMeshSweep = @import("geometry/curves_to_mesh.zig").curveToMeshSweep;
+    pub const InsetOptions = @import("geometry/mesh_inset.zig").InsetOptions;
+    pub const insetIndividual = @import("geometry/mesh_inset.zig").insetIndividual;
     pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
     pub const MergeByDistanceOptions = @import("geometry/mesh_merge_by_distance.zig").MergeByDistanceOptions;
     pub const mergeByDistance = @import("geometry/mesh_merge_by_distance.zig").mergeByDistance;
@@ -60,6 +62,7 @@ test {
     _ = @import("mesh.zig");
     _ = @import("geometry/curves.zig");
     _ = @import("geometry/curves_to_mesh.zig");
+    _ = @import("geometry/mesh_inset.zig");
     _ = @import("geometry/mesh_to_curve.zig");
     _ = @import("geometry/mesh_merge_by_distance.zig");
     _ = @import("geometry/mesh_triangulate.zig");

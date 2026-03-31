@@ -1,11 +1,6 @@
 # Roadmap
 
-> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
-
-## Active Head
-
-- branch: `main`
-- head: `9e82115e`
+> Generated from `status/hyperdata.json`. Refresh with `npm run status:update`.
 
 ## Phase Map
 
@@ -27,7 +22,7 @@
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as dissolve or inset.
+- Port another narrow mesh operation such as dissolve.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

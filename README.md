@@ -2,7 +2,8 @@
 
 A companion Zig rewrite that lifts a realistic first slice out of Blender instead of pretending the whole codebase can be transliterated in one shot.
 
-The status sections in this file, [progress.md](/Users/s3nik/Desktop/blender-zig/progress.md), and [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md) are generated from `status/hyperdata.json` via `npm run status:update`.
+The status sections in this file, [progress.md](/Users/s3nik/Desktop/blender-zig/progress.md), and [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md) are generated from versioned `status/hyperdata.json` via `npm run status:update`.
+Use `npm run status:live` for the current branch and commit readout.
 
 Contributor surfaces:
 - [ARCHITECTURE.md](/Users/s3nik/Desktop/blender-zig/ARCHITECTURE.md)
@@ -17,6 +18,7 @@ Current focus:
 - curves-to-mesh wire conversion and swept mesh generation
 - bounded direct mesh ops beginning with triangulation
 - mesh cleanup ops beginning with merge-by-distance
+- individual-face inset modeling on the face-corner mesh
 - mesh-edge extraction into curves
 - OBJ export so generated geometry can be inspected immediately
 - OMX/Ralphy-inspired team and release scaffolding around the rewrite effort
@@ -26,7 +28,7 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate` and `mesh-merge-by-distance`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, and `mesh-inset`
 - `GeometrySet` OBJ export is in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
 - the next recommended slices are tighter mesh ops and broader export paths, not UI or rendering
@@ -69,6 +71,7 @@ zig build run -- curve-tube zig-out/curve-tube.obj
 zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
 zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
 zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
+zig build run -- mesh-inset zig-out/mesh-inset.obj
 zig build run -- mesh-edges zig-out/mesh-edges.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
 npm run dist
@@ -79,7 +82,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-edges|graph-demo> [output.obj]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-edges|graph-demo> [output.obj]
 ```
 <!-- status:auto:cli-usage:end -->
 

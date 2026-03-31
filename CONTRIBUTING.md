@@ -37,6 +37,7 @@ zig build test
 zig build run -- <command> [output.obj]
 npm run status:update
 npm run status:check
+npm run status:live
 ```
 
 Use `npm run status:update` only when the repo's reported state actually changed. It regenerates:
@@ -46,6 +47,7 @@ Use `npm run status:update` only when the repo's reported state actually changed
 - [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md)
 
 The source of truth for those generated sections is [status/hyperdata.json](/Users/s3nik/Desktop/blender-zig/status/hyperdata.json).
+Use `npm run status:live` when you want the current git branch and commit instead of the committed status surfaces.
 
 ## Where To Put Code
 
