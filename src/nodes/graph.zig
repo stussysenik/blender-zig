@@ -62,6 +62,15 @@ pub const TranslateNode = struct {
     translation: math.Vec3 = math.Vec3.init(0, 0, 0),
 };
 
+pub const CurveInstanceArrayNode = struct {
+    count: usize = 2,
+    step: math.Vec3 = math.Vec3.init(1, 0, 0),
+};
+
+pub const RealizeInstancesNode = struct {
+    realize_instance_attributes: bool = true,
+};
+
 pub const NodeOp = union(enum) {
     line: LineNode,
     curve_line: CurveLineNode,
@@ -69,14 +78,16 @@ pub const NodeOp = union(enum) {
     cuboid: CuboidNode,
     uv_sphere: UvSphereNode,
     vector_constant: math.Vec3,
+    curve_instance_array: CurveInstanceArrayNode,
     translate: TranslateNode,
+    realize_instances: RealizeInstancesNode,
     join_geometry: void,
 
     pub fn role(self: NodeOp) NodeRole {
         return switch (self) {
             .line, .curve_line, .grid, .cuboid, .uv_sphere => .source,
             .vector_constant => .value,
-            .translate => .transform,
+            .curve_instance_array, .translate, .realize_instances => .transform,
             .join_geometry => .merge,
         };
     }
@@ -90,6 +101,7 @@ pub const NodeOp = union(enum) {
 
     pub fn acceptsInput(self: NodeOp, socket_type: SocketType) bool {
         return switch (self) {
+            .curve_instance_array, .realize_instances => socket_type == .geometry,
             .translate => socket_type == .geometry or socket_type == .vector3,
             .join_geometry => socket_type == .geometry,
             else => false,
@@ -98,6 +110,10 @@ pub const NodeOp = union(enum) {
 
     pub fn maxInputs(self: NodeOp, socket_type: SocketType) ?usize {
         return switch (self) {
+            .curve_instance_array, .realize_instances => switch (socket_type) {
+                .geometry => 1,
+                .vector3 => 0,
+            },
             .translate => switch (socket_type) {
                 .geometry, .vector3 => 1,
             },
@@ -358,6 +374,9 @@ pub const Graph = struct {
                 )),
             },
             .vector_constant => |value| .{ .vector3 = value },
+            .curve_instance_array => |params| .{
+                .geometry = try createCurveInstanceArrayGeometry(allocator, try self.singleInputGeometry(node_id, evaluation), params),
+            },
             .translate => |params| blk: {
                 const source_geometry = try self.singleInputGeometry(node_id, evaluation);
                 const translation = self.singleInputVector3(node_id, evaluation) catch |err| switch (err) {
@@ -367,6 +386,13 @@ pub const Graph = struct {
                 var geometry = try source_geometry.clone(allocator);
                 geometry.translate(translation);
                 break :blk .{ .geometry = geometry };
+            },
+            .realize_instances => |params| blk: {
+                const source_geometry = try self.singleInputGeometry(node_id, evaluation);
+                const realized = try geometry_mod.realizeInstances(allocator, source_geometry, .{
+                    .realize_instance_attributes = params.realize_instance_attributes,
+                });
+                break :blk .{ .geometry = realized.geometry };
             },
             .join_geometry => blk: {
                 var merged_geometry: ?geometry_mod.GeometrySet = null;
@@ -457,6 +483,36 @@ fn createCurveLineGeometry(allocator: std.mem.Allocator, params: CurveLineNode) 
 
     try curves.appendCurve(positions, params.cyclic, test_indices);
     return curves;
+}
+
+fn createCurveInstanceArrayGeometry(
+    allocator: std.mem.Allocator,
+    source_geometry: *const geometry_mod.GeometrySet,
+    params: CurveInstanceArrayNode,
+) !geometry_mod.GeometrySet {
+    if (params.count == 0) return error.InvalidResolution;
+    if (source_geometry.curves == null) return error.MissingCurvesComponent;
+
+    var geometry = geometry_mod.GeometrySet.init(allocator);
+    errdefer geometry.deinit();
+
+    if (source_geometry.mesh) |*mesh| {
+        geometry.mesh = try mesh.clone(allocator);
+    }
+
+    var instances = geometry_mod.Instances.init(allocator);
+    errdefer instances.deinit();
+
+    const handle = try instances.addReference(try geometry_mod.GeometrySet.fromCurvesClone(allocator, &source_geometry.curves.?));
+
+    // The instance array node is deliberately narrow: repeat one curves payload at a fixed step.
+    for (0..params.count) |index| {
+        const offset = params.step.scale(@as(f32, @floatFromInt(index)));
+        try instances.addInstance(handle, .{ .translation = offset });
+    }
+
+    geometry.instances = instances;
+    return geometry;
 }
 
 test "graph topological order is stable for a simple pipeline" {
@@ -559,6 +615,69 @@ test "graph evaluates a curve source node" {
     try std.testing.expectEqual(@as(usize, 1), curves.curvesNum());
     try std.testing.expect(math.vec3ApproxEq(curves.positions.items[0], math.Vec3.init(1, 2, 0), 0.0001));
     try std.testing.expect(math.vec3ApproxEq(curves.positions.items[3], math.Vec3.init(2.5, 2, 0), 0.0001));
+}
+
+test "curve instance array node builds instances and preserves direct mesh" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const grid = try graph.addNode(Node.init("grid", .{
+        .grid = .{
+            .verts_x = 2,
+            .verts_y = 2,
+            .size_x = 2,
+            .size_y = 2,
+            .with_uvs = false,
+        },
+    }));
+    const curve = try graph.addNode(Node.init("curve-line", .{
+        .curve_line = .{
+            .start = math.Vec3.init(0, 0, 0),
+            .delta = math.Vec3.init(1, 0, 0),
+            .count = 3,
+        },
+    }));
+    const join = try graph.addNode(Node.init("join", .{ .join_geometry = {} }));
+    const array = try graph.addNode(Node.init("curve-array", .{
+        .curve_instance_array = .{
+            .count = 2,
+            .step = math.Vec3.init(10, 0, 0),
+        },
+    }));
+
+    try graph.addEdge(grid, join);
+    try graph.addEdge(curve, join);
+    try graph.addEdge(join, array);
+
+    var evaluation = try graph.evaluate(std.testing.allocator);
+    defer evaluation.deinit();
+
+    const geometry = evaluation.geometry(array).?;
+    try std.testing.expect(geometry.mesh != null);
+    try std.testing.expect(geometry.instances != null);
+    try std.testing.expectEqual(@as(usize, 4), geometry.mesh.?.vertexCount());
+    try std.testing.expectEqual(@as(usize, 2), geometry.instances.?.items.items.len);
+}
+
+test "curve instance array node requires curves" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const grid = try graph.addNode(Node.init("grid", .{
+        .grid = .{
+            .verts_x = 2,
+            .verts_y = 2,
+            .size_x = 2,
+            .size_y = 2,
+            .with_uvs = false,
+        },
+    }));
+    const array = try graph.addNode(Node.init("curve-array", .{
+        .curve_instance_array = .{},
+    }));
+
+    try graph.addEdge(grid, array);
+    try std.testing.expectError(error.MissingCurvesComponent, graph.evaluate(std.testing.allocator));
 }
 
 test "graph joins primitive meshes in edge order" {
@@ -695,4 +814,53 @@ test "join geometry keeps mesh and curve components together" {
     try std.testing.expect(geometry_value.curves != null);
     try std.testing.expectEqual(@as(usize, 4), geometry_value.mesh.?.vertexCount());
     try std.testing.expectEqual(@as(usize, 3), geometry_value.curves.?.pointsNum());
+}
+
+test "realize instances node expands curve arrays and keeps direct mesh" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const grid = try graph.addNode(Node.init("grid", .{
+        .grid = .{
+            .verts_x = 2,
+            .verts_y = 2,
+            .size_x = 2,
+            .size_y = 2,
+            .with_uvs = false,
+        },
+    }));
+    const curve = try graph.addNode(Node.init("curve-line", .{
+        .curve_line = .{
+            .start = math.Vec3.init(0, 0, 0),
+            .delta = math.Vec3.init(1, 0, 0),
+            .count = 3,
+        },
+    }));
+    const join = try graph.addNode(Node.init("join", .{ .join_geometry = {} }));
+    const array = try graph.addNode(Node.init("curve-array", .{
+        .curve_instance_array = .{
+            .count = 2,
+            .step = math.Vec3.init(10, 0, 0),
+        },
+    }));
+    const realize = try graph.addNode(Node.init("realize", .{
+        .realize_instances = .{},
+    }));
+
+    try graph.addEdge(grid, join);
+    try graph.addEdge(curve, join);
+    try graph.addEdge(join, array);
+    try graph.addEdge(array, realize);
+
+    var evaluation = try graph.evaluate(std.testing.allocator);
+    defer evaluation.deinit();
+
+    const geometry = evaluation.geometry(realize).?;
+    try std.testing.expect(geometry.mesh != null);
+    try std.testing.expect(geometry.curves != null);
+    try std.testing.expect(geometry.instances == null);
+    try std.testing.expectEqual(@as(usize, 4), geometry.mesh.?.vertexCount());
+    try std.testing.expectEqual(@as(usize, 6), geometry.curves.?.pointsNum());
+    try std.testing.expect(math.vec3ApproxEq(geometry.curves.?.positions.items[0], math.Vec3.init(0, 0, 0), 0.0001));
+    try std.testing.expect(math.vec3ApproxEq(geometry.curves.?.positions.items[3], math.Vec3.init(10, 0, 0), 0.0001));
 }

@@ -106,14 +106,6 @@ pub const GeometrySet = struct {
     }
 
     pub fn appendGeometry(self: *GeometrySet, other: *const GeometrySet) !void {
-        // Keep instance realization explicit; this bridge only merges materialized geometry.
-        if (self.instances != null and (other.mesh != null or other.curves != null or other.instances != null)) {
-            return error.UnsupportedGeometryComponent;
-        }
-        if (other.instances != null and (self.mesh != null or self.curves != null)) {
-            return error.UnsupportedGeometryComponent;
-        }
-
         if (other.mesh) |*other_mesh| {
             if (self.mesh) |*mesh| {
                 try mesh.appendMesh(other_mesh);
@@ -129,10 +121,12 @@ pub const GeometrySet = struct {
             }
         }
         if (other.instances) |*other_instances| {
-            if (self.instances) |_| {
-                return error.UnsupportedGeometryComponent;
+            // Join keeps instances lazy; they only materialize when a realize step asks for it.
+            if (self.instances) |*instances| {
+                try instances.appendInstances(other_instances);
+            } else {
+                self.instances = try other_instances.clone(self.allocator);
             }
-            self.instances = try other_instances.clone(self.allocator);
         }
     }
 };
@@ -224,6 +218,56 @@ pub const Instances = struct {
             try attribute.values.append(self.allocator, default_value);
         }
         try self.float_attributes.append(self.allocator, attribute);
+    }
+
+    pub fn appendInstances(self: *Instances, other: *const Instances) std.mem.Allocator.Error!void {
+        const reference_offset: u32 = @intCast(self.references.items.len);
+        const existing_instances = self.items.items.len;
+        const other_instances = other.items.items.len;
+
+        for (self.float_attributes.items) |*attribute| {
+            if (other.findFloatAttributeIndex(attribute.name) == null) {
+                try appendRepeatedInstanceFloat(&attribute.values, self.allocator, 0.0, other_instances);
+            }
+        }
+        for (other.float_attributes.items) |*other_attribute| {
+            const attribute = try self.ensureFloatAttribute(other_attribute.name, existing_instances);
+            std.debug.assert(attribute.items.len == existing_instances);
+            try attribute.appendSlice(self.allocator, other_attribute.values.items);
+        }
+
+        for (other.references.items) |*reference| {
+            try self.references.append(self.allocator, try reference.clone(self.allocator));
+        }
+        for (other.items.items) |item| {
+            try self.items.append(self.allocator, .{
+                .handle = item.handle + reference_offset,
+                .transform = item.transform,
+            });
+        }
+    }
+
+    fn findFloatAttributeIndex(self: *const Instances, name: []const u8) ?usize {
+        for (self.float_attributes.items, 0..) |attribute, index| {
+            if (std.mem.eql(u8, attribute.name, name)) {
+                return index;
+            }
+        }
+        return null;
+    }
+
+    fn ensureFloatAttribute(self: *Instances, name: []const u8, prefix_len: usize) std.mem.Allocator.Error!*std.ArrayList(f32) {
+        for (self.float_attributes.items) |*attribute| {
+            if (std.mem.eql(u8, attribute.name, name)) {
+                return &attribute.values;
+            }
+        }
+
+        var attribute = try NamedInstanceFloatAttribute.init(self.allocator, name);
+        errdefer attribute.deinit(self.allocator);
+        try appendRepeatedInstanceFloat(&attribute.values, self.allocator, 0.0, prefix_len);
+        try self.float_attributes.append(self.allocator, attribute);
+        return &self.float_attributes.items[self.float_attributes.items.len - 1].values;
     }
 };
 
@@ -323,6 +367,12 @@ fn createRealizeTestMesh(allocator: std.mem.Allocator) !mesh_mod.Mesh {
     _ = try mesh.appendVertex(math.Vec3.init(1, 0, 0));
     try mesh.appendEdge(0, 1);
     return mesh;
+}
+
+fn appendRepeatedInstanceFloat(values: *std.ArrayList(f32), allocator: std.mem.Allocator, value: f32, count: usize) std.mem.Allocator.Error!void {
+    for (0..count) |_| {
+        try values.append(allocator, value);
+    }
 }
 
 test "realize instances ignores restricted curve builtin instance attribute" {
