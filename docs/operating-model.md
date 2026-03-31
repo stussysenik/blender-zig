@@ -10,10 +10,12 @@ Prompt resolution prefers `.codex/prompts/*.md` and falls back to `roles/*.md` f
 
 The intended path is:
 1. Keep the backlog in `tasks/*.md`.
-2. Run `scripts/ralph-loop.sh` for one task at a time.
-3. Use `scripts/team-loop.sh` when you want several roles working in parallel.
-4. Promote only verified work into release automation.
-5. Re-anchor the backlog against `docs/blender-repo-scan.md` whenever the upstream target slice changes.
+2. Run `scripts/ralph-loop.sh --phase N --dry-run` when you want to inspect a concrete phase slice before launching it.
+3. Run `scripts/ralph-loop.sh --phase N` for a single task at a time inside that phase, or omit `--phase` to continue the first unchecked task in the file.
+4. Use `scripts/team-loop.sh --phase N --dry-run` to preview a role-to-task assignment, then drop `--dry-run` to run several roles in parallel.
+5. Use `--task-file PATH` whenever the task source should be something other than `tasks/zig-rewrite.md`.
+6. Promote only verified work into release automation.
+7. Re-anchor the backlog against `docs/blender-repo-scan.md` whenever the upstream target slice changes.
 
 ## Roles
 
@@ -31,6 +33,7 @@ The root [AGENTS.md](/Users/s3nik/Desktop/blender-zig/AGENTS.md) is the workspac
 - Semantic release is configured, but it still needs CI credentials and a populated `main` branch to publish.
 - The scripts are scaffolding, not an opinionated replacement for engineering judgment.
 - This repository is not attempting a whole-Blender rewrite in one pass. Work should advance by testable subsystem slices.
+- Phase-scoped runs are preferred over bare task scanning when you already know the next slice.
 
 ## Release Policy
 

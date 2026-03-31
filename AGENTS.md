@@ -36,6 +36,8 @@ Prompt files under `.codex/prompts/*.md` are narrower role surfaces and must fol
 - `scripts/ralph-loop.sh` is the sequential task loop.
 - `scripts/team-loop.sh` is the optional tmux-backed parallel loop.
 - `.codex/prompts/` contains the role prompts used by the OMX-style flow.
+- Use `--phase N` when you want a concrete backlog slice, `--list-phases` when you want to inspect the available slices, and `--dry-run` when you want the task and role plan before launching agents.
+- `--task-file PATH` selects the task source explicitly; the phase flag only scopes work inside that source.
 
 ## Completion Standard
 
