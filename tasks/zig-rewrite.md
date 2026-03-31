@@ -49,11 +49,16 @@
 - [x] add deterministic graph evaluation tests
 
 ## Phase 7: Geometry bridge
-- [ ] extend `GeometrySet` beyond the curves-first slice without copying Blender's full component registry
-- [ ] allow node evaluation to exchange shared geometry values instead of mesh-only outputs
-- [ ] add mixed mesh and curves regression tests around realization boundaries
+- [x] extend `GeometrySet` beyond the curves-first slice without copying Blender's full component registry
+- [x] allow node evaluation to exchange shared geometry values instead of mesh-only outputs
+- [x] add mixed mesh and curves regression tests around realization boundaries
 
-## Phase 8: Release and governance
+## Phase 8: Curves In Nodes
+- [ ] add a minimal curve-producing node that outputs `GeometrySet`
+- [ ] add a narrow `realize_instances` node op for curve-first geometry
+- [ ] port node-level mixed mesh and curves realization tests
+
+## Phase 9: Release and governance
 - [ ] add conventional commit examples
 - [x] wire semantic-release in CI
 - [x] document signed-commit expectations and limitations

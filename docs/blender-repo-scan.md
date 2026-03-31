@@ -128,3 +128,11 @@ Next:
 8. Extend `GeometrySet` so node evaluation can move beyond mesh-only values.
 9. Add mixed curves and mesh evaluation tests that cross the realization boundary.
 10. Keep the node API narrow while admitting shared geometry values.
+
+Those are now in the local rewrite.
+
+Next:
+
+11. Add a minimal curve-producing node that emits `GeometrySet`.
+12. Add a narrow `realize_instances` node op over the existing curve-first path.
+13. Port node-level realization tests without widening into a full dependency-graph model.
