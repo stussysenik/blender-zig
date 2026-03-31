@@ -51,6 +51,7 @@ Open phases:
 - `zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj`
 - `zig build run -- mesh-extrude zig-out/mesh-extrude.obj`
 - `zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj`
+- `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`

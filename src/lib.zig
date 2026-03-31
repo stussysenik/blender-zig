@@ -31,6 +31,8 @@ pub const geometry = struct {
     pub const extrudeIndividual = @import("geometry/mesh_extrude.zig").extrudeIndividual;
     pub const InsetOptions = @import("geometry/mesh_inset.zig").InsetOptions;
     pub const insetIndividual = @import("geometry/mesh_inset.zig").insetIndividual;
+    pub const SubdivideOptions = @import("geometry/mesh_subdivide.zig").SubdivideOptions;
+    pub const subdivideFaces = @import("geometry/mesh_subdivide.zig").subdivideFaces;
     pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
     pub const MergeByDistanceOptions = @import("geometry/mesh_merge_by_distance.zig").MergeByDistanceOptions;
     pub const mergeByDistance = @import("geometry/mesh_merge_by_distance.zig").mergeByDistance;
@@ -71,6 +73,7 @@ test {
     _ = @import("geometry/mesh_dissolve.zig");
     _ = @import("geometry/mesh_extrude.zig");
     _ = @import("geometry/mesh_inset.zig");
+    _ = @import("geometry/mesh_subdivide.zig");
     _ = @import("geometry/mesh_to_curve.zig");
     _ = @import("geometry/mesh_merge_by_distance.zig");
     _ = @import("geometry/mesh_triangulate.zig");
