@@ -1,9 +1,11 @@
 # Progress
 
-> Generated from `status/hyperdata.json`. Refresh with `npm run status:update`.
+> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
 
 ## Hypertime Snapshot
 
+- branch: `main`
+- head: `42828047`
 - source: `status/hyperdata.json`
 
 Artifacts:
@@ -35,6 +37,17 @@ Active phases:
 
 Open phases:
 - none
+
+## Pushed Commits
+
+- `42828047` feat: add mesh triangulation slice
+- `9815107f` docs: add contributor architecture surfaces
+- `dd7c539f` feat: automate status docs and roundtrip cli
+- `fd883e59` fix: repair direct geometry modeling build
+- `13b13a86` feat: add direct curve sweep modeling
+- `e455c279` feat: add mesh edges to curves conversion
+- `e100adcb` feat: add cylinder and cone primitive mesh
+- `e9f4aaec` feat: add curves to mesh conversion
 
 ## What Runs Today
 

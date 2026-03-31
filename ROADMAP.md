@@ -1,6 +1,11 @@
 # Roadmap
 
-> Generated from `status/hyperdata.json`. Refresh with `npm run status:update`.
+> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
+
+## Active Head
+
+- branch: `main`
+- head: `42828047`
 
 ## Phase Map
 
