@@ -33,7 +33,7 @@ Completed phases:
 Active phases:
 - Phase 12: Release and governance
 - Phase 13: Direct mesh ops
-- Phase 15: Mesh export surfaces
+- Phase 15: Mesh IO surfaces
 
 Open phases:
 - none
@@ -44,6 +44,7 @@ Open phases:
 - `zig build -Doptimize=ReleaseFast`
 - `zig build run -- sphere`
 - `zig build run -- cylinder zig-out/cylinder.obj`
+- `zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj`
 - `zig build run -- cylinder zig-out/cylinder.ply`
 - `zig build run -- curve-wire zig-out/curve-wire.obj`
 - `zig build run -- curve-tube zig-out/curve-tube.obj`
@@ -67,8 +68,8 @@ Open phases:
 ## Next Targets
 
 - Add seed or step parameter overrides inside recipe studies so saved authoring sessions can vary primitive resolution and sizes.
-- Add one lightweight mesh import path to close the inspect-edit-export loop.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
+- Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.
 
 ## Readout
@@ -76,4 +77,5 @@ Open phases:
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
 Saved recipe files now sit on top of the same `Seed` and `StepSpec` model as inline pipeline runs.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
+Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

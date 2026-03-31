@@ -38,6 +38,7 @@ zig build test
 zig build run -- <command> [output.obj]
 zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
 zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
+zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj
 npm run status:update
 npm run status:check
 npm run status:live

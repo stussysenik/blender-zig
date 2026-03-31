@@ -19,8 +19,44 @@ pub fn main() !void {
     var stdout_buffer: [4096]u8 = undefined;
     var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
     const stdout = &stdout_writer.interface;
+    var stderr_buffer: [2048]u8 = undefined;
+    var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
+    const stderr = &stderr_writer.interface;
 
     const command = args[1];
+    if (std.mem.eql(u8, command, "mesh-import")) {
+        if (args.len < 3 or args.len > 4) {
+            try printUsage();
+            return;
+        }
+
+        const input_path = args[2];
+        const output_path = if (args.len == 4) args[3] else null;
+        if (output_path) |path| {
+            if (try pathsResolveEqual(allocator, input_path, path)) {
+                return error.ImportOutputMatchesInput;
+            }
+        }
+
+        var imported = try readImportedMesh(allocator, input_path);
+        defer imported.deinit();
+        switch (imported) {
+            .mesh => |*mesh| {
+                try printMeshSummary(stdout, command, mesh);
+                if (output_path) |path| {
+                    try writeMeshOutput(mesh, path);
+                    try stdout.print("wrote {s}\n", .{path});
+                }
+                try stdout.flush();
+                return;
+            },
+            .parse_failure => |failure| {
+                try printObjParseFailure(stderr, input_path, failure);
+                try stderr.flush();
+                return error.InvalidImportedMesh;
+            },
+        }
+    }
     if (std.mem.eql(u8, command, "mesh-pipeline")) {
         // `mesh-pipeline` is the current authoring shell: either feed inline step specs
         // or load the exact same step grammar from a checked-in recipe file.
@@ -80,14 +116,15 @@ pub fn main() !void {
 }
 
 fn printUsage() !void {
-    var stderr_buffer: [2048]u8 = undefined;
+    var stderr_buffer: [3072]u8 = undefined;
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-edges|graph-demo> [output-path]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-import|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
+        \\  zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj
         \\  zig build run -- cone zig-out/cone.obj
         \\  zig build run -- curve-wire zig-out/curve-wire.obj
         \\  zig build run -- curve-tube zig-out/curve-tube.obj
@@ -201,6 +238,31 @@ fn writeGeometryOutput(geometry: *const blendzig.geometry.GeometrySet, path: []c
         return error.UnsupportedPlyGeometry;
     }
     return blendzig.io.obj.writeGeometryFile(geometry, path);
+}
+
+fn readImportedMesh(allocator: std.mem.Allocator, path: []const u8) !blendzig.io.obj.ReadResult {
+    if (std.mem.endsWith(u8, path, ".obj")) {
+        return blendzig.io.obj.readFile(allocator, path);
+    }
+    return error.UnsupportedImportFormat;
+}
+
+fn printObjParseFailure(writer: anytype, path: []const u8, failure: blendzig.io.obj.ParseFailure) !void {
+    try writer.print(
+        "failed to import {s}: line={d} record={s} cause={s}\n",
+        .{ path, failure.line_number, failure.record_kind.label(), @errorName(failure.cause) },
+    );
+}
+
+fn pathsResolveEqual(allocator: std.mem.Allocator, left: []const u8, right: []const u8) !bool {
+    const cwd_real = try std.fs.cwd().realpathAlloc(allocator, ".");
+    defer allocator.free(cwd_real);
+
+    const left_path = try std.fs.path.resolve(allocator, &.{ cwd_real, left });
+    defer allocator.free(left_path);
+    const right_path = try std.fs.path.resolve(allocator, &.{ cwd_real, right });
+    defer allocator.free(right_path);
+    return std.mem.eql(u8, left_path, right_path);
 }
 
 fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !blendzig.mesh.Mesh {
@@ -563,4 +625,33 @@ test "geometry output dispatch rejects ply for mixed geometry" {
     defer geometry.deinit();
 
     try std.testing.expectError(error.UnsupportedPlyGeometry, writeGeometryOutput(&geometry, "mixed.ply"));
+}
+
+test "mesh import reads exported obj and preserves topology counts" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    var mesh = try buildPrimitive(std.testing.allocator, "sphere");
+    defer mesh.deinit();
+
+    const temp_root = try temp.dir.realpathAlloc(std.testing.allocator, ".");
+    defer std.testing.allocator.free(temp_root);
+    const input_path = try std.fs.path.join(std.testing.allocator, &.{ temp_root, "sphere.obj" });
+    defer std.testing.allocator.free(input_path);
+    try writeMeshOutput(&mesh, input_path);
+
+    var imported = try readImportedMesh(std.testing.allocator, input_path);
+    defer imported.deinit();
+    switch (imported) {
+        .mesh => |*loaded| {
+            try std.testing.expectEqual(mesh.vertexCount(), loaded.vertexCount());
+            try std.testing.expectEqual(mesh.faceCount(), loaded.faceCount());
+            try std.testing.expectEqual(mesh.hasCornerUvs(), loaded.hasCornerUvs());
+        },
+        .parse_failure => |_| return error.TestUnexpectedResult,
+    }
+}
+
+test "mesh import rejects identical input and output paths" {
+    try std.testing.expect(try pathsResolveEqual(std.testing.allocator, "zig-out/file.obj", "zig-out/file.obj"));
 }

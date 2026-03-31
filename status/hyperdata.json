@@ -14,6 +14,7 @@
     "parameterized mesh pipeline CLI over existing primitives and ops",
     "saved mesh-pipeline recipes for repeatable local authoring studies",
     "ASCII PLY mesh export alongside OBJ",
+    "narrow ASCII OBJ mesh import for inspect-edit-export roundtrips",
     "mesh-edge extraction into curves",
     "OBJ export so generated geometry can be inspected immediately",
     "OMX/Ralphy-inspired team and release scaffolding around the rewrite effort"
@@ -23,10 +24,10 @@
     "phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`",
     "phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-planar-dissolve`, and `mesh-subdivide`",
     "phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, and multiple checked-in studies",
-    "phase 15 starts broader mesh export with ASCII PLY alongside OBJ",
+    "phase 15 mesh IO now includes ASCII PLY export and a narrow ASCII OBJ import path",
     "`GeometrySet` OBJ export is in for mixed mesh and curve output",
     "optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in",
-    "the next recommended slices are broader recipe coverage and import/export depth, not UI or rendering"
+    "the next recommended slices are broader recipe coverage and mesh-plus-curves IO depth, not UI or rendering"
   ],
   "progress_surfaces": [
     {
@@ -51,6 +52,7 @@
     "zig build test",
     "zig build run -- sphere",
     "zig build run -- cylinder zig-out/cylinder.obj",
+    "zig build run -- mesh-import zig-out/cylinder.obj zig-out/cylinder-roundtrip.obj",
     "zig build run -- cylinder zig-out/cylinder.ply",
     "zig build run -- curve-wire zig-out/curve-wire.obj",
     "zig build run -- curve-tube zig-out/curve-tube.obj",
@@ -75,6 +77,7 @@
     "zig build -Doptimize=ReleaseFast",
     "zig build run -- sphere",
     "zig build run -- cylinder zig-out/cylinder.obj",
+    "zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj",
     "zig build run -- cylinder zig-out/cylinder.ply",
     "zig build run -- curve-wire zig-out/curve-wire.obj",
     "zig build run -- curve-tube zig-out/curve-tube.obj",
@@ -113,6 +116,7 @@
     "mesh-planar-dissolve",
     "mesh-subdivide",
     "mesh-pipeline",
+    "mesh-import",
     "mesh-edges",
     "graph-demo"
   ],
@@ -194,20 +198,21 @@
     },
     {
       "id": 15,
-      "title": "Mesh export surfaces",
+      "title": "Mesh IO surfaces",
       "state": "active"
     }
   ],
   "next_targets": [
     "Add seed or step parameter overrides inside recipe studies so saved authoring sessions can vary primitive resolution and sizes.",
-    "Add one lightweight mesh import path to close the inspect-edit-export loop.",
     "Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.",
+    "Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.",
     "Add notarization only after Apple credentials exist."
   ],
   "notes": [
     "The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.",
     "Saved recipe files now sit on top of the same `Seed` and `StepSpec` model as inline pipeline runs.",
     "Mesh commands can now write ASCII PLY when the output path ends in `.ply`.",
+    "Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`.",
     "The next meaningful improvement is still in `src/`, not in more planning artifacts."
   ]
 }

@@ -19,13 +19,13 @@
 - [~] Phase 12: Release and governance
 - [~] Phase 13: Direct mesh ops
 - [x] Phase 14: Composable local authoring
-- [~] Phase 15: Mesh export surfaces
+- [~] Phase 15: Mesh IO surfaces
 
 ## Current Targets
 
 - Add seed or step parameter overrides inside recipe studies so saved authoring sessions can vary primitive resolution and sizes.
-- Add one lightweight mesh import path to close the inspect-edit-export loop.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
+- Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

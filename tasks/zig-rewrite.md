@@ -97,10 +97,11 @@
 - [x] add a persisted scene or recipe format beyond argv tokens
 - [x] add multiple recipe studies that cover different direct-ops authoring patterns
 
-## Phase 15: Mesh export surfaces
+## Phase 15: Mesh IO surfaces
 - [x] add ASCII PLY mesh export alongside OBJ
+- [x] add one lightweight mesh import path to close the inspect-edit-export loop
 - [ ] add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear
-- [ ] add one lightweight mesh import path to close the inspect-edit-export loop
+- [ ] widen import beyond the narrow OBJ subset only when a concrete modeling need appears
 
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet

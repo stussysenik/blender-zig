@@ -27,6 +27,7 @@ Current focus:
 - parameterized mesh pipeline CLI over existing primitives and ops
 - saved mesh-pipeline recipes for repeatable local authoring studies
 - ASCII PLY mesh export alongside OBJ
+- narrow ASCII OBJ mesh import for inspect-edit-export roundtrips
 - mesh-edge extraction into curves
 - OBJ export so generated geometry can be inspected immediately
 - OMX/Ralphy-inspired team and release scaffolding around the rewrite effort
@@ -38,10 +39,10 @@ Current status:
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
 - phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-planar-dissolve`, and `mesh-subdivide`
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, and multiple checked-in studies
-- phase 15 starts broader mesh export with ASCII PLY alongside OBJ
+- phase 15 mesh IO now includes ASCII PLY export and a narrow ASCII OBJ import path
 - `GeometrySet` OBJ export is in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
-- the next recommended slices are broader recipe coverage and import/export depth, not UI or rendering
+- the next recommended slices are broader recipe coverage and mesh-plus-curves IO depth, not UI or rendering
 <!-- status:auto:status:end -->
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:
@@ -76,6 +77,7 @@ Reference and distribution helpers:
 zig build test
 zig build run -- sphere
 zig build run -- cylinder zig-out/cylinder.obj
+zig build run -- mesh-import zig-out/cylinder.obj zig-out/cylinder-roundtrip.obj
 zig build run -- cylinder zig-out/cylinder.ply
 zig build run -- curve-wire zig-out/curve-wire.obj
 zig build run -- curve-tube zig-out/curve-tube.obj
@@ -101,7 +103,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-edges|graph-demo> [output-path]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-import|mesh-edges|graph-demo> [output-path]
 ```
 <!-- status:auto:cli-usage:end -->
 
