@@ -18,11 +18,12 @@
 - [x] Phase 11: Direct curve modeling
 - [~] Phase 12: Release and governance
 - [~] Phase 13: Direct mesh ops
+- [~] Phase 14: Composable local authoring
 
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as a delete/cleanup pass or bevel-like growth.
+- Add parameterized pipeline steps so local authoring is not locked to fixed defaults.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

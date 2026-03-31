@@ -92,3 +92,5 @@ The nearest credible milestone is not "replace Blender." It is:
 3. one additional export path and repeatable packaged artifacts
 
 Once those are in place, `blender-zig` becomes a serious standalone geometry application rather than only a rewrite experiment.
+
+The new short-term bridge between 1 and 2 is a composable mesh pipeline CLI: one seed mesh plus a bounded stack of existing ops, still without pretending we already have Blender's full scene model.

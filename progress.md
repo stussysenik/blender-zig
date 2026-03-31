@@ -32,6 +32,7 @@ Completed phases:
 Active phases:
 - Phase 12: Release and governance
 - Phase 13: Direct mesh ops
+- Phase 14: Composable local authoring
 
 Open phases:
 - none
@@ -52,6 +53,7 @@ Open phases:
 - `zig build run -- mesh-extrude zig-out/mesh-extrude.obj`
 - `zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj`
 - `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
+- `zig build run -- mesh-pipeline grid subdivide extrude --write zig-out/pipeline.obj`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -60,7 +62,7 @@ Open phases:
 ## Next Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as a delete/cleanup pass or bevel-like growth.
+- Add parameterized pipeline steps so local authoring is not locked to fixed defaults.
 - Add notarization only after Apple credentials exist.
 
 ## Readout

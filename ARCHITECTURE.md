@@ -13,6 +13,7 @@ If you want the fastest path into the code, read files in this order:
 5. [src/geometry/realize_instances.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/realize_instances.zig)
 6. One concrete op under [src/geometry/](/Users/s3nik/Desktop/blender-zig/src/geometry)
 7. [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig)
+8. [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig)
 
 That path gives you the executable entrypoint, the public surface, the core mesh model, the curve model, the mixed geometry container, one feature slice, and the export path.
 
@@ -99,6 +100,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 
 - [src/math.zig](/Users/s3nik/Desktop/blender-zig/src/math.zig): vector math and bounds
 - [src/mesh.zig](/Users/s3nik/Desktop/blender-zig/src/mesh.zig): mesh topology container
+- [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline
 - [src/geometry/primitives/](/Users/s3nik/Desktop/blender-zig/src/geometry/primitives): primitive mesh builders
 - [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig): curve kernel
 - [src/geometry/curves_to_mesh.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves_to_mesh.zig): wire and sweep conversion

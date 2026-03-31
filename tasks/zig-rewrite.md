@@ -91,6 +91,11 @@
 - [x] port a bounded face subdivision pass with shared edge midpoints
 - [ ] port another narrow mesh op such as a delete/cleanup pass or bevel-like growth
 
+## Phase 14: Composable local authoring
+- [x] add a bounded mesh pipeline CLI that chains existing primitives and ops
+- [ ] add parameterized pipeline steps instead of fixed defaults
+- [ ] add a persisted scene or recipe format beyond argv tokens
+
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet
 - [ ] do not port DNA/RNA, asset systems, or the full dependency graph yet
