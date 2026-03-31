@@ -52,10 +52,10 @@ pub fn createCylinderMesh(
     }
 
     if (top_cap) {
-        try appendCap(mesh, top_center.?, top_ring, segments, true, with_uvs);
+        try appendCap(&mesh, top_center.?, top_ring, segments, true, with_uvs);
     }
     if (bottom_cap) {
-        try appendCap(mesh, bottom_center.?, bottom_ring, segments, false, with_uvs);
+        try appendCap(&mesh, bottom_center.?, bottom_ring, segments, false, with_uvs);
     }
 
     try mesh.rebuildEdgesFromFaces();
@@ -106,7 +106,7 @@ pub fn createConeMesh(
     }
 
     if (base_cap) {
-        try appendCap(mesh, base_center.?, base_ring, segments, false, with_uvs);
+        try appendCap(&mesh, base_center.?, base_ring, segments, false, with_uvs);
     }
 
     try mesh.rebuildEdgesFromFaces();
