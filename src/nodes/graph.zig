@@ -1,4 +1,6 @@
 const std = @import("std");
+const curves_mod = @import("../geometry/curves.zig");
+const geometry_mod = @import("../geometry/realize_instances.zig");
 const math = @import("../math.zig");
 const mesh_mod = @import("../mesh.zig");
 const line_primitive = @import("../geometry/primitives/line.zig");
@@ -9,7 +11,7 @@ const uv_sphere_primitive = @import("../geometry/primitives/uv_sphere.zig");
 pub const NodeId = u32;
 
 pub const SocketType = enum {
-    mesh,
+    geometry,
     vector3,
 };
 
@@ -74,14 +76,14 @@ pub const NodeOp = union(enum) {
     pub fn outputSocketType(self: NodeOp) SocketType {
         return switch (self) {
             .vector_constant => .vector3,
-            else => .mesh,
+            else => .geometry,
         };
     }
 
     pub fn acceptsInput(self: NodeOp, socket_type: SocketType) bool {
         return switch (self) {
-            .translate => socket_type == .mesh or socket_type == .vector3,
-            .join_geometry => socket_type == .mesh,
+            .translate => socket_type == .geometry or socket_type == .vector3,
+            .join_geometry => socket_type == .geometry,
             else => false,
         };
     }
@@ -89,10 +91,10 @@ pub const NodeOp = union(enum) {
     pub fn maxInputs(self: NodeOp, socket_type: SocketType) ?usize {
         return switch (self) {
             .translate => switch (socket_type) {
-                .mesh, .vector3 => 1,
+                .geometry, .vector3 => 1,
             },
             .join_geometry => switch (socket_type) {
-                .mesh => null,
+                .geometry => null,
                 .vector3 => 0,
             },
             else => 0,
@@ -117,16 +119,16 @@ pub const Node = struct {
 pub const Edge = struct {
     from: NodeId,
     to: NodeId,
-    socket_type: SocketType = .mesh,
+    socket_type: SocketType = .geometry,
 };
 
 pub const NodeValue = union(enum) {
-    mesh: mesh_mod.Mesh,
+    geometry: geometry_mod.GeometrySet,
     vector3: math.Vec3,
 
     pub fn deinit(self: *NodeValue) void {
         switch (self.*) {
-            .mesh => |*mesh| mesh.deinit(),
+            .geometry => |*geometry| geometry.deinit(),
             .vector3 => {},
         }
     }
@@ -156,13 +158,29 @@ pub const Evaluation = struct {
         self.allocator.free(self.values);
     }
 
-    pub fn mesh(self: *const Evaluation, node_id: NodeId) ?*const mesh_mod.Mesh {
+    pub fn geometry(self: *const Evaluation, node_id: NodeId) ?*const geometry_mod.GeometrySet {
         if (node_id >= self.values.len) return null;
         if (self.values[node_id]) |*value| {
             return switch (value.*) {
-                .mesh => |*value_mesh| value_mesh,
+                .geometry => |*value_geometry| value_geometry,
                 .vector3 => null,
             };
+        }
+        return null;
+    }
+
+    pub fn mesh(self: *const Evaluation, node_id: NodeId) ?*const mesh_mod.Mesh {
+        const geometry_value = self.geometry(node_id) orelse return null;
+        if (geometry_value.mesh) |*geometry_mesh| {
+            return geometry_mesh;
+        }
+        return null;
+    }
+
+    pub fn curves(self: *const Evaluation, node_id: NodeId) ?*const curves_mod.CurvesGeometry {
+        const geometry_value = self.geometry(node_id) orelse return null;
+        if (geometry_value.curves) |*geometry_curves| {
+            return geometry_curves;
         }
         return null;
     }
@@ -172,7 +190,7 @@ pub const Evaluation = struct {
         if (self.values[node_id]) |value| {
             return switch (value) {
                 .vector3 => |vector| vector,
-                .mesh => null,
+                .geometry => null,
             };
         }
         return null;
@@ -200,7 +218,7 @@ pub const Graph = struct {
     }
 
     pub fn addEdge(self: *Graph, from: NodeId, to: NodeId) !void {
-        try self.addTypedEdge(from, to, .mesh);
+        try self.addTypedEdge(from, to, .geometry);
     }
 
     pub fn addTypedEdge(self: *Graph, from: NodeId, to: NodeId, socket_type: SocketType) !void {
@@ -292,67 +310,67 @@ pub const Graph = struct {
         const node = self.nodes.items[node_id];
         return switch (node.op) {
             .line => |params| .{
-                .mesh = try line_primitive.createLineMesh(
+                .geometry = geometry_mod.GeometrySet.fromMeshOwned(allocator, try line_primitive.createLineMesh(
                     allocator,
                     params.start,
                     params.delta,
                     params.count,
-                ),
+                )),
             },
             .grid => |params| .{
-                .mesh = try grid_primitive.createGridMesh(
+                .geometry = geometry_mod.GeometrySet.fromMeshOwned(allocator, try grid_primitive.createGridMesh(
                     allocator,
                     params.verts_x,
                     params.verts_y,
                     params.size_x,
                     params.size_y,
                     params.with_uvs,
-                ),
+                )),
             },
             .cuboid => |params| .{
-                .mesh = try cuboid_primitive.createCuboidMesh(
+                .geometry = geometry_mod.GeometrySet.fromMeshOwned(allocator, try cuboid_primitive.createCuboidMesh(
                     allocator,
                     params.size,
                     params.verts_x,
                     params.verts_y,
                     params.verts_z,
                     params.with_uvs,
-                ),
+                )),
             },
             .uv_sphere => |params| .{
-                .mesh = try uv_sphere_primitive.createUvSphereMesh(
+                .geometry = geometry_mod.GeometrySet.fromMeshOwned(allocator, try uv_sphere_primitive.createUvSphereMesh(
                     allocator,
                     params.radius,
                     params.segments,
                     params.rings,
                     params.with_uvs,
-                ),
+                )),
             },
             .vector_constant => |value| .{ .vector3 = value },
             .translate => |params| blk: {
-                const source_mesh = try self.singleInputMesh(node_id, evaluation);
+                const source_geometry = try self.singleInputGeometry(node_id, evaluation);
                 const translation = self.singleInputVector3(node_id, evaluation) catch |err| switch (err) {
                     error.MissingInput => params.translation,
                     else => return err,
                 };
-                var mesh = try source_mesh.clone(allocator);
-                mesh.translate(translation);
-                break :blk .{ .mesh = mesh };
+                var geometry = try source_geometry.clone(allocator);
+                geometry.translate(translation);
+                break :blk .{ .geometry = geometry };
             },
             .join_geometry => blk: {
-                var merged_mesh: ?mesh_mod.Mesh = null;
-                errdefer if (merged_mesh) |*mesh| {
-                    mesh.deinit();
+                var merged_geometry: ?geometry_mod.GeometrySet = null;
+                errdefer if (merged_geometry) |*geometry| {
+                    geometry.deinit();
                 };
 
                 var input_count: usize = 0;
                 for (self.edges.items) |edge| {
-                    if (edge.to != node_id or edge.socket_type != .mesh) continue;
-                    const source_mesh = try self.resolvedInputMesh(evaluation, edge.from);
-                    if (merged_mesh) |*mesh| {
-                        try mesh.appendMesh(source_mesh);
+                    if (edge.to != node_id or edge.socket_type != .geometry) continue;
+                    const source_geometry = try self.resolvedInputGeometry(evaluation, edge.from);
+                    if (merged_geometry) |*geometry| {
+                        try geometry.appendGeometry(source_geometry);
                     } else {
-                        merged_mesh = try source_mesh.clone(allocator);
+                        merged_geometry = try source_geometry.clone(allocator);
                     }
                     input_count += 1;
                 }
@@ -360,31 +378,31 @@ pub const Graph = struct {
                 if (input_count == 0) {
                     return error.MissingInput;
                 }
-                break :blk .{ .mesh = merged_mesh.? };
+                break :blk .{ .geometry = merged_geometry.? };
             },
         };
     }
 
-    fn singleInputMesh(self: *const Graph, node_id: NodeId, evaluation: *const Evaluation) !*const mesh_mod.Mesh {
-        var source_mesh: ?*const mesh_mod.Mesh = null;
+    fn singleInputGeometry(self: *const Graph, node_id: NodeId, evaluation: *const Evaluation) !*const geometry_mod.GeometrySet {
+        var source_geometry: ?*const geometry_mod.GeometrySet = null;
         var input_count: usize = 0;
 
         for (self.edges.items) |edge| {
-            if (edge.to != node_id or edge.socket_type != .mesh) continue;
-            source_mesh = try self.resolvedInputMesh(evaluation, edge.from);
+            if (edge.to != node_id or edge.socket_type != .geometry) continue;
+            source_geometry = try self.resolvedInputGeometry(evaluation, edge.from);
             input_count += 1;
         }
 
         return switch (input_count) {
             0 => error.MissingInput,
-            1 => source_mesh.?,
+            1 => source_geometry.?,
             else => error.InvalidInputArity,
         };
     }
 
-    fn resolvedInputMesh(self: *const Graph, evaluation: *const Evaluation, from: NodeId) !*const mesh_mod.Mesh {
+    fn resolvedInputGeometry(self: *const Graph, evaluation: *const Evaluation, from: NodeId) !*const geometry_mod.GeometrySet {
         _ = self;
-        return evaluation.mesh(from) orelse error.MissingInput;
+        return evaluation.geometry(from) orelse error.MissingInput;
     }
 
     fn singleInputVector3(self: *const Graph, node_id: NodeId, evaluation: *const Evaluation) !math.Vec3 {
@@ -468,6 +486,26 @@ test "graph evaluates a translated line pipeline" {
     try std.testing.expectEqual(@as(usize, 3), mesh.vertexCount());
     try std.testing.expect(math.vec3ApproxEq(mesh.positions.items[0], math.Vec3.init(5, 3, 0), 0.0001));
     try std.testing.expect(math.vec3ApproxEq(mesh.positions.items[2], math.Vec3.init(7, 3, 0), 0.0001));
+}
+
+test "graph evaluation stores geometry values" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const line = try graph.addNode(Node.init("line", .{
+        .line = .{
+            .start = math.Vec3.init(0, 0, 0),
+            .delta = math.Vec3.init(1, 0, 0),
+            .count = 2,
+        },
+    }));
+
+    var evaluation = try graph.evaluate(std.testing.allocator);
+    defer evaluation.deinit();
+
+    const geometry = evaluation.geometry(line).?;
+    try std.testing.expect(geometry.mesh != null);
+    try std.testing.expectEqual(@as(usize, 2), geometry.mesh.?.vertexCount());
 }
 
 test "graph joins primitive meshes in edge order" {

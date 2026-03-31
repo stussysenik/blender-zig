@@ -1,6 +1,7 @@
 const std = @import("std");
 const curves_mod = @import("curves.zig");
 const math = @import("../math.zig");
+const mesh_mod = @import("../mesh.zig");
 
 pub const InstanceTransform = struct {
     translation: math.Vec3 = math.Vec3.init(0, 0, 0),
@@ -16,6 +17,7 @@ pub const InstanceTransform = struct {
 
 pub const GeometrySet = struct {
     allocator: std.mem.Allocator,
+    mesh: ?mesh_mod.Mesh = null,
     curves: ?curves_mod.CurvesGeometry = null,
     instances: ?Instances = null,
 
@@ -27,6 +29,20 @@ pub const GeometrySet = struct {
         return .{
             .allocator = allocator,
             .curves = curves,
+        };
+    }
+
+    pub fn fromMeshOwned(allocator: std.mem.Allocator, mesh: mesh_mod.Mesh) GeometrySet {
+        return .{
+            .allocator = allocator,
+            .mesh = mesh,
+        };
+    }
+
+    pub fn fromMeshClone(allocator: std.mem.Allocator, mesh: *const mesh_mod.Mesh) std.mem.Allocator.Error!GeometrySet {
+        return .{
+            .allocator = allocator,
+            .mesh = try mesh.clone(allocator),
         };
     }
 
@@ -45,6 +61,10 @@ pub const GeometrySet = struct {
     }
 
     pub fn deinit(self: *GeometrySet) void {
+        if (self.mesh) |*mesh| {
+            mesh.deinit();
+            self.mesh = null;
+        }
         if (self.curves) |*curves| {
             curves.deinit();
             self.curves = null;
@@ -59,6 +79,9 @@ pub const GeometrySet = struct {
         var cloned = GeometrySet.init(allocator);
         errdefer cloned.deinit();
 
+        if (self.mesh) |*mesh| {
+            cloned.mesh = try mesh.clone(allocator);
+        }
         if (self.curves) |*curves| {
             cloned.curves = try curves.clone(allocator);
         }
@@ -66,6 +89,51 @@ pub const GeometrySet = struct {
             cloned.instances = try instances.clone(allocator);
         }
         return cloned;
+    }
+
+    pub fn translate(self: *GeometrySet, delta: math.Vec3) void {
+        if (self.mesh) |*mesh| {
+            mesh.translate(delta);
+        }
+        if (self.curves) |*curves| {
+            curves.translate(delta);
+        }
+        if (self.instances) |*instances| {
+            for (instances.items.items) |*instance| {
+                instance.transform.translation = instance.transform.translation.add(delta);
+            }
+        }
+    }
+
+    pub fn appendGeometry(self: *GeometrySet, other: *const GeometrySet) !void {
+        // Keep instance realization explicit; this bridge only merges materialized geometry.
+        if (self.instances != null and (other.mesh != null or other.curves != null or other.instances != null)) {
+            return error.UnsupportedGeometryComponent;
+        }
+        if (other.instances != null and (self.mesh != null or self.curves != null)) {
+            return error.UnsupportedGeometryComponent;
+        }
+
+        if (other.mesh) |*other_mesh| {
+            if (self.mesh) |*mesh| {
+                try mesh.appendMesh(other_mesh);
+            } else {
+                self.mesh = try other_mesh.clone(self.allocator);
+            }
+        }
+        if (other.curves) |*other_curves| {
+            if (self.curves) |*curves| {
+                try curves.appendCurves(other_curves);
+            } else {
+                self.curves = try other_curves.clone(self.allocator);
+            }
+        }
+        if (other.instances) |*other_instances| {
+            if (self.instances) |_| {
+                return error.UnsupportedGeometryComponent;
+            }
+            self.instances = try other_instances.clone(self.allocator);
+        }
     }
 };
 
@@ -172,19 +240,29 @@ pub fn realizeInstances(
     geometry_set: *const GeometrySet,
     options: RealizeInstancesOptions,
 ) std.mem.Allocator.Error!RealizeInstancesResult {
+    var result_geometry = GeometrySet.init(allocator);
+    errdefer result_geometry.deinit();
+
+    if (geometry_set.mesh) |*mesh| {
+        result_geometry.mesh = try mesh.clone(allocator);
+    }
+    if (geometry_set.curves) |*curves| {
+        result_geometry.curves = try curves.clone(allocator);
+    }
     if (geometry_set.instances == null) {
-        return .{ .geometry = try geometry_set.clone(allocator) };
+        return .{ .geometry = result_geometry };
     }
 
     const instances = &geometry_set.instances.?;
-    var dst_curves = try curves_mod.CurvesGeometry.init(allocator);
-    errdefer dst_curves.deinit();
-
     for (instances.items.items, 0..) |instance, instance_index| {
         const reference = &instances.references.items[instance.handle];
         if (reference.curves == null) continue;
 
         const src_curves = &reference.curves.?;
+        if (result_geometry.curves == null) {
+            result_geometry.curves = try curves_mod.CurvesGeometry.init(allocator);
+        }
+        const dst_curves = &result_geometry.curves.?;
         for (0..src_curves.curvesNum()) |curve_index| {
             const range = src_curves.pointsByCurve(curve_index);
             const point_count = range.end - range.start;
@@ -216,7 +294,7 @@ pub fn realizeInstances(
         }
     }
 
-    return .{ .geometry = GeometrySet.fromCurvesOwned(allocator, dst_curves) };
+    return .{ .geometry = result_geometry };
 }
 
 fn isRestrictedCurveBuiltinAttribute(name: []const u8) bool {
@@ -235,6 +313,16 @@ fn createRealizeTestCurves(allocator: std.mem.Allocator) !curves_mod.CurvesGeome
     const test_index = [_]i32{ 0, 1, 2 };
     try curves.appendCurve(&positions, false, &test_index);
     return curves;
+}
+
+fn createRealizeTestMesh(allocator: std.mem.Allocator) !mesh_mod.Mesh {
+    var mesh = try mesh_mod.Mesh.init(allocator);
+    errdefer mesh.deinit();
+
+    _ = try mesh.appendVertex(math.Vec3.init(-1, 0, 0));
+    _ = try mesh.appendVertex(math.Vec3.init(1, 0, 0));
+    try mesh.appendEdge(0, 1);
+    return mesh;
 }
 
 test "realize instances ignores restricted curve builtin instance attribute" {
@@ -293,4 +381,37 @@ test "realize instances copies generic instance attribute to points" {
     try std.testing.expectEqualSlices(f32, &[_]f32{ 0.5, 0.5, 0.5, 1.5, 1.5, 1.5 }, weight);
     try std.testing.expect(math.vec3ApproxEq(realized.positions.items[3], math.Vec3.init(10, 0, 0), 0.0001));
     try std.testing.expect(math.vec3ApproxEq(realized.positions.items[5], math.Vec3.init(12, 0, 0), 0.0001));
+}
+
+test "realize instances preserves direct mesh and curve components" {
+    const direct_mesh = try createRealizeTestMesh(std.testing.allocator);
+    const direct_curves = try createRealizeTestCurves(std.testing.allocator);
+    var source_curves = try createRealizeTestCurves(std.testing.allocator);
+    defer source_curves.deinit();
+
+    var instances = Instances.init(std.testing.allocator);
+    const handle = try instances.addReference(try GeometrySet.fromCurvesClone(std.testing.allocator, &source_curves));
+    try instances.addInstance(handle, .{ .translation = math.Vec3.init(10, 0, 0) });
+    try instances.addFloatAttribute("weight", 2.0);
+
+    var geometry = GeometrySet.fromInstancesOwned(std.testing.allocator, instances);
+    geometry.mesh = direct_mesh;
+    geometry.curves = direct_curves;
+    defer geometry.deinit();
+
+    const result = try realizeInstances(std.testing.allocator, &geometry, .{ .realize_instance_attributes = true });
+    defer {
+        var realized_geometry = result.geometry;
+        realized_geometry.deinit();
+    }
+
+    try std.testing.expect(result.geometry.mesh != null);
+    try std.testing.expectEqual(@as(usize, 2), result.geometry.mesh.?.vertexCount());
+
+    const realized_curves = &result.geometry.curves.?;
+    try std.testing.expectEqual(@as(usize, 6), realized_curves.pointsNum());
+    try std.testing.expectEqual(@as(usize, 2), realized_curves.curvesNum());
+    try std.testing.expect(math.vec3ApproxEq(realized_curves.positions.items[0], math.Vec3.init(0, 0, 0), 0.0001));
+    try std.testing.expect(math.vec3ApproxEq(realized_curves.positions.items[3], math.Vec3.init(10, 0, 0), 0.0001));
+    try std.testing.expectEqualSlices(f32, &[_]f32{ 0.0, 0.0, 0.0, 2.0, 2.0, 2.0 }, realized_curves.getPointFloatAttribute("weight").?);
 }

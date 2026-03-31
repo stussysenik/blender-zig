@@ -85,10 +85,10 @@ pub const CurvesGeometry = struct {
         value: f32,
         count: usize,
     ) !void {
-        const attribute = try self.ensurePointFloatAttribute(name);
-        for (0..count) |_| {
-            try attribute.append(self.allocator, value);
-        }
+        std.debug.assert(count <= self.pointsNum());
+        const attribute = try self.ensurePointFloatAttribute(name, self.pointsNum() - count);
+        std.debug.assert(attribute.items.len == self.pointsNum() - count);
+        try appendRepeatedFloat(attribute, self.allocator, value, count);
     }
 
     pub fn clone(self: *const CurvesGeometry, allocator: std.mem.Allocator) !CurvesGeometry {
@@ -104,6 +104,46 @@ pub const CurvesGeometry = struct {
             try clone_curves.point_float_attributes.append(allocator, try attribute.clone(allocator));
         }
         return clone_curves;
+    }
+
+    pub fn translate(self: *CurvesGeometry, delta: math.Vec3) void {
+        for (self.positions.items) |*position| {
+            position.* = position.add(delta);
+        }
+    }
+
+    pub fn appendCurves(self: *CurvesGeometry, other: *const CurvesGeometry) !void {
+        const existing_points = self.pointsNum();
+        const other_points = other.pointsNum();
+
+        // Align point attributes by name so merged curve batches keep dense per-point arrays.
+        for (self.point_float_attributes.items) |*attribute| {
+            if (other.findPointFloatAttributeIndex(attribute.name) == null) {
+                try appendRepeatedFloat(&attribute.values, self.allocator, 0.0, other_points);
+            }
+        }
+        for (other.point_float_attributes.items) |*other_attribute| {
+            const attribute = try self.ensurePointFloatAttribute(other_attribute.name, existing_points);
+            std.debug.assert(attribute.items.len == existing_points);
+            try attribute.appendSlice(self.allocator, other_attribute.values.items);
+        }
+
+        try self.positions.appendSlice(self.allocator, other.positions.items);
+        for (other.curve_offsets.items[1..]) |offset| {
+            try self.curve_offsets.append(self.allocator, @as(u32, @intCast(existing_points)) + offset);
+        }
+        try self.cyclic.appendSlice(self.allocator, other.cyclic.items);
+
+        if (self.point_test_index.items.len > 0 or other.point_test_index.items.len > 0) {
+            if (self.point_test_index.items.len == 0) {
+                try appendRepeatedTestIndex(&self.point_test_index, self.allocator, -1, existing_points);
+            }
+            if (other.point_test_index.items.len > 0) {
+                try self.point_test_index.appendSlice(self.allocator, other.point_test_index.items);
+            } else {
+                try appendRepeatedTestIndex(&self.point_test_index, self.allocator, -1, other_points);
+            }
+        }
     }
 
     pub fn pointsByCurve(self: *const CurvesGeometry, curve_index: usize) offset_indices.Range {
@@ -143,17 +183,41 @@ pub const CurvesGeometry = struct {
         try self.curve_offsets.append(self.allocator, @intCast(self.positions.items.len));
     }
 
-    fn ensurePointFloatAttribute(self: *CurvesGeometry, name: []const u8) !*std.ArrayList(f32) {
+    fn ensurePointFloatAttribute(self: *CurvesGeometry, name: []const u8, prefix_len: usize) !*std.ArrayList(f32) {
         for (self.point_float_attributes.items) |*attribute| {
             if (std.mem.eql(u8, attribute.name, name)) {
                 return &attribute.values;
             }
         }
 
-        try self.point_float_attributes.append(self.allocator, try NamedFloatAttribute.init(self.allocator, name));
+        var attribute = try NamedFloatAttribute.init(self.allocator, name);
+        errdefer attribute.deinit(self.allocator);
+        try appendRepeatedFloat(&attribute.values, self.allocator, 0.0, prefix_len);
+        try self.point_float_attributes.append(self.allocator, attribute);
         return &self.point_float_attributes.items[self.point_float_attributes.items.len - 1].values;
     }
+
+    fn findPointFloatAttributeIndex(self: *const CurvesGeometry, name: []const u8) ?usize {
+        for (self.point_float_attributes.items, 0..) |attribute, index| {
+            if (std.mem.eql(u8, attribute.name, name)) {
+                return index;
+            }
+        }
+        return null;
+    }
 };
+
+fn appendRepeatedFloat(values: *std.ArrayList(f32), allocator: std.mem.Allocator, value: f32, count: usize) !void {
+    for (0..count) |_| {
+        try values.append(allocator, value);
+    }
+}
+
+fn appendRepeatedTestIndex(values: *std.ArrayList(i32), allocator: std.mem.Allocator, value: i32, count: usize) !void {
+    for (0..count) |_| {
+        try values.append(allocator, value);
+    }
+}
 
 pub fn curvesMergeEndpoints(
     allocator: std.mem.Allocator,
