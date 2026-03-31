@@ -864,3 +864,33 @@ test "realize instances node expands curve arrays and keeps direct mesh" {
     try std.testing.expect(math.vec3ApproxEq(geometry.curves.?.positions.items[0], math.Vec3.init(0, 0, 0), 0.0001));
     try std.testing.expect(math.vec3ApproxEq(geometry.curves.?.positions.items[3], math.Vec3.init(10, 0, 0), 0.0001));
 }
+
+test "realize instances node is a no-op when geometry has no instances" {
+    var graph = Graph.init(std.testing.allocator);
+    defer graph.deinit();
+
+    const curve = try graph.addNode(Node.init("curve-line", .{
+        .curve_line = .{
+            .start = math.Vec3.init(1, 2, 0),
+            .delta = math.Vec3.init(0.5, 0, 0),
+            .count = 4,
+        },
+    }));
+    const realize = try graph.addNode(Node.init("realize", .{
+        .realize_instances = .{},
+    }));
+
+    try graph.addEdge(curve, realize);
+
+    var evaluation = try graph.evaluate(std.testing.allocator);
+    defer evaluation.deinit();
+
+    const geometry = evaluation.geometry(realize).?;
+    try std.testing.expect(geometry.mesh == null);
+    try std.testing.expect(geometry.curves != null);
+    try std.testing.expect(geometry.instances == null);
+    try std.testing.expectEqual(@as(usize, 4), geometry.curves.?.pointsNum());
+    try std.testing.expectEqual(@as(usize, 1), geometry.curves.?.curvesNum());
+    try std.testing.expect(math.vec3ApproxEq(geometry.curves.?.positions.items[0], math.Vec3.init(1, 2, 0), 0.0001));
+    try std.testing.expect(math.vec3ApproxEq(geometry.curves.?.positions.items[3], math.Vec3.init(2.5, 2, 0), 0.0001));
+}

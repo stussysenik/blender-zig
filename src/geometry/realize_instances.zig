@@ -433,6 +433,34 @@ test "realize instances copies generic instance attribute to points" {
     try std.testing.expect(math.vec3ApproxEq(realized.positions.items[5], math.Vec3.init(12, 0, 0), 0.0001));
 }
 
+test "realize instances can skip generic instance attributes" {
+    var source_curves = try createRealizeTestCurves(std.testing.allocator);
+    defer source_curves.deinit();
+
+    var instances = Instances.init(std.testing.allocator);
+
+    const handle = try instances.addReference(try GeometrySet.fromCurvesClone(std.testing.allocator, &source_curves));
+    try instances.addInstance(handle, InstanceTransform.identity());
+    try instances.addInstance(handle, .{ .translation = math.Vec3.init(10, 0, 0) });
+    try instances.addFloatAttribute("weight", 0.5);
+    instances.float_attributes.items[0].values.items[1] = 1.5;
+
+    var instances_geometry = GeometrySet.fromInstancesOwned(std.testing.allocator, instances);
+    defer instances_geometry.deinit();
+
+    const result = try realizeInstances(std.testing.allocator, &instances_geometry, .{ .realize_instance_attributes = false });
+    defer {
+        var geometry = result.geometry;
+        geometry.deinit();
+    }
+
+    const realized = &result.geometry.curves.?;
+    try std.testing.expectEqual(@as(usize, 6), realized.pointsNum());
+    try std.testing.expect(realized.getPointFloatAttribute("weight") == null);
+    try std.testing.expect(math.vec3ApproxEq(realized.positions.items[3], math.Vec3.init(10, 0, 0), 0.0001));
+    try std.testing.expect(math.vec3ApproxEq(realized.positions.items[5], math.Vec3.init(12, 0, 0), 0.0001));
+}
+
 test "realize instances preserves direct mesh and curve components" {
     const direct_mesh = try createRealizeTestMesh(std.testing.allocator);
     const direct_curves = try createRealizeTestCurves(std.testing.allocator);
