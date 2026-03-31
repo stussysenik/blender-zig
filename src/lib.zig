@@ -22,6 +22,7 @@ pub const geometry = struct {
     pub const curveToWireMesh = @import("geometry/curves_to_mesh.zig").curveToWireMesh;
     pub const curveToMeshSweep = @import("geometry/curves_to_mesh.zig").curveToMeshSweep;
     pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
+    pub const triangulateMesh = @import("geometry/mesh_triangulate.zig").triangulateMesh;
     pub const GeometrySet = @import("geometry/realize_instances.zig").GeometrySet;
     pub const Instances = @import("geometry/realize_instances.zig").Instances;
     pub const InstanceTransform = @import("geometry/realize_instances.zig").InstanceTransform;
@@ -56,6 +57,7 @@ test {
     _ = @import("geometry/curves.zig");
     _ = @import("geometry/curves_to_mesh.zig");
     _ = @import("geometry/mesh_to_curve.zig");
+    _ = @import("geometry/mesh_triangulate.zig");
     _ = @import("geometry/realize_instances.zig");
     _ = @import("geometry/primitives/line.zig");
     _ = @import("geometry/primitives/grid.zig");

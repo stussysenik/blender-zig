@@ -103,6 +103,10 @@ pub fn approxEq(a: f32, b: f32, epsilon: f32) bool {
     return @abs(a - b) <= epsilon;
 }
 
+pub fn vec2ApproxEq(a: Vec2, b: Vec2, epsilon: f32) bool {
+    return approxEq(a.x, b.x, epsilon) and approxEq(a.y, b.y, epsilon);
+}
+
 pub fn vec3ApproxEq(a: Vec3, b: Vec3, epsilon: f32) bool {
     return approxEq(a.x, b.x, epsilon) and approxEq(a.y, b.y, epsilon) and approxEq(a.z, b.z, epsilon);
 }

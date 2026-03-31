@@ -1,11 +1,6 @@
 # Roadmap
 
-> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
-
-## Active Head
-
-- branch: `main`
-- head: `dd7c539f`
+> Generated from `status/hyperdata.json`. Refresh with `npm run status:update`.
 
 ## Phase Map
 
@@ -22,11 +17,12 @@
 - [x] Phase 10: Runnable graph demo
 - [x] Phase 11: Direct curve modeling
 - [~] Phase 12: Release and governance
+- [~] Phase 13: Direct mesh ops
 
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port a narrow mesh operation like merge-by-distance or triangulate.
+- Port another narrow mesh operation such as merge-by-distance.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

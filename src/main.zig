@@ -21,8 +21,8 @@ pub fn main() !void {
     const command = args[1];
     // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
     // regression path for contributors who want to validate one feature in isolation.
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip")) {
-        var mesh = try buildCurveCommand(allocator, command);
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate")) {
+        var mesh = try buildDerivedMeshCommand(allocator, command);
         defer mesh.deinit();
 
         try printMeshSummary(stdout, command, &mesh);
@@ -65,7 +65,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-edges|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-edges|graph-demo> [output.obj]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -73,6 +73,7 @@ fn printUsage() !void {
         \\  zig build run -- curve-wire zig-out/curve-wire.obj
         \\  zig build run -- curve-tube zig-out/curve-tube.obj
         \\  zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
+        \\  zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -154,7 +155,7 @@ fn printGeometrySummary(writer: anytype, label: []const u8, geometry: *const ble
     }
 }
 
-fn buildCurveCommand(allocator: std.mem.Allocator, command: []const u8) !blendzig.mesh.Mesh {
+fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !blendzig.mesh.Mesh {
     if (std.mem.eql(u8, command, "curve-wire")) {
         var path = try createHelixCurve(allocator, 3, 18, 1.2, 0.1);
         defer path.deinit();
@@ -173,6 +174,11 @@ fn buildCurveCommand(allocator: std.mem.Allocator, command: []const u8) !blendzi
         var curves = try blendzig.geometry.meshEdgesToCurves(allocator, &source_mesh);
         defer curves.deinit();
         return blendzig.geometry.convertCurvesToPolylineMesh(allocator, &curves, .{});
+    }
+    if (std.mem.eql(u8, command, "mesh-triangulate")) {
+        var source_mesh = try blendzig.geometry.createGridMesh(allocator, 6, 5, 6.0, 4.0, true);
+        defer source_mesh.deinit();
+        return blendzig.geometry.triangulateMesh(allocator, &source_mesh);
     }
     return error.UnknownPrimitive;
 }
@@ -311,7 +317,7 @@ fn createCircleProfile(
 }
 
 test "curve tube command builds faces" {
-    var mesh = try buildCurveCommand(std.testing.allocator, "curve-tube");
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "curve-tube");
     defer mesh.deinit();
 
     try std.testing.expect(mesh.faceCount() > 0);
@@ -319,7 +325,7 @@ test "curve tube command builds faces" {
 }
 
 test "mesh roundtrip command builds a loose-edge mesh" {
-    var mesh = try buildCurveCommand(std.testing.allocator, "mesh-roundtrip");
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-roundtrip");
     defer mesh.deinit();
 
     try std.testing.expect(mesh.faceCount() == 0);
@@ -335,4 +341,17 @@ test "mesh edges command builds a mixed geometry view" {
     try std.testing.expect(geometry.curves != null);
     try std.testing.expect(geometry.curves.?.curvesNum() > 0);
     try std.testing.expect(geometry.curves.?.pointsNum() > 0);
+}
+
+test "mesh triangulate command triangulates grid faces" {
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-triangulate");
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 30), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 40), mesh.faceCount());
+    try std.testing.expect(mesh.hasCornerUvs());
+    for (0..mesh.faceCount()) |face_index| {
+        const range = mesh.faceVertexRange(face_index);
+        try std.testing.expectEqual(@as(usize, 3), range.end - range.start);
+    }
 }

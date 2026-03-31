@@ -80,6 +80,11 @@
 - [x] wire semantic-release in CI
 - [x] document signed-commit expectations and limitations
 
+## Phase 13: Direct mesh ops
+- [x] add a bounded triangulate op for the current face-corner mesh model
+- [x] expose `mesh-triangulate` through the CLI
+- [ ] port another narrow mesh op such as merge-by-distance
+
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet
 - [ ] do not port DNA/RNA, asset systems, or the full dependency graph yet

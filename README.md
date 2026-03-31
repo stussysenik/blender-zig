@@ -15,6 +15,7 @@ Current focus:
 - mesh topology and bounds
 - geometry primitive generation: line, grid, cuboid, cylinder, cone, UV sphere
 - curves-to-mesh wire conversion and swept mesh generation
+- bounded direct mesh ops beginning with triangulation
 - mesh-edge extraction into curves
 - OBJ export so generated geometry can be inspected immediately
 - OMX/Ralphy-inspired team and release scaffolding around the rewrite effort
@@ -24,6 +25,7 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
+- phase 13 direct mesh ops is started with `mesh-triangulate`, preserving corner UVs and loose edges
 - `GeometrySet` OBJ export is in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
 - the next recommended slices are tighter mesh ops and broader export paths, not UI or rendering
@@ -64,6 +66,7 @@ zig build run -- cylinder zig-out/cylinder.obj
 zig build run -- curve-wire zig-out/curve-wire.obj
 zig build run -- curve-tube zig-out/curve-tube.obj
 zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
+zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
 zig build run -- mesh-edges zig-out/mesh-edges.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
 npm run dist
@@ -74,7 +77,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-edges|graph-demo> [output.obj]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-edges|graph-demo> [output.obj]
 ```
 <!-- status:auto:cli-usage:end -->
 

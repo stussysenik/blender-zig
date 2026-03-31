@@ -51,14 +51,6 @@ function phaseLine(phase) {
 // Generated status docs come from versioned hyperdata plus live git state so the
 // repo can auto-refresh progress surfaces without hiding the source of truth.
 const data = JSON.parse(readText("status/hyperdata.json"));
-const head = git("git rev-parse HEAD");
-const shortHead = head.slice(0, 8);
-const branch = git("git rev-parse --abbrev-ref HEAD");
-const recentCommits = git("git log --oneline -n 8")
-  .split("\n")
-  .filter(Boolean)
-  .map((line) => `- \`${line.slice(0, 8)}\` ${line.slice(9)}`);
-
 const completedPhases = data.phases.filter((phase) => phase.state === "done");
 const activePhases = data.phases.filter((phase) => phase.state === "active");
 const openPhases = data.phases.filter((phase) => phase.state === "open");
@@ -83,12 +75,10 @@ nextReadme = replaceBlock(
 
 const nextProgress = `# Progress
 
-> Generated from \`status/hyperdata.json\` and git state. Refresh with \`npm run status:update\`.
+> Generated from \`status/hyperdata.json\`. Refresh with \`npm run status:update\`.
 
 ## Hypertime Snapshot
 
-- branch: \`${branch}\`
-- head: \`${shortHead}\`
 - source: \`status/hyperdata.json\`
 
 Artifacts:
@@ -107,10 +97,6 @@ ${activePhases.length > 0 ? bulletList(activePhases.map((phase) => `Phase ${phas
 Open phases:
 ${openPhases.length > 0 ? bulletList(openPhases.map((phase) => `Phase ${phase.id}: ${phase.title}`)) : "- none"}
 
-## Pushed Commits
-
-${recentCommits.join("\n")}
-
 ## What Runs Today
 
 ${bulletList(data.runs_today.map((item) => `\`${item}\``))}
@@ -126,12 +112,7 @@ ${data.notes.join("\n")}
 
 const nextRoadmap = `# Roadmap
 
-> Generated from \`status/hyperdata.json\` and git state. Refresh with \`npm run status:update\`.
-
-## Active Head
-
-- branch: \`${branch}\`
-- head: \`${shortHead}\`
+> Generated from \`status/hyperdata.json\`. Refresh with \`npm run status:update\`.
 
 ## Phase Map
 

@@ -1,11 +1,9 @@
 # Progress
 
-> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
+> Generated from `status/hyperdata.json`. Refresh with `npm run status:update`.
 
 ## Hypertime Snapshot
 
-- branch: `main`
-- head: `dd7c539f`
 - source: `status/hyperdata.json`
 
 Artifacts:
@@ -33,20 +31,10 @@ Completed phases:
 
 Active phases:
 - Phase 12: Release and governance
+- Phase 13: Direct mesh ops
 
 Open phases:
 - none
-
-## Pushed Commits
-
-- `dd7c539f` feat: automate status docs and roundtrip cli
-- `fd883e59` fix: repair direct geometry modeling build
-- `13b13a86` feat: add direct curve sweep modeling
-- `e455c279` feat: add mesh edges to curves conversion
-- `e100adcb` feat: add cylinder and cone primitive mesh
-- `e9f4aaec` feat: add curves to mesh conversion
-- `b1f931fc` docs: add rewrite progress surfaces
-- `20b6d834` feat: add graph demo cli export path
 
 ## What Runs Today
 
@@ -57,6 +45,7 @@ Open phases:
 - `zig build run -- curve-wire zig-out/curve-wire.obj`
 - `zig build run -- curve-tube zig-out/curve-tube.obj`
 - `zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj`
+- `zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -65,7 +54,7 @@ Open phases:
 ## Next Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port a narrow mesh operation like merge-by-distance or triangulate.
+- Port another narrow mesh operation such as merge-by-distance.
 - Add notarization only after Apple credentials exist.
 
 ## Readout
