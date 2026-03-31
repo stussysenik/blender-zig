@@ -19,7 +19,7 @@ pub fn main() !void {
     const stdout = &stdout_writer.interface;
 
     const command = args[1];
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube")) {
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip")) {
         var mesh = try buildCurveCommand(allocator, command);
         defer mesh.deinit();
 
@@ -63,13 +63,14 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-edges|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-edges|graph-demo> [output.obj]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
         \\  zig build run -- cone zig-out/cone.obj
         \\  zig build run -- curve-wire zig-out/curve-wire.obj
         \\  zig build run -- curve-tube zig-out/curve-tube.obj
+        \\  zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -163,6 +164,13 @@ fn buildCurveCommand(allocator: std.mem.Allocator, command: []const u8) !blendzi
         var profile = try createCircleProfile(allocator, 0.18, 10);
         defer profile.deinit();
         return blendzig.geometry.curveToMeshSweep(allocator, &path, &profile, .{ .fill_caps = true });
+    }
+    if (std.mem.eql(u8, command, "mesh-roundtrip")) {
+        var source_mesh = try blendzig.geometry.createCylinderMesh(allocator, 1.2, 2.8, 12, false, false, false);
+        defer source_mesh.deinit();
+        var curves = try blendzig.geometry.meshEdgesToCurves(allocator, &source_mesh);
+        defer curves.deinit();
+        return blendzig.geometry.convertCurvesToPolylineMesh(allocator, &curves, .{});
     }
     return error.UnknownPrimitive;
 }
@@ -304,6 +312,15 @@ test "curve tube command builds faces" {
     defer mesh.deinit();
 
     try std.testing.expect(mesh.faceCount() > 0);
+    try std.testing.expect(mesh.vertexCount() > 0);
+}
+
+test "mesh roundtrip command builds a loose-edge mesh" {
+    var mesh = try buildCurveCommand(std.testing.allocator, "mesh-roundtrip");
+    defer mesh.deinit();
+
+    try std.testing.expect(mesh.faceCount() == 0);
+    try std.testing.expect(mesh.edges.items.len > 0);
     try std.testing.expect(mesh.vertexCount() > 0);
 }
 

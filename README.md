@@ -2,31 +2,27 @@
 
 A companion Zig rewrite that lifts a realistic first slice out of Blender instead of pretending the whole codebase can be transliterated in one shot.
 
+The status sections in this file, [progress.md](/Users/s3nik/Desktop/blender-zig/progress.md), and [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md) are generated from `status/hyperdata.json` via `npm run status:update`.
+
 Current focus:
+<!-- status:auto:focus:start -->
 - `blenlib`-style core utilities: disjoint sets and offset indices
 - mesh topology and bounds
-- geometry primitive generation: line, grid, cuboid, UV sphere
+- geometry primitive generation: line, grid, cuboid, cylinder, cone, UV sphere
 - curves-to-mesh wire conversion and swept mesh generation
-- a small executable node-graph kernel for geometry-pipeline planning
-- curves-first instances realization and regression coverage
+- mesh-edge extraction into curves
 - OBJ export so generated geometry can be inspected immediately
-- a fixed graph-demo CLI that runs the node pipeline end to end
-- OMX/Ralphy-inspired team/release scaffolding around the rewrite effort
+- OMX/Ralphy-inspired team and release scaffolding around the rewrite effort
+<!-- status:auto:focus:end -->
 
 Current status:
-- phase 0 bootstrap is done
-- the first mesh/primitive port slice is done
-- the curves kernel and merge-curves slice are now in
-- the curve interpolation slice is now in
-- the curves-first instances and realization slice is now in
-- executable node evaluation for primitive meshes is now in
-- the shared `GeometrySet` bridge between nodes, meshes, and curves is now in
-- curve-producing geometry nodes and curve-first realization nodes are now in
-- reference setup, optimized packaging, and a macOS CLI artifact workflow are now in
-- `GeometrySet` OBJ export and a graph-driven CLI demo are now in
-- direct `curve-wire` and `curve-tube` CLI modeling paths are now in
-- the next recommended slice is notarization plus broader distribution hardening once Apple credentials exist
-- the OMX-native role prompts live in `.codex/prompts/` and are used by `scripts/ralph-loop.sh`
+<!-- status:auto:status:start -->
+- phase 0 bootstrap through phase 10 runnable graph demo are in
+- phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
+- `GeometrySet` OBJ export is in for mixed mesh and curve output
+- optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
+- the next recommended slices are tighter mesh ops and broader export paths, not UI or rendering
+<!-- status:auto:status:end -->
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:
 - `source/blender/blenlib/BLI_disjoint_set.hh`
@@ -39,34 +35,43 @@ This repo is intentionally narrow. It is inspired by Blender subsystems like:
 For the upstream scan and the next port targets, see `docs/blender-repo-scan.md`.
 
 Progress surfaces:
+<!-- status:auto:progress-surfaces:start -->
 - [hypertime progress log](/Users/s3nik/Desktop/blender-zig/progress.md)
 - [current state snapshot](/Users/s3nik/Desktop/blender-zig/docs/screenshots/current-state.svg)
 - [phase map](/Users/s3nik/Desktop/blender-zig/docs/assets/phase-map.svg)
+<!-- status:auto:progress-surfaces:end -->
 
 Reference and distribution helpers:
-- `npm run reference:setup`
-- `npm run dist`
-- `npm run sign:macos -- zig-out/bin/blender-zig "Developer ID Application: Your Name"`
+<!-- status:auto:reference-helpers:start -->
+- npm run reference:setup
+- npm run dist
+- npm run sign:macos -- zig-out/bin/blender-zig "Developer ID Application: Your Name"
+<!-- status:auto:reference-helpers:end -->
 - [reference and distribution notes](/Users/s3nik/Desktop/blender-zig/docs/reference-and-distribution.md)
 
 ## Quick Start
 
+<!-- status:auto:quick-start:start -->
 ```bash
 zig build test
 zig build run -- sphere
+zig build run -- cylinder zig-out/cylinder.obj
 zig build run -- curve-wire zig-out/curve-wire.obj
 zig build run -- curve-tube zig-out/curve-tube.obj
-zig build run -- cuboid zig-out/cuboid.obj
-zig build run -- grid zig-out/grid.obj
+zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
+zig build run -- mesh-edges zig-out/mesh-edges.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
 npm run dist
 ```
+<!-- status:auto:quick-start:end -->
 
 CLI usage:
 
+<!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|sphere|curve-wire|curve-tube|graph-demo> [output.obj]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-edges|graph-demo> [output.obj]
 ```
+<!-- status:auto:cli-usage:end -->
 
 Defaults are intentionally opinionated:
 - `line`: 8 points

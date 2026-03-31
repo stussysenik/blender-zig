@@ -1,6 +1,12 @@
 # Progress
 
+> Generated from `status/hyperdata.json` and git state. Refresh with `npm run status:update`.
+
 ## Hypertime Snapshot
+
+- branch: `main`
+- head: `fd883e59`
+- source: `status/hyperdata.json`
 
 Artifacts:
 - `progress.md`
@@ -12,59 +18,57 @@ Artifacts:
 `blender-zig` is a runnable Zig CLI on macOS and a staged rewrite workspace for Blender-inspired geometry systems.
 
 Completed phases:
-- Phase 0: repo bootstrap
-- Phase 1: mesh and primitive slice
-- Phase 2: verification baseline
-- Phase 3: curves kernel
-- Phase 4: curve interpolation
-- Phase 5: instances and realization
-- Phase 6: nodes and evaluation
-- Phase 7: geometry bridge
-- Phase 8: curves in nodes
-- Phase 9: distribution and references
-- Phase 10: runnable graph demo surface
-- Phase 11: direct curve modeling
+- Phase 0: Repo bootstrap
+- Phase 1: Mesh and primitive slice
+- Phase 2: Verification baseline
+- Phase 3: Curves kernel
+- Phase 4: Curve interpolation
+- Phase 5: Instances and realization
+- Phase 6: Nodes and evaluation
+- Phase 7: Geometry bridge
+- Phase 8: Curves in nodes
+- Phase 9: Distribution and references
+- Phase 10: Runnable graph demo
+- Phase 11: Direct curve modeling
 
-Open phase:
-- Phase 12: release and governance
+Active phases:
+- Phase 12: Release and governance
+
+Open phases:
+- none
 
 ## Pushed Commits
 
-- `18f16c6d` `ci: add macos artifact workflow`
-- `11d3ba30` `build: add distribution and reference tooling`
-- `74ca0cae` `feat: add curve realization nodes`
-- `4de2b7de` `feat: add node-level realize instances flow`
-- `5ab7dfe8` `feat: add curve nodes to geometry evaluation`
-- `927027c3` `docs: advance geometry bridge roadmap`
+- `fd883e59` fix: repair direct geometry modeling build
+- `13b13a86` feat: add direct curve sweep modeling
+- `e455c279` feat: add mesh edges to curves conversion
+- `e100adcb` feat: add cylinder and cone primitive mesh
+- `e9f4aaec` feat: add curves to mesh conversion
+- `b1f931fc` docs: add rewrite progress surfaces
+- `20b6d834` feat: add graph demo cli export path
+- `18f16c6d` ci: add macos artifact workflow
 
 ## What Runs Today
 
 - `zig build test`
 - `zig build -Doptimize=ReleaseFast`
 - `zig build run -- sphere`
+- `zig build run -- cylinder zig-out/cylinder.obj`
 - `zig build run -- curve-wire zig-out/curve-wire.obj`
 - `zig build run -- curve-tube zig-out/curve-tube.obj`
-- `zig build run -- cuboid zig-out/cuboid.obj`
+- `zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj`
+- `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
 - `npm run dist -- <version>`
-- `bash scripts/ralph-loop.sh --dry-run --task 'extend GeometrySet beyond the curves-first slice' --role architect`
-
-Observed local outputs:
-- `zig-out/bin/blender-zig` is a Mach-O 64-bit arm64 executable on macOS.
-- `npm run dist` writes a zip archive under `dist/` and a SHA-256 sidecar.
-- `npm run reference:setup` adds and fetches the `blender-reference` remote.
-- `graph-demo` builds a real `GeometrySet` from the node graph and can export it as one OBJ.
-- `curve-tube` builds a swept mesh with faces directly from curves and exports it as one OBJ.
 
 ## Next Targets
 
-- Expose the existing mesh-to-curve and curves-to-mesh roundtrip directly in the CLI.
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
+- Port a narrow mesh operation like merge-by-distance or triangulate.
 - Add notarization only after Apple credentials exist.
-- Keep the Zig runtime slice smaller than the release/tooling surface.
 
 ## Readout
 
-The repo is past the bootstrap stage and now has a working native CLI, geometry realization flow, curve-producing nodes, and distribution scaffolding.
+The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

@@ -73,7 +73,7 @@
 ## Phase 11: Direct Curve Modeling
 - [x] extend curves-to-mesh beyond loose wires with a bounded sweep path
 - [x] add direct `curve-wire` and `curve-tube` CLI commands that do not depend on the graph demo
-- [ ] expose mesh-to-curve and curves-to-mesh roundtrips through the CLI
+- [x] expose mesh-to-curve and curves-to-mesh roundtrips through the CLI
 
 ## Phase 12: Release and governance
 - [ ] add conventional commit examples

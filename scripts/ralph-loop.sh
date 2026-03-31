@@ -109,6 +109,17 @@ run_agent() {
   printf '%s\n' "$prompt" | "${cmd[@]}" -C "$workdir" -
 }
 
+update_status_docs() {
+  local workdir="$1"
+  if ! command -v node >/dev/null 2>&1; then
+    printf 'Skipping status update: node is not available\n' >&2
+    return 0
+  fi
+  if [[ -f "$workdir/scripts/update-status.mjs" ]]; then
+    (cd "$workdir" && node scripts/update-status.mjs)
+  fi
+}
+
 task_loop() {
   local task="$1"
   local workdir="$ROOT"
@@ -118,6 +129,9 @@ task_loop() {
   run_agent "$task" "$workdir"
   if [[ "$AUTO_COMPLETE" -eq 1 && "$DRY_RUN" -eq 0 ]]; then
     mark_task_complete "$task"
+  fi
+  if [[ "$DRY_RUN" -eq 0 ]]; then
+    update_status_docs "$workdir"
   fi
 }
 

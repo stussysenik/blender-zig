@@ -1,0 +1,150 @@
+{
+  "focus": [
+    "`blenlib`-style core utilities: disjoint sets and offset indices",
+    "mesh topology and bounds",
+    "geometry primitive generation: line, grid, cuboid, cylinder, cone, UV sphere",
+    "curves-to-mesh wire conversion and swept mesh generation",
+    "mesh-edge extraction into curves",
+    "OBJ export so generated geometry can be inspected immediately",
+    "OMX/Ralphy-inspired team and release scaffolding around the rewrite effort"
+  ],
+  "status": [
+    "phase 0 bootstrap through phase 10 runnable graph demo are in",
+    "phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`",
+    "`GeometrySet` OBJ export is in for mixed mesh and curve output",
+    "optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in",
+    "the next recommended slices are tighter mesh ops and broader export paths, not UI or rendering"
+  ],
+  "progress_surfaces": [
+    {
+      "label": "hypertime progress log",
+      "path": "progress.md"
+    },
+    {
+      "label": "current state snapshot",
+      "path": "docs/screenshots/current-state.svg"
+    },
+    {
+      "label": "phase map",
+      "path": "docs/assets/phase-map.svg"
+    }
+  ],
+  "reference_helpers": [
+    "npm run reference:setup",
+    "npm run dist",
+    "npm run sign:macos -- zig-out/bin/blender-zig \"Developer ID Application: Your Name\""
+  ],
+  "quick_start": [
+    "zig build test",
+    "zig build run -- sphere",
+    "zig build run -- cylinder zig-out/cylinder.obj",
+    "zig build run -- curve-wire zig-out/curve-wire.obj",
+    "zig build run -- curve-tube zig-out/curve-tube.obj",
+    "zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj",
+    "zig build run -- mesh-edges zig-out/mesh-edges.obj",
+    "zig build run -- graph-demo zig-out/graph-demo.obj",
+    "npm run dist"
+  ],
+  "runs_today": [
+    "zig build test",
+    "zig build -Doptimize=ReleaseFast",
+    "zig build run -- sphere",
+    "zig build run -- cylinder zig-out/cylinder.obj",
+    "zig build run -- curve-wire zig-out/curve-wire.obj",
+    "zig build run -- curve-tube zig-out/curve-tube.obj",
+    "zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj",
+    "zig build run -- mesh-edges zig-out/mesh-edges.obj",
+    "zig build run -- graph-demo zig-out/graph-demo.obj",
+    "npm run reference:setup",
+    "npm run dist -- <version>"
+  ],
+  "cli_commands": [
+    "line",
+    "grid",
+    "cuboid",
+    "cylinder",
+    "cone",
+    "sphere",
+    "curve-wire",
+    "curve-tube",
+    "mesh-roundtrip",
+    "mesh-edges",
+    "graph-demo"
+  ],
+  "phases": [
+    {
+      "id": 0,
+      "title": "Repo bootstrap",
+      "state": "done"
+    },
+    {
+      "id": 1,
+      "title": "Mesh and primitive slice",
+      "state": "done"
+    },
+    {
+      "id": 2,
+      "title": "Verification baseline",
+      "state": "done"
+    },
+    {
+      "id": 3,
+      "title": "Curves kernel",
+      "state": "done"
+    },
+    {
+      "id": 4,
+      "title": "Curve interpolation",
+      "state": "done"
+    },
+    {
+      "id": 5,
+      "title": "Instances and realization",
+      "state": "done"
+    },
+    {
+      "id": 6,
+      "title": "Nodes and evaluation",
+      "state": "done"
+    },
+    {
+      "id": 7,
+      "title": "Geometry bridge",
+      "state": "done"
+    },
+    {
+      "id": 8,
+      "title": "Curves in nodes",
+      "state": "done"
+    },
+    {
+      "id": 9,
+      "title": "Distribution and references",
+      "state": "done"
+    },
+    {
+      "id": 10,
+      "title": "Runnable graph demo",
+      "state": "done"
+    },
+    {
+      "id": 11,
+      "title": "Direct curve modeling",
+      "state": "done"
+    },
+    {
+      "id": 12,
+      "title": "Release and governance",
+      "state": "active"
+    }
+  ],
+  "next_targets": [
+    "Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.",
+    "Port a narrow mesh operation like merge-by-distance or triangulate.",
+    "Add notarization only after Apple credentials exist."
+  ],
+  "notes": [
+    "The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.",
+    "The next meaningful improvement is still in `src/`, not in more planning artifacts."
+  ]
+}

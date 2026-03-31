@@ -6,6 +6,8 @@
   "scripts": {
     "ralph": "bash scripts/ralph-loop.sh",
     "team": "bash scripts/team-loop.sh",
+    "status:update": "node scripts/update-status.mjs",
+    "status:check": "node scripts/update-status.mjs --check",
     "reference:setup": "bash scripts/add-reference-remote.sh",
     "dist": "bash scripts/package-release.sh",
     "sign:macos": "bash scripts/sign-macos-release.sh",
