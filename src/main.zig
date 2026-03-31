@@ -24,6 +24,39 @@ pub fn main() !void {
     const stderr = &stderr_writer.interface;
 
     const command = args[1];
+    if (std.mem.eql(u8, command, "geometry-import")) {
+        if (args.len < 3 or args.len > 4) {
+            try printUsage();
+            return;
+        }
+
+        const input_path = args[2];
+        const output_path = if (args.len == 4) args[3] else null;
+        if (output_path) |path| {
+            if (try pathsResolveEqual(allocator, input_path, path)) {
+                return error.ImportOutputMatchesInput;
+            }
+        }
+
+        var imported = try readImportedGeometry(allocator, input_path);
+        defer imported.deinit();
+        switch (imported) {
+            .geometry => |*geometry| {
+                try printGeometrySummary(stdout, command, geometry);
+                if (output_path) |path| {
+                    try writeGeometryOutput(geometry, path);
+                    try stdout.print("wrote {s}\n", .{path});
+                }
+                try stdout.flush();
+                return;
+            },
+            .parse_failure => |failure| {
+                try printObjParseFailure(stderr, input_path, failure);
+                try stderr.flush();
+                return error.InvalidImportedGeometry;
+            },
+        }
+    }
     if (std.mem.eql(u8, command, "mesh-import")) {
         if (args.len < 3 or args.len > 4) {
             try printUsage();
@@ -120,11 +153,12 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-import|mesh-edges|graph-demo> [output-path]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
         \\  zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj
+        \\  zig build run -- geometry-import zig-out/graph-demo.obj zig-out/graph-demo-roundtrip.obj
         \\  zig build run -- cone zig-out/cone.obj
         \\  zig build run -- curve-wire zig-out/curve-wire.obj
         \\  zig build run -- curve-tube zig-out/curve-tube.obj
@@ -243,6 +277,13 @@ fn writeGeometryOutput(geometry: *const blendzig.geometry.GeometrySet, path: []c
 fn readImportedMesh(allocator: std.mem.Allocator, path: []const u8) !blendzig.io.obj.ReadResult {
     if (std.mem.endsWith(u8, path, ".obj")) {
         return blendzig.io.obj.readFile(allocator, path);
+    }
+    return error.UnsupportedImportFormat;
+}
+
+fn readImportedGeometry(allocator: std.mem.Allocator, path: []const u8) !blendzig.io.obj.GeometryReadResult {
+    if (std.mem.endsWith(u8, path, ".obj")) {
+        return blendzig.io.obj.readGeometryFile(allocator, path);
     }
     return error.UnsupportedImportFormat;
 }
@@ -654,6 +695,33 @@ test "mesh import reads exported obj and preserves topology counts" {
             try std.testing.expectEqual(mesh.vertexCount(), loaded.vertexCount());
             try std.testing.expectEqual(mesh.faceCount(), loaded.faceCount());
             try std.testing.expectEqual(mesh.hasCornerUvs(), loaded.hasCornerUvs());
+        },
+        .parse_failure => |_| return error.TestUnexpectedResult,
+    }
+}
+
+test "geometry import reads exported mixed obj and preserves component counts" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    var geometry = try buildGeometryCommand(std.testing.allocator, "mesh-edges");
+    defer geometry.deinit();
+
+    const temp_root = try temp.dir.realpathAlloc(std.testing.allocator, ".");
+    defer std.testing.allocator.free(temp_root);
+    const input_path = try std.fs.path.join(std.testing.allocator, &.{ temp_root, "mixed.obj" });
+    defer std.testing.allocator.free(input_path);
+    try writeGeometryOutput(&geometry, input_path);
+
+    var imported = try readImportedGeometry(std.testing.allocator, input_path);
+    defer imported.deinit();
+    switch (imported) {
+        .geometry => |*loaded| {
+            try std.testing.expect(loaded.mesh != null);
+            try std.testing.expect(loaded.curves != null);
+            try std.testing.expectEqual(geometry.mesh.?.faceCount(), loaded.mesh.?.faceCount());
+            try std.testing.expectEqual(geometry.curves.?.curvesNum(), loaded.curves.?.curvesNum());
+            try std.testing.expectEqual(geometry.curves.?.pointsNum(), loaded.curves.?.pointsNum());
         },
         .parse_failure => |_| return error.TestUnexpectedResult,
     }

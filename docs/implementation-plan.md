@@ -59,7 +59,7 @@ Status: early.
 Today `blender-zig` is a native macOS CLI. The next step toward an application is not a renderer first; it is a stronger authoring/runtime shell:
 
 - scene recipe loading and saved authoring studies
-- richer mesh IO beyond one-way OBJ, starting with ASCII PLY export and a narrow OBJ import loop
+- richer mesh and mixed-geometry IO beyond one-way OBJ, starting with ASCII PLY export plus narrow OBJ import loops for both meshes and `GeometrySet`
 - repeatable packaging and release artifacts
 - code signing and notarization for distribution
 

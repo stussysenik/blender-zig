@@ -101,6 +101,7 @@
 ## Phase 15: Mesh IO surfaces
 - [x] add ASCII PLY mesh export alongside OBJ
 - [x] add one lightweight mesh import path to close the inspect-edit-export loop
+- [x] add a narrow mixed mesh-plus-curves OBJ import path for `GeometrySet` roundtrips
 - [ ] add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear
 - [ ] widen import beyond the narrow OBJ subset only when a concrete modeling need appears
 

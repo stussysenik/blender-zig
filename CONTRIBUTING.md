@@ -41,6 +41,8 @@ zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 su
 zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
 zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
 zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj
+zig build run -- graph-demo zig-out/graph-demo.obj
+zig build run -- geometry-import zig-out/graph-demo.obj zig-out/graph-demo-roundtrip.obj
 npm run status:update
 npm run status:check
 npm run status:live

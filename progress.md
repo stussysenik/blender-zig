@@ -62,6 +62,7 @@ Open phases:
 - `zig build run -- mesh-pipeline --recipe recipes/cylinder-panel-study.bzrecipe`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
+- `zig build run -- geometry-import zig-out/graph-demo.obj zig-out/graph-demo-roundtrip.obj`
 - `npm run reference:setup`
 - `npm run dist -- <version>`
 
@@ -77,5 +78,5 @@ Open phases:
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
 Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
-Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`.
+Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.
