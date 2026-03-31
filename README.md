@@ -20,7 +20,7 @@ Current status:
 - executable node evaluation for primitive meshes is now in
 - the shared `GeometrySet` bridge between nodes, meshes, and curves is now in
 - curve-producing geometry nodes and curve-first realization nodes are now in
-- reference setup, optimized packaging, and local macOS signing scaffolding are now in
+- reference setup, optimized packaging, and a macOS CLI artifact workflow are now in
 - the next recommended slice is notarization plus broader distribution hardening once Apple credentials exist
 - the OMX-native role prompts live in `.codex/prompts/` and are used by `scripts/ralph-loop.sh`
 

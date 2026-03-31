@@ -68,3 +68,16 @@ The local packaging script can submit for notarization if `APPLE_NOTARY_PROFILE`
 - `APPLE_APP_SPECIFIC_PASSWORD`
 
 Those should be added only when an Apple signing identity and notarization credentials exist.
+
+## CI Artifact Builds
+
+The repo also ships a macOS artifact workflow in [native-artifacts.yml](/Users/s3nik/Desktop/blender-zig/.github/workflows/native-artifacts.yml).
+
+That workflow:
+- installs Zig on `macos-latest`
+- runs `zig build test`
+- packages an optimized native archive
+- smoke-runs the built CLI
+- uploads the `.zip` and checksum as workflow artifacts
+
+If the `APPLE_DEVELOPER_IDENTITY` secret exists, the workflow signs the packaged binary. It does not notarize in CI yet.

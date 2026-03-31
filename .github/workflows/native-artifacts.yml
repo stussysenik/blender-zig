@@ -1,0 +1,45 @@
+name: Native Artifacts
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  macos-artifact:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    env:
+      APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Install Zig
+        run: brew install zig
+      - name: Report packaging mode
+        run: |
+          if [ -n "${APPLE_DEVELOPER_IDENTITY:-}" ]; then
+            echo "signing=enabled"
+          else
+            echo "signing=disabled"
+          fi
+          echo "notarization=disabled-in-ci"
+      - name: Run tests
+        run: zig build test
+      - name: Package optimized artifact
+        run: VERIFY_BEFORE_DIST=0 npm run dist -- "${GITHUB_SHA::12}"
+      - name: Smoke run packaged binary
+        run: ./zig-out/bin/blender-zig sphere | tee smoke.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blender-zig-macos-${{ github.sha }}
+          path: |
+            dist/*.zip
+            dist/*.sha256
+            smoke.txt

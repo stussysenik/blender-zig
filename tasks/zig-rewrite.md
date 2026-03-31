@@ -62,6 +62,7 @@
 - [x] document and automate the local `blender-reference` remote setup
 - [x] add release packaging scripts for optimized native artifacts
 - [x] add macOS signing scaffolding without requiring secrets locally
+- [x] add a macOS artifact workflow that validates optimized builds in CI
 - [ ] add notarization once Apple credentials exist
 
 ## Phase 10: Release and governance

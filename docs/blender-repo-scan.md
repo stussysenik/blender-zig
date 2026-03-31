@@ -145,5 +145,5 @@ Next practical track:
 15. Add optimized packaging steps for native release artifacts.
 16. Add macOS signing and notarization scaffolding without pretending secrets already exist.
 
-Items 14 and 15 are now in the local rewrite, and basic macOS signing scaffolding is in place.
+Items 14 and 15 are now in the local rewrite, a macOS artifact workflow is in place, and basic signing scaffolding exists.
 The next practical ops target is notarization once Apple credentials exist.
