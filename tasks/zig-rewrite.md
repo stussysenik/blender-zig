@@ -86,6 +86,7 @@
 - [x] port a bounded `merge-by-distance` cleanup pass with face and loose-edge remapping
 - [x] port a bounded individual-face inset path with UV-preserving face generation
 - [x] port a bounded dissolve-edge pass that merges two manifold faces into one ngon
+- [x] port a bounded individual-face extrude along the face normal
 - [ ] port another narrow mesh op such as extrude or limited planar dissolve
 
 ## Explicit deferrals

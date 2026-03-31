@@ -29,11 +29,11 @@ Current ops in tree:
 - merge by distance
 - inset
 - shared-edge dissolve
+- individual-face extrude
 - mesh-to-curve and curve-to-mesh conversions
 
 Next high-value ports:
 
-- extrude
 - limited planar dissolve
 - delete/cleanup passes
 - simple subdivision or bevel-like topology growth

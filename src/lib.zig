@@ -25,6 +25,8 @@ pub const geometry = struct {
     pub const curveToMeshSweep = @import("geometry/curves_to_mesh.zig").curveToMeshSweep;
     pub const DissolveOptions = @import("geometry/mesh_dissolve.zig").DissolveOptions;
     pub const dissolveEdges = @import("geometry/mesh_dissolve.zig").dissolveEdges;
+    pub const ExtrudeOptions = @import("geometry/mesh_extrude.zig").ExtrudeOptions;
+    pub const extrudeIndividual = @import("geometry/mesh_extrude.zig").extrudeIndividual;
     pub const InsetOptions = @import("geometry/mesh_inset.zig").InsetOptions;
     pub const insetIndividual = @import("geometry/mesh_inset.zig").insetIndividual;
     pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
@@ -65,6 +67,7 @@ test {
     _ = @import("geometry/curves.zig");
     _ = @import("geometry/curves_to_mesh.zig");
     _ = @import("geometry/mesh_dissolve.zig");
+    _ = @import("geometry/mesh_extrude.zig");
     _ = @import("geometry/mesh_inset.zig");
     _ = @import("geometry/mesh_to_curve.zig");
     _ = @import("geometry/mesh_merge_by_distance.zig");

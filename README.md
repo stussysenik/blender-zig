@@ -21,6 +21,7 @@ Current focus:
 - mesh cleanup ops beginning with merge-by-distance
 - individual-face inset modeling on the face-corner mesh
 - bounded shared-edge dissolve that merges two faces into one ngon
+- bounded individual-face extrusion along the face normal
 - mesh-edge extraction into curves
 - OBJ export so generated geometry can be inspected immediately
 - OMX/Ralphy-inspired team and release scaffolding around the rewrite effort
@@ -30,7 +31,7 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, and `mesh-dissolve`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, and `mesh-extrude`
 - `GeometrySet` OBJ export is in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
 - the next recommended slices are tighter mesh ops and broader export paths, not UI or rendering
@@ -75,6 +76,7 @@ zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
 zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
 zig build run -- mesh-inset zig-out/mesh-inset.obj
 zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
+zig build run -- mesh-extrude zig-out/mesh-extrude.obj
 zig build run -- mesh-edges zig-out/mesh-edges.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
 npm run dist
@@ -85,7 +87,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-edges|graph-demo> [output.obj]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-edges|graph-demo> [output.obj]
 ```
 <!-- status:auto:cli-usage:end -->
 

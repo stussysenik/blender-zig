@@ -49,6 +49,7 @@ Open phases:
 - `zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj`
 - `zig build run -- mesh-inset zig-out/mesh-inset.obj`
 - `zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj`
+- `zig build run -- mesh-extrude zig-out/mesh-extrude.obj`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -57,7 +58,7 @@ Open phases:
 ## Next Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as extrude or limited planar dissolve.
+- Port another narrow mesh operation such as limited planar dissolve or a delete/cleanup pass.
 - Add notarization only after Apple credentials exist.
 
 ## Readout

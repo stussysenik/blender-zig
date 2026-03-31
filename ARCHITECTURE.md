@@ -102,6 +102,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/geometry/primitives/](/Users/s3nik/Desktop/blender-zig/src/geometry/primitives): primitive mesh builders
 - [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig): curve kernel
 - [src/geometry/curves_to_mesh.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves_to_mesh.zig): wire and sweep conversion
+- [src/geometry/mesh_extrude.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_extrude.zig): bounded individual-face extrusion
 - [src/geometry/mesh_to_curve.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_to_curve.zig): edge extraction into curves
 - [src/geometry/realize_instances.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/realize_instances.zig): mixed geometry and realization
 - [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig): OBJ export

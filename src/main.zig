@@ -23,7 +23,7 @@ pub fn main() !void {
     const command = args[1];
     // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
     // regression path for contributors who want to validate one feature in isolation.
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset") or std.mem.eql(u8, command, "mesh-dissolve")) {
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset") or std.mem.eql(u8, command, "mesh-dissolve") or std.mem.eql(u8, command, "mesh-extrude")) {
         var mesh = try buildDerivedMeshCommand(allocator, command);
         defer mesh.deinit();
 
@@ -67,7 +67,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-edges|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-edges|graph-demo> [output.obj]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -79,6 +79,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
         \\  zig build run -- mesh-inset zig-out/mesh-inset.obj
         \\  zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
+        \\  zig build run -- mesh-extrude zig-out/mesh-extrude.obj
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -201,6 +202,11 @@ fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !b
         return blendzig.geometry.dissolveEdges(allocator, &source_mesh, &[_]blendzig.mesh.Edge{
             .{ .a = 2, .b = 3 },
         });
+    }
+    if (std.mem.eql(u8, command, "mesh-extrude")) {
+        var source_mesh = try blendzig.geometry.createGridMesh(allocator, 2, 2, 2.0, 2.0, true);
+        defer source_mesh.deinit();
+        return blendzig.geometry.extrudeIndividual(allocator, &source_mesh, .{ .distance = 1.25 });
     }
     return error.UnknownPrimitive;
 }
@@ -433,4 +439,14 @@ test "mesh dissolve command merges two quads into one ngon" {
     try std.testing.expectEqual(@as(usize, 6), mesh.edges.items.len);
     try std.testing.expect(mesh.hasCornerUvs());
     try std.testing.expectEqual(@as(usize, 6), mesh.corner_uvs.items.len);
+}
+
+test "mesh extrude command builds a capped shell with side walls" {
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-extrude");
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 8), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 6), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 12), mesh.edges.items.len);
+    try std.testing.expect(mesh.hasCornerUvs());
 }
