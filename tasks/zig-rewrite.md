@@ -55,10 +55,15 @@
 
 ## Phase 8: Curves In Nodes
 - [x] add a minimal curve-producing node that outputs `GeometrySet`
-- [ ] add a narrow `realize_instances` node op for curve-first geometry
-- [ ] port node-level mixed mesh and curves realization tests
+- [x] add a narrow `realize_instances` node op for curve-first geometry
+- [x] port node-level mixed mesh and curves realization tests
 
-## Phase 9: Release and governance
+## Phase 9: Distribution And References
+- [ ] document and automate the local `blender-reference` remote setup
+- [ ] add release packaging scripts for optimized native artifacts
+- [ ] add macOS signing and notarization scaffolding without requiring secrets locally
+
+## Phase 10: Release and governance
 - [ ] add conventional commit examples
 - [x] wire semantic-release in CI
 - [x] document signed-commit expectations and limitations

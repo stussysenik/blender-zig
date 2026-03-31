@@ -137,4 +137,10 @@ Next:
 12. Add a narrow `realize_instances` node op over the existing curve-first path.
 13. Port node-level realization tests without widening into a full dependency-graph model.
 
-Item 11 is now in the local rewrite. The next direct target is item 12.
+Items 11, 12, and 13 are now in the local rewrite.
+
+Next practical track:
+
+14. Automate reference-remote setup against the Blender fork.
+15. Add optimized packaging steps for native release artifacts.
+16. Add macOS signing and notarization scaffolding without pretending secrets already exist.
