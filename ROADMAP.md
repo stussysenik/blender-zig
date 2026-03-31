@@ -22,8 +22,8 @@
 
 ## Current Targets
 
+- Add multiple checked-in recipe studies so contributors can resume direct-ops authoring from real examples.
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Add a persisted scene or recipe format beyond argv tokens so authoring sessions can be resumed directly.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

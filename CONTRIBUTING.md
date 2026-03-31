@@ -16,7 +16,8 @@ If you are new here:
 2. Read [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md).
 3. Run `zig build test`.
 4. Run one CLI command such as `zig build run -- curve-tube zig-out/curve-tube.obj`.
-5. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig) and the module behind that command.
+5. Run `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`.
+6. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and the module behind the step you want to study.
 
 That gets you from zero to a concrete, debuggable feature slice quickly.
 
@@ -35,6 +36,7 @@ The standard local loop is:
 ```bash
 zig build test
 zig build run -- <command> [output.obj]
+zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
 npm run status:update
 npm run status:check
 npm run status:live

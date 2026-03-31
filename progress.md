@@ -54,6 +54,7 @@ Open phases:
 - `zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj`
 - `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
 - `zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj`
+- `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -61,11 +62,12 @@ Open phases:
 
 ## Next Targets
 
+- Add multiple checked-in recipe studies so contributors can resume direct-ops authoring from real examples.
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Add a persisted scene or recipe format beyond argv tokens so authoring sessions can be resumed directly.
 - Add notarization only after Apple credentials exist.
 
 ## Readout
 
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
+Saved recipe files now sit on top of the same `Seed` and `StepSpec` model as inline pipeline runs.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

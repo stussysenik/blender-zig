@@ -58,7 +58,7 @@ Status: early.
 
 Today `blender-zig` is a native macOS CLI. The next step toward an application is not a renderer first; it is a stronger authoring/runtime shell:
 
-- scene recipe loading
+- scene recipe loading and saved authoring studies
 - richer export paths beyond OBJ
 - repeatable packaging and release artifacts
 - code signing and notarization for distribution
@@ -93,4 +93,4 @@ The nearest credible milestone is not "replace Blender." It is:
 
 Once those are in place, `blender-zig` becomes a serious standalone geometry application rather than only a rewrite experiment.
 
-The new short-term bridge between 1 and 2 is a composable mesh pipeline CLI: one seed mesh plus a bounded, parameterized stack of existing ops, still without pretending we already have Blender's full scene model.
+The new short-term bridge between 1 and 2 is a composable mesh pipeline CLI: one seed mesh plus a bounded, parameterized stack of existing ops, now runnable either inline or from saved recipe files, still without pretending we already have Blender's full scene model.

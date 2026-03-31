@@ -100,7 +100,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 
 - [src/math.zig](/Users/s3nik/Desktop/blender-zig/src/math.zig): vector math and bounds
 - [src/mesh.zig](/Users/s3nik/Desktop/blender-zig/src/mesh.zig): mesh topology container
-- [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline
+- [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline and recipe loader
 - [src/geometry/primitives/](/Users/s3nik/Desktop/blender-zig/src/geometry/primitives): primitive mesh builders
 - [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig): curve kernel
 - [src/geometry/curves_to_mesh.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves_to_mesh.zig): wire and sweep conversion
@@ -110,6 +110,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/geometry/realize_instances.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/realize_instances.zig): mixed geometry and realization
 - [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig): OBJ export
 - [src/nodes/graph.zig](/Users/s3nik/Desktop/blender-zig/src/nodes/graph.zig): optional typed graph evaluator
+- [recipes/](/Users/s3nik/Desktop/blender-zig/recipes): saved authoring studies for `mesh-pipeline --recipe`
 - [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md): checked backlog
 - [status/hyperdata.json](/Users/s3nik/Desktop/blender-zig/status/hyperdata.json): source of truth for generated status docs
 - [scripts/update-status.mjs](/Users/s3nik/Desktop/blender-zig/scripts/update-status.mjs): generator for `README.md`, `progress.md`, and `ROADMAP.md`

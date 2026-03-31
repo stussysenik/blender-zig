@@ -1,0 +1,10 @@
+# blender-zig pipeline v1
+# This recipe stays intentionally close to the CLI grammar so contributors can
+# move between saved studies and shell runs without learning a second syntax.
+
+seed=grid
+write=../zig-out/grid-study.obj
+
+step=subdivide:repeat=2
+step=extrude:distance=0.75
+step=inset:factor=0.1

@@ -61,38 +61,56 @@ pub const ParsedArgs = struct {
     seed: Seed,
     steps: std.ArrayList(StepSpec),
     output_path: ?[]const u8,
+    owned_recipe_text: ?[]u8 = null,
+    owned_output_path: ?[]u8 = null,
 
     pub fn deinit(self: *ParsedArgs, allocator: std.mem.Allocator) void {
+        if (self.owned_recipe_text) |buffer| allocator.free(buffer);
+        if (self.owned_output_path) |buffer| allocator.free(buffer);
         self.steps.deinit(allocator);
         allocator.destroy(self);
     }
 };
 
 pub fn parseArgs(allocator: std.mem.Allocator, args: []const []const u8) !*ParsedArgs {
-    if (args.len == 0) return error.MissingPipelineSeed;
+    var inline_tokens = std.ArrayList([]const u8).empty;
+    defer inline_tokens.deinit(allocator);
 
-    var parsed = try allocator.create(ParsedArgs);
-    errdefer allocator.destroy(parsed);
-    parsed.* = .{
-        .seed = try Seed.parse(args[0]),
-        .steps = .empty,
-        .output_path = null,
-    };
-    errdefer parsed.steps.deinit(allocator);
+    var recipe_path: ?[]const u8 = null;
+    var output_path: ?[]const u8 = null;
 
-    var index: usize = 1;
+    var index: usize = 0;
     while (index < args.len) : (index += 1) {
         const token = args[index];
         if (std.mem.eql(u8, token, "--write")) {
             if (index + 1 >= args.len) return error.MissingPipelineOutputPath;
-            parsed.output_path = args[index + 1];
+            if (output_path != null) return error.DuplicatePipelineOutputPath;
+            output_path = args[index + 1];
             index += 1;
             continue;
         }
-        try parsed.steps.append(allocator, try parseStepSpec(token));
+        if (std.mem.eql(u8, token, "--recipe")) {
+            if (index + 1 >= args.len) return error.MissingPipelineRecipePath;
+            if (recipe_path != null) return error.DuplicatePipelineRecipePath;
+            recipe_path = args[index + 1];
+            index += 1;
+            continue;
+        }
+        try inline_tokens.append(allocator, token);
     }
 
-    return parsed;
+    if (recipe_path) |path| {
+        if (inline_tokens.items.len != 0) return error.MixedPipelineSources;
+
+        var parsed = try parseRecipeFile(allocator, path);
+        if (output_path) |write_path| {
+            parsed.output_path = write_path;
+        }
+        return parsed;
+    }
+
+    if (inline_tokens.items.len == 0) return error.MissingPipelineSeed;
+    return parseInlineTokens(allocator, inline_tokens.items, output_path);
 }
 
 pub fn runMeshPipeline(
@@ -152,6 +170,103 @@ fn applyStep(
             .distance = step_spec.merge_distance orelse 0.01,
         }),
     };
+}
+
+fn parseInlineTokens(
+    allocator: std.mem.Allocator,
+    inline_tokens: []const []const u8,
+    output_path: ?[]const u8,
+) !*ParsedArgs {
+    var parsed = try allocator.create(ParsedArgs);
+    errdefer allocator.destroy(parsed);
+    parsed.* = .{
+        .seed = try Seed.parse(inline_tokens[0]),
+        .steps = .empty,
+        .output_path = output_path,
+    };
+    errdefer parsed.steps.deinit(allocator);
+
+    for (inline_tokens[1..]) |token| {
+        try parsed.steps.append(allocator, try parseStepSpec(token));
+    }
+
+    return parsed;
+}
+
+// Recipes deliberately reuse the existing step token grammar so contributors only
+// have one modeling vocabulary to learn: the CLI form and the saved-file form match.
+fn parseRecipeFile(allocator: std.mem.Allocator, recipe_path: []const u8) !*ParsedArgs {
+    const recipe_text = try std.fs.cwd().readFileAlloc(allocator, recipe_path, std.math.maxInt(usize));
+    return parseRecipeText(allocator, recipe_text, recipe_path);
+}
+
+fn parseRecipeText(
+    allocator: std.mem.Allocator,
+    owned_recipe_text: []u8,
+    recipe_path: []const u8,
+) !*ParsedArgs {
+    errdefer allocator.free(owned_recipe_text);
+    var parsed = try allocator.create(ParsedArgs);
+    errdefer allocator.destroy(parsed);
+    parsed.* = .{
+        .seed = .grid,
+        .steps = .empty,
+        .output_path = null,
+        .owned_recipe_text = owned_recipe_text,
+        .owned_output_path = null,
+    };
+    errdefer parsed.steps.deinit(allocator);
+    errdefer if (parsed.owned_output_path) |buffer| allocator.free(buffer);
+
+    var seed: ?Seed = null;
+    var lines = std.mem.splitScalar(u8, owned_recipe_text, '\n');
+    while (lines.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+        if (trimmed.len == 0 or trimmed[0] == '#') continue;
+
+        const separator_index = std.mem.indexOfScalar(u8, trimmed, '=') orelse return error.InvalidRecipeLineSyntax;
+        const raw_key = trimmed[0..separator_index];
+        const raw_value = trimmed[separator_index + 1 ..];
+
+        const key = std.mem.trim(u8, raw_key, " \t");
+        const value = std.mem.trim(u8, raw_value, " \t");
+        if (value.len == 0) return error.InvalidRecipeLineSyntax;
+
+        if (std.mem.eql(u8, key, "seed")) {
+            if (seed != null) return error.DuplicateRecipeSeed;
+            seed = try Seed.parse(value);
+            continue;
+        }
+        if (std.mem.eql(u8, key, "write")) {
+            if (parsed.output_path != null) return error.DuplicateRecipeWritePath;
+            const resolved = try resolveRecipeOutputPath(allocator, recipe_path, value);
+            parsed.owned_output_path = resolved;
+            parsed.output_path = resolved;
+            continue;
+        }
+        if (std.mem.eql(u8, key, "step")) {
+            try parsed.steps.append(allocator, try parseStepSpec(value));
+            continue;
+        }
+        return error.UnknownRecipeKey;
+    }
+
+    parsed.seed = seed orelse return error.MissingRecipeSeed;
+    return parsed;
+}
+
+fn resolveRecipeOutputPath(
+    allocator: std.mem.Allocator,
+    recipe_path: []const u8,
+    output_path: []const u8,
+) ![]u8 {
+    if (std.fs.path.isAbsolute(output_path)) {
+        return allocator.dupe(u8, output_path);
+    }
+    const recipe_dir = std.fs.path.dirname(recipe_path) orelse {
+        return allocator.dupe(u8, output_path);
+    };
+    return std.fs.path.resolve(allocator, &.{ recipe_dir, output_path });
 }
 
 fn pickFirstSharedEdge(mesh: *const mesh_mod.Mesh) ?mesh_mod.Edge {
@@ -287,6 +402,59 @@ test "pipeline can parse parameterized steps and output path" {
     try std.testing.expectEqualStrings("zig-out/pipeline.obj", parsed.output_path.?);
 }
 
+test "pipeline can parse a persisted recipe file" {
+    const recipe_text =
+        \\# blender-zig pipeline v1
+        \\seed=grid
+        \\write=zig-out/recipe.obj
+        \\
+        \\step=subdivide:repeat=2
+        \\step=extrude:distance=0.75
+        \\step=inset:factor=0.1
+        \\
+    ;
+    const owned_text = try std.testing.allocator.dupe(u8, recipe_text);
+    var parsed = try parseRecipeText(std.testing.allocator, owned_text, "recipes/grid-study.bzrecipe");
+    defer parsed.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(Seed.grid, parsed.seed);
+    try std.testing.expectEqualStrings("recipes/zig-out/recipe.obj", parsed.output_path.?);
+    try std.testing.expectEqual(@as(usize, 3), parsed.steps.items.len);
+    try std.testing.expectEqual(Step.subdivide, parsed.steps.items[0].step);
+    try std.testing.expectEqual(@as(usize, 2), parsed.steps.items[0].repeat);
+    try std.testing.expectEqual(@as(f32, 0.75), parsed.steps.items[1].extrude_distance.?);
+    try std.testing.expectEqual(@as(f32, 0.1), parsed.steps.items[2].inset_factor.?);
+}
+
+test "pipeline recipe args can override write path" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "authoring.bzrecipe",
+        .data =
+        \\seed=cuboid
+        \\write=zig-out/from-recipe.obj
+        \\step=triangulate
+        ,
+    });
+
+    const recipe_path = try temp.dir.realpathAlloc(std.testing.allocator, "authoring.bzrecipe");
+    defer std.testing.allocator.free(recipe_path);
+
+    var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{
+        "--recipe",
+        recipe_path,
+        "--write",
+        "zig-out/from-cli.obj",
+    });
+    defer parsed.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(Seed.cuboid, parsed.seed);
+    try std.testing.expectEqual(@as(usize, 1), parsed.steps.items.len);
+    try std.testing.expectEqualStrings("zig-out/from-cli.obj", parsed.output_path.?);
+}
+
 test "pipeline can build a parameterized modeling stack" {
     const steps = [_]StepSpec{
         .{ .step = .subdivide, .repeat = 2 },
@@ -302,4 +470,65 @@ test "pipeline can build a parameterized modeling stack" {
 
 test "pipeline rejects unsupported parameters for a step" {
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
+}
+
+test "pipeline recipe rejects mixed inline and file sources" {
+    try std.testing.expectError(error.MixedPipelineSources, parseArgs(std.testing.allocator, &[_][]const u8{
+        "--recipe",
+        "recipes/grid-study.bzrecipe",
+        "grid",
+    }));
+}
+
+test "pipeline recipe requires a recipe path" {
+    try std.testing.expectError(error.MissingPipelineRecipePath, parseArgs(std.testing.allocator, &[_][]const u8{
+        "--recipe",
+    }));
+}
+
+test "pipeline recipe surfaces file loading errors" {
+    try std.testing.expectError(error.FileNotFound, parseArgs(std.testing.allocator, &[_][]const u8{
+        "--recipe",
+        "recipes/does-not-exist.bzrecipe",
+    }));
+}
+
+test "pipeline recipe rejects missing seed" {
+    const recipe_text =
+        \\step=triangulate
+        \\step=extrude:distance=0.5
+        \\
+    ;
+    const owned_text = try std.testing.allocator.dupe(u8, recipe_text);
+    try std.testing.expectError(
+        error.MissingRecipeSeed,
+        parseRecipeText(std.testing.allocator, owned_text, "recipes/missing-seed.bzrecipe"),
+    );
+}
+
+test "pipeline recipe rejects duplicate keys and unknown keys" {
+    {
+        const owned_text = try std.testing.allocator.dupe(
+            u8,
+            \\seed=grid
+            \\seed=cuboid
+            ,
+        );
+        try std.testing.expectError(
+            error.DuplicateRecipeSeed,
+            parseRecipeText(std.testing.allocator, owned_text, "recipes/duplicate-seed.bzrecipe"),
+        );
+    }
+    {
+        const owned_text = try std.testing.allocator.dupe(
+            u8,
+            \\seed=grid
+            \\color=red
+            ,
+        );
+        try std.testing.expectError(
+            error.UnknownRecipeKey,
+            parseRecipeText(std.testing.allocator, owned_text, "recipes/unknown-key.bzrecipe"),
+        );
+    }
 }

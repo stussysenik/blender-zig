@@ -22,6 +22,8 @@ pub fn main() !void {
 
     const command = args[1];
     if (std.mem.eql(u8, command, "mesh-pipeline")) {
+        // `mesh-pipeline` is the current authoring shell: either feed inline step specs
+        // or load the exact same step grammar from a checked-in recipe file.
         var parsed = try blendzig.pipeline.parseArgs(allocator, args[2..]);
         defer parsed.deinit(allocator);
 
@@ -98,6 +100,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj
         \\  zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
         \\  zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
+        \\  zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
