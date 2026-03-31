@@ -53,6 +53,7 @@ pub const geometry = struct {
 
 pub const io = struct {
     pub const obj = @import("io/obj.zig");
+    pub const ply = @import("io/ply.zig");
 };
 
 pub const nodes = struct {
@@ -86,5 +87,6 @@ test {
     _ = @import("geometry/primitives/cylinder_cone.zig");
     _ = @import("geometry/primitives/uv_sphere.zig");
     _ = @import("io/obj.zig");
+    _ = @import("io/ply.zig");
     _ = @import("nodes/graph.zig");
 }

@@ -25,3 +25,9 @@ Rules:
 - `step=` can appear many times and runs in file order.
 - blank lines and `#` comments are ignored.
 - step parameter syntax is exactly the same as inline `mesh-pipeline` usage.
+
+Checked-in studies:
+
+- [grid-study.bzrecipe](/Users/s3nik/Desktop/blender-zig/recipes/grid-study.bzrecipe): subdivide + extrude + inset on the flat grid seed.
+- [cuboid-facet-study.bzrecipe](/Users/s3nik/Desktop/blender-zig/recipes/cuboid-facet-study.bzrecipe): subdivide + extrude + triangulate, written to ASCII PLY.
+- [cylinder-panel-study.bzrecipe](/Users/s3nik/Desktop/blender-zig/recipes/cylinder-panel-study.bzrecipe): inset + extrude + triangulate on the cylindrical seed.

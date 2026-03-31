@@ -37,6 +37,7 @@ The standard local loop is:
 zig build test
 zig build run -- <command> [output.obj]
 zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
+zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
 npm run status:update
 npm run status:check
 npm run status:live

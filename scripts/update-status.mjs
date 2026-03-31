@@ -62,7 +62,7 @@ nextReadme = replaceBlock(nextReadme, "status:auto:quick-start", codeBlock("bash
 nextReadme = replaceBlock(
   nextReadme,
   "status:auto:cli-usage",
-  codeBlock("text", [`blender-zig <${data.cli_commands.join("|")}> [output.obj]`]),
+  codeBlock("text", [`blender-zig <${data.cli_commands.join("|")}> [output-path]`]),
 );
 
 const nextProgress = `# Progress

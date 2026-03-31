@@ -95,7 +95,12 @@
 - [x] add a bounded mesh pipeline CLI that chains existing primitives and ops
 - [x] add parameterized pipeline steps instead of fixed defaults
 - [x] add a persisted scene or recipe format beyond argv tokens
-- [ ] add multiple recipe studies that cover different direct-ops authoring patterns
+- [x] add multiple recipe studies that cover different direct-ops authoring patterns
+
+## Phase 15: Mesh export surfaces
+- [x] add ASCII PLY mesh export alongside OBJ
+- [ ] add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear
+- [ ] add one lightweight mesh import path to close the inspect-edit-export loop
 
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet

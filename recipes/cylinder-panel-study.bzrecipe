@@ -1,0 +1,10 @@
+# blender-zig pipeline v1
+# Uses the cylindrical seed to stress inset plus capped shell growth while staying
+# inside the current direct mesh-op surface.
+
+seed=cylinder
+write=../zig-out/cylinder-panel-study.obj
+
+step=inset:factor=0.14
+step=extrude:distance=0.25
+step=triangulate

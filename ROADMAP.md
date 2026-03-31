@@ -18,12 +18,14 @@
 - [x] Phase 11: Direct curve modeling
 - [~] Phase 12: Release and governance
 - [~] Phase 13: Direct mesh ops
-- [~] Phase 14: Composable local authoring
+- [x] Phase 14: Composable local authoring
+- [~] Phase 15: Mesh export surfaces
 
 ## Current Targets
 
-- Add multiple checked-in recipe studies so contributors can resume direct-ops authoring from real examples.
-- Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
+- Add seed or step parameter overrides inside recipe studies so saved authoring sessions can vary primitive resolution and sizes.
+- Add one lightweight mesh import path to close the inspect-edit-export loop.
+- Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

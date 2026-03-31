@@ -12,7 +12,7 @@ If you want the fastest path into the code, read files in this order:
 4. [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig)
 5. [src/geometry/realize_instances.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/realize_instances.zig)
 6. One concrete op under [src/geometry/](/Users/s3nik/Desktop/blender-zig/src/geometry)
-7. [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig)
+7. [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig) and [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig)
 8. [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig)
 
 That path gives you the executable entrypoint, the public surface, the core mesh model, the curve model, the mixed geometry container, one feature slice, and the export path.
@@ -80,7 +80,7 @@ The default runtime path is:
 1. [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig) parses a command.
 2. It builds a mesh or `GeometrySet` using a function in `src/geometry/`.
 3. It prints a summary so the CLI is also a smoke test surface.
-4. It optionally writes an OBJ via [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig).
+4. It optionally writes an OBJ or ASCII PLY via [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig) and [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig).
 
 This is the shortest path for new work. If a feature can be demonstrated directly, prefer adding a CLI route before routing it through the node runtime.
 
@@ -108,7 +108,8 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/geometry/mesh_subdivide.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_subdivide.zig): bounded shared-midpoint face subdivision
 - [src/geometry/mesh_to_curve.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_to_curve.zig): edge extraction into curves
 - [src/geometry/realize_instances.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/realize_instances.zig): mixed geometry and realization
-- [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig): OBJ export
+- [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig): OBJ export for meshes and mixed geometry
+- [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig): ASCII PLY export for mesh-only output
 - [src/nodes/graph.zig](/Users/s3nik/Desktop/blender-zig/src/nodes/graph.zig): optional typed graph evaluator
 - [recipes/](/Users/s3nik/Desktop/blender-zig/recipes): saved authoring studies for `mesh-pipeline --recipe`
 - [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md): checked backlog

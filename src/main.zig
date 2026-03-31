@@ -32,7 +32,7 @@ pub fn main() !void {
 
         try printMeshSummary(stdout, command, &mesh);
         if (parsed.output_path) |output_path| {
-            try blendzig.io.obj.writeFile(&mesh, output_path);
+            try writeMeshOutput(&mesh, output_path);
             try stdout.print("wrote {s}\n", .{output_path});
         }
         try stdout.flush();
@@ -46,7 +46,7 @@ pub fn main() !void {
 
         try printMeshSummary(stdout, command, &mesh);
         if (args.len >= 3) {
-            try blendzig.io.obj.writeFile(&mesh, args[2]);
+            try writeMeshOutput(&mesh, args[2]);
             try stdout.print("wrote {s}\n", .{args[2]});
         }
         try stdout.flush();
@@ -61,7 +61,7 @@ pub fn main() !void {
 
         try printGeometrySummary(stdout, command, &geometry);
         if (args.len >= 3) {
-            try blendzig.io.obj.writeGeometryFile(&geometry, args[2]);
+            try writeGeometryOutput(&geometry, args[2]);
             try stdout.print("wrote {s}\n", .{args[2]});
         }
         try stdout.flush();
@@ -73,7 +73,7 @@ pub fn main() !void {
 
     try printMeshSummary(stdout, command, &mesh);
     if (args.len >= 3) {
-        try blendzig.io.obj.writeFile(&mesh, args[2]);
+        try writeMeshOutput(&mesh, args[2]);
         try stdout.print("wrote {s}\n", .{args[2]});
     }
     try stdout.flush();
@@ -84,7 +84,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-edges|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -101,6 +101,8 @@ fn printUsage() !void {
         \\  zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
         \\  zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
         \\  zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
+        \\  zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
+        \\  zig build run -- cylinder zig-out/cylinder.ply
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -180,6 +182,25 @@ fn printGeometrySummary(writer: anytype, label: []const u8, geometry: *const ble
             );
         }
     }
+}
+
+fn writeMeshOutput(mesh: *const blendzig.mesh.Mesh, path: []const u8) !void {
+    if (std.mem.endsWith(u8, path, ".ply")) {
+        return blendzig.io.ply.writeFile(mesh, path);
+    }
+    return blendzig.io.obj.writeFile(mesh, path);
+}
+
+fn writeGeometryOutput(geometry: *const blendzig.geometry.GeometrySet, path: []const u8) !void {
+    if (std.mem.endsWith(u8, path, ".ply")) {
+        if (geometry.instances != null) return error.UnsupportedPlyGeometry;
+        if (geometry.curves != null) return error.UnsupportedPlyGeometry;
+        if (geometry.mesh) |*mesh| {
+            return blendzig.io.ply.writeFile(mesh, path);
+        }
+        return error.UnsupportedPlyGeometry;
+    }
+    return blendzig.io.obj.writeGeometryFile(geometry, path);
 }
 
 fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !blendzig.mesh.Mesh {
@@ -515,4 +536,31 @@ test "mesh pipeline command can build a chained modeling stack" {
     try std.testing.expect(mesh.vertexCount() > 20);
     try std.testing.expect(mesh.faceCount() > 20);
     try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "mesh output dispatch can write ply files" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    var mesh = try buildPrimitive(std.testing.allocator, "grid");
+    defer mesh.deinit();
+
+    const temp_root = try temp.dir.realpathAlloc(std.testing.allocator, ".");
+    defer std.testing.allocator.free(temp_root);
+    const output_path = try std.fs.path.join(std.testing.allocator, &.{ temp_root, "grid-test.ply" });
+    defer std.testing.allocator.free(output_path);
+
+    try writeMeshOutput(&mesh, output_path);
+
+    const bytes = try temp.dir.readFileAlloc(std.testing.allocator, "grid-test.ply", 1024 * 1024);
+    defer std.testing.allocator.free(bytes);
+
+    try std.testing.expect(std.mem.startsWith(u8, bytes, "ply\nformat ascii 1.0\n"));
+}
+
+test "geometry output dispatch rejects ply for mixed geometry" {
+    var geometry = try buildGeometryCommand(std.testing.allocator, "mesh-edges");
+    defer geometry.deinit();
+
+    try std.testing.expectError(error.UnsupportedPlyGeometry, writeGeometryOutput(&geometry, "mixed.ply"));
 }

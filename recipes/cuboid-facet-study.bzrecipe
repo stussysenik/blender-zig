@@ -1,0 +1,10 @@
+# blender-zig pipeline v1
+# Starts from a boxy seed, grows panels outward, then preserves the faceted result
+# in ASCII PLY without forcing everything through OBJ.
+
+seed=cuboid
+write=../zig-out/cuboid-facet-study.ply
+
+step=subdivide
+step=extrude:distance=0.35
+step=triangulate

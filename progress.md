@@ -28,11 +28,12 @@ Completed phases:
 - Phase 9: Distribution and references
 - Phase 10: Runnable graph demo
 - Phase 11: Direct curve modeling
+- Phase 14: Composable local authoring
 
 Active phases:
 - Phase 12: Release and governance
 - Phase 13: Direct mesh ops
-- Phase 14: Composable local authoring
+- Phase 15: Mesh export surfaces
 
 Open phases:
 - none
@@ -43,6 +44,7 @@ Open phases:
 - `zig build -Doptimize=ReleaseFast`
 - `zig build run -- sphere`
 - `zig build run -- cylinder zig-out/cylinder.obj`
+- `zig build run -- cylinder zig-out/cylinder.ply`
 - `zig build run -- curve-wire zig-out/curve-wire.obj`
 - `zig build run -- curve-tube zig-out/curve-tube.obj`
 - `zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj`
@@ -55,6 +57,8 @@ Open phases:
 - `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
 - `zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj`
 - `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`
+- `zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe`
+- `zig build run -- mesh-pipeline --recipe recipes/cylinder-panel-study.bzrecipe`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
 - `zig build run -- graph-demo zig-out/graph-demo.obj`
 - `npm run reference:setup`
@@ -62,12 +66,14 @@ Open phases:
 
 ## Next Targets
 
-- Add multiple checked-in recipe studies so contributors can resume direct-ops authoring from real examples.
-- Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
+- Add seed or step parameter overrides inside recipe studies so saved authoring sessions can vary primitive resolution and sizes.
+- Add one lightweight mesh import path to close the inspect-edit-export loop.
+- Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Add notarization only after Apple credentials exist.
 
 ## Readout
 
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
 Saved recipe files now sit on top of the same `Seed` and `StepSpec` model as inline pipeline runs.
+Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.
