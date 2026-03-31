@@ -1,0 +1,26 @@
+{
+  "name": "blender-zig",
+  "private": true,
+  "version": "0.0.0-development",
+  "type": "module",
+  "scripts": {
+    "ralph": "bash scripts/ralph-loop.sh",
+    "team": "bash scripts/team-loop.sh",
+    "release": "semantic-release",
+    "release:dry-run": "semantic-release --dry-run",
+    "commitlint": "commitlint --from HEAD~1 --to HEAD"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.2",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "semantic-release": "^24.2.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

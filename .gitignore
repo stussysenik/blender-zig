@@ -1,0 +1,10 @@
+.state/
+.omx/
+.worktrees/
+.zig-cache/
+zig-out/
+node_modules/
+dist/
+coverage/
+*.log
+*.bak
