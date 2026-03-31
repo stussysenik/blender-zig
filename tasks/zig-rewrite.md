@@ -97,6 +97,7 @@
 - [x] add a persisted scene or recipe format beyond argv tokens
 - [x] add multiple recipe studies that cover different direct-ops authoring patterns
 - [x] add recipe-level seed overrides so saved studies can vary primitive resolution and size
+- [x] add bounded transform and array composition steps so scene-style studies can assemble repeated forms
 
 ## Phase 15: Mesh IO surfaces
 - [x] add ASCII PLY mesh export alongside OBJ

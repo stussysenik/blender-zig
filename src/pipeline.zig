@@ -9,6 +9,7 @@ const mesh_extrude = @import("geometry/mesh_extrude.zig");
 const mesh_inset = @import("geometry/mesh_inset.zig");
 const mesh_merge = @import("geometry/mesh_merge_by_distance.zig");
 const mesh_subdivide = @import("geometry/mesh_subdivide.zig");
+const mesh_transform = @import("geometry/mesh_transform.zig");
 const mesh_triangulate = @import("geometry/mesh_triangulate.zig");
 
 pub const Seed = enum {
@@ -51,6 +52,10 @@ pub const Step = enum {
     dissolve,
     planar_dissolve,
     merge_by_distance,
+    translate,
+    scale,
+    rotate_z,
+    array,
 
     pub fn parse(name: []const u8) !Step {
         if (std.mem.eql(u8, name, "subdivide")) return .subdivide;
@@ -60,6 +65,10 @@ pub const Step = enum {
         if (std.mem.eql(u8, name, "dissolve")) return .dissolve;
         if (std.mem.eql(u8, name, "planar-dissolve")) return .planar_dissolve;
         if (std.mem.eql(u8, name, "merge-by-distance")) return .merge_by_distance;
+        if (std.mem.eql(u8, name, "translate")) return .translate;
+        if (std.mem.eql(u8, name, "scale")) return .scale;
+        if (std.mem.eql(u8, name, "rotate-z")) return .rotate_z;
+        if (std.mem.eql(u8, name, "array")) return .array;
         return error.UnknownPipelineStep;
     }
 };
@@ -72,6 +81,20 @@ pub const StepSpec = struct {
     merge_distance: ?f32 = null,
     planar_normal_epsilon: ?f32 = null,
     planar_plane_epsilon: ?f32 = null,
+    translate_x: ?f32 = null,
+    translate_y: ?f32 = null,
+    translate_z: ?f32 = null,
+    scale_x: ?f32 = null,
+    scale_y: ?f32 = null,
+    scale_z: ?f32 = null,
+    rotate_degrees: ?f32 = null,
+    array_count: ?usize = null,
+    array_count_x: ?usize = null,
+    array_count_y: ?usize = null,
+    array_count_z: ?usize = null,
+    array_offset_x: ?f32 = null,
+    array_offset_y: ?f32 = null,
+    array_offset_z: ?f32 = null,
 };
 
 pub const ParsedArgs = struct {
@@ -218,6 +241,22 @@ fn applyStep(
         .merge_by_distance => mesh_merge.mergeByDistance(allocator, mesh, .{
             .distance = step_spec.merge_distance orelse 0.01,
         }),
+        .translate => mesh_transform.translateMesh(allocator, mesh, .{
+            .x = step_spec.translate_x orelse 0.0,
+            .y = step_spec.translate_y orelse 0.0,
+            .z = step_spec.translate_z orelse 0.0,
+        }),
+        .scale => mesh_transform.scaleMesh(allocator, mesh, .{
+            .x = step_spec.scale_x orelse 1.0,
+            .y = step_spec.scale_y orelse 1.0,
+            .z = step_spec.scale_z orelse 1.0,
+        }),
+        .rotate_z => mesh_transform.rotateMeshZ(
+            allocator,
+            mesh,
+            std.math.degreesToRadians(step_spec.rotate_degrees orelse 0.0),
+        ),
+        .array => applyArrayStep(allocator, mesh, step_spec),
     };
 }
 
@@ -398,12 +437,135 @@ fn parseStepSpec(token: []const u8) !StepSpec {
                         return error.UnsupportedPipelineParameter;
                     }
                 },
+                .translate => {
+                    if (std.mem.eql(u8, key, "x")) {
+                        spec.translate_x = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "y")) {
+                        spec.translate_y = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "z")) {
+                        spec.translate_z = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .scale => {
+                    if (std.mem.eql(u8, key, "x")) {
+                        spec.scale_x = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "y")) {
+                        spec.scale_y = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "z")) {
+                        spec.scale_z = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .rotate_z => {
+                    if (std.mem.eql(u8, key, "degrees")) {
+                        spec.rotate_degrees = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .array => {
+                    if (std.mem.eql(u8, key, "count")) {
+                        spec.array_count = try parsePositiveInt(value_text);
+                    } else if (std.mem.eql(u8, key, "count-x")) {
+                        spec.array_count_x = try parsePositiveInt(value_text);
+                    } else if (std.mem.eql(u8, key, "count-y")) {
+                        spec.array_count_y = try parsePositiveInt(value_text);
+                    } else if (std.mem.eql(u8, key, "count-z")) {
+                        spec.array_count_z = try parsePositiveInt(value_text);
+                    } else if (std.mem.eql(u8, key, "offset-x")) {
+                        spec.array_offset_x = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "offset-y")) {
+                        spec.array_offset_y = try parseFloat(value_text);
+                    } else if (std.mem.eql(u8, key, "offset-z")) {
+                        spec.array_offset_z = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
                 else => return error.UnsupportedPipelineParameter,
             }
         }
     }
 
+    if (spec.step == .array) {
+        const has_axis_counts = spec.array_count_x != null or spec.array_count_y != null or spec.array_count_z != null;
+        if (spec.array_count == null and !has_axis_counts) return error.MissingPipelineArrayCount;
+        if (spec.array_count != null and has_axis_counts) return error.InvalidPipelineArrayMode;
+    }
+
     return spec;
+}
+
+fn applyArrayStep(
+    allocator: std.mem.Allocator,
+    mesh: *const mesh_mod.Mesh,
+    step_spec: StepSpec,
+) !mesh_mod.Mesh {
+    if (step_spec.array_count) |count| {
+        return mesh_transform.duplicateMeshArray(allocator, mesh, .{
+            .count = count,
+            .offset = .{
+                .x = step_spec.array_offset_x orelse 1.0,
+                .y = step_spec.array_offset_y orelse 0.0,
+                .z = step_spec.array_offset_z orelse 0.0,
+            },
+        });
+    }
+
+    var result = try mesh.clone(allocator);
+    errdefer result.deinit();
+
+    try applyAxisArray(
+        allocator,
+        &result,
+        step_spec.array_count_x orelse 1,
+        .{
+            .x = step_spec.array_offset_x orelse 1.0,
+            .y = 0.0,
+            .z = 0.0,
+        },
+    );
+    try applyAxisArray(
+        allocator,
+        &result,
+        step_spec.array_count_y orelse 1,
+        .{
+            .x = 0.0,
+            .y = step_spec.array_offset_y orelse 1.0,
+            .z = 0.0,
+        },
+    );
+    try applyAxisArray(
+        allocator,
+        &result,
+        step_spec.array_count_z orelse 1,
+        .{
+            .x = 0.0,
+            .y = 0.0,
+            .z = step_spec.array_offset_z orelse 1.0,
+        },
+    );
+
+    return result;
+}
+
+fn applyAxisArray(
+    allocator: std.mem.Allocator,
+    mesh: *mesh_mod.Mesh,
+    count: usize,
+    offset: mesh_mod.Vec3,
+) !void {
+    if (count <= 1) return;
+
+    const duplicated = try mesh_transform.duplicateMeshArray(allocator, mesh, .{
+        .count = count,
+        .offset = offset,
+    });
+    mesh.deinit();
+    mesh.* = duplicated;
 }
 
 // Seed overrides use the same `name:param=value,...` shape as steps so saved
@@ -675,6 +837,53 @@ test "pipeline can build a parameterized modeling stack" {
     try std.testing.expect(mesh.hasCornerUvs());
 }
 
+test "pipeline can parse transform and array steps" {
+    const translate = try parseStepSpec("translate:x=1.5,y=-0.25,z=2.0");
+    const scale = try parseStepSpec("scale:x=0.5,y=2.0,z=1.0");
+    const rotate = try parseStepSpec("rotate-z:degrees=22.5");
+    const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
+    const grid_array = try parseStepSpec("array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95");
+
+    try std.testing.expectEqual(Step.translate, translate.step);
+    try std.testing.expectEqual(@as(f32, 1.5), translate.translate_x.?);
+    try std.testing.expectEqual(@as(f32, -0.25), translate.translate_y.?);
+    try std.testing.expectEqual(Step.scale, scale.step);
+    try std.testing.expectEqual(@as(f32, 2.0), scale.scale_y.?);
+    try std.testing.expectEqual(Step.rotate_z, rotate.step);
+    try std.testing.expectEqual(@as(f32, 22.5), rotate.rotate_degrees.?);
+    try std.testing.expectEqual(Step.array, linear_array.step);
+    try std.testing.expectEqual(@as(usize, 6), linear_array.array_count.?);
+    try std.testing.expectEqual(@as(f32, 1.5), linear_array.array_offset_x.?);
+    try std.testing.expectEqual(@as(usize, 4), grid_array.array_count_x.?);
+    try std.testing.expectEqual(@as(usize, 3), grid_array.array_count_y.?);
+}
+
+test "pipeline can build transform and array scenes" {
+    const steps = [_]StepSpec{
+        .{ .step = .scale, .scale_x = 0.45, .scale_y = 0.45, .scale_z = 1.0 },
+        .{ .step = .array, .array_count_x = 4, .array_count_y = 3, .array_offset_x = 1.35, .array_offset_y = 0.95 },
+        .{ .step = .rotate_z, .rotate_degrees = 12.0 },
+        .{ .step = .translate, .translate_x = -2.0, .translate_y = -1.3, .translate_z = 0.0 },
+    };
+
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 5,
+        .verts_y = 4,
+        .size_x = 4.0,
+        .size_y = 2.5,
+        .with_uvs = true,
+    }, &steps);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 240), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 144), mesh.faceCount());
+    try std.testing.expect(mesh.hasCornerUvs());
+    try std.testing.expect(mesh.bounds != null);
+    try std.testing.expect(mesh.bounds.?.max.x > mesh.bounds.?.min.x);
+    try std.testing.expect(mesh.bounds.?.max.y > mesh.bounds.?.min.y);
+}
+
 test "pipeline seed overrides parse equivalently inline and in recipes" {
     const inline_spec = try parseSeedSpec("cylinder:radius=1.25,height=3.0,segments=24,top-cap=true,bottom-cap=false,uvs=true");
     const from_recipe_text =
@@ -778,6 +987,11 @@ test "pipeline rejects invalid seed values and malformed syntax" {
     try std.testing.expectError(error.InvalidPipelineBool, parseSeedSpec("cylinder:top-cap=yes"));
     try std.testing.expectError(error.InvalidPipelineSeedSyntax, parseSeedSpec("grid:verts-x=8=9"));
     try std.testing.expectError(error.InvalidPipelineRepeat, parseSeedSpec("sphere:segments=0"));
+}
+
+test "pipeline rejects invalid array modes" {
+    try std.testing.expectError(error.MissingPipelineArrayCount, parseStepSpec("array:offset-x=1.0"));
+    try std.testing.expectError(error.InvalidPipelineArrayMode, parseStepSpec("array:count=4,count-x=2,offset-x=1.0"));
 }
 
 test "pipeline recipe rejects mixed inline and file sources" {

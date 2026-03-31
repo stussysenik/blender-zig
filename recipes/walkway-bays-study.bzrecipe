@@ -1,0 +1,11 @@
+# blender-zig pipeline v1
+# A compact set of bays that should read as a staggered walkway once the
+# transform steps exist. The offsets are chosen to make the repetition obvious.
+
+seed=cuboid:size-x=1.4,size-y=0.5,size-z=0.4,verts-x=2,verts-y=2,verts-z=2,uvs=true
+write=../zig-out/walkway-bays-study.obj
+
+step=scale:x=1.0,y=1.2,z=0.75
+step=array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0
+step=rotate-z:degrees=18
+step=translate:x=-3.5,y=-0.9,z=0.0

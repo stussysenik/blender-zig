@@ -1,0 +1,11 @@
+# blender-zig pipeline v1
+# A vertical stack that is meant to show how repeated pieces behave in Z.
+# This is a good contributor test for transform ordering and spacing comments.
+
+seed=cylinder:radius=0.9,height=1.0,segments=16,top-cap=true,bottom-cap=true,uvs=true
+write=../zig-out/tower-stack-study.obj
+
+step=scale:x=1.0,y=1.0,z=0.65
+step=array:count=5,offset-x=0.0,offset-y=0.0,offset-z=1.15
+step=rotate-z:degrees=22.5
+step=translate:x=0.0,y=0.0,z=0.0

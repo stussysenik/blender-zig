@@ -58,6 +58,9 @@ Open phases:
 - `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
 - `zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj`
 - `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`
+- `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`
+- `zig build run -- mesh-pipeline --recipe recipes/walkway-bays-study.bzrecipe`
+- `zig build run -- mesh-pipeline --recipe recipes/tower-stack-study.bzrecipe`
 - `zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe`
 - `zig build run -- mesh-pipeline --recipe recipes/cylinder-panel-study.bzrecipe`
 - `zig build run -- mesh-edges zig-out/mesh-edges.obj`
@@ -68,15 +71,16 @@ Open phases:
 
 ## Next Targets
 
+- Add multi-part scene composition so authoring can combine more than one seed or imported asset in a single saved study.
+- Port another narrow mesh op such as a delete/cleanup pass or bevel-like growth to strengthen direct modeling.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
-- Broaden saved studies from single object recipes into small reusable scene-style authoring sets.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.
 
 ## Readout
 
 The repo is past bootstrap and now behaves like a native Zig geometry tool on macOS.
-Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides.
+Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides, bounded transforms, and array composition.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

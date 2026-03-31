@@ -171,7 +171,9 @@ fn printUsage() !void {
         \\  zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj
         \\  zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
         \\  zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
+        \\  zig build run -- mesh-pipeline grid:verts-x=5,verts-y=4,size-x=4.0,size-y=2.5 scale:x=0.45,y=0.45,z=1.0 array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95 rotate-z:degrees=12 translate:x=-2.0,y=-1.3,z=0.0 --write zig-out/plaza.obj
         \\  zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
+        \\  zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe
         \\  zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
         \\  zig build run -- cylinder zig-out/cylinder.ply
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj

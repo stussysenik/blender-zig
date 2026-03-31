@@ -80,7 +80,7 @@ The default runtime path is:
 1. [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig) parses a command.
 2. It builds a mesh or `GeometrySet` using a function in `src/geometry/`.
 3. It prints a summary so the CLI is also a smoke test surface.
-4. It optionally writes an OBJ or ASCII PLY, `mesh-import` reads a narrow ASCII OBJ mesh subset, and `geometry-import` reads mixed face-plus-line OBJ geometry via [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig) and [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig).
+4. It optionally writes an OBJ or ASCII PLY, `mesh-import` reads a narrow ASCII OBJ mesh subset, `geometry-import` reads mixed face-plus-line OBJ geometry, and `mesh-pipeline` now covers bounded transform and array composition via [src/io/obj.zig](/Users/s3nik/Desktop/blender-zig/src/io/obj.zig), [src/io/ply.zig](/Users/s3nik/Desktop/blender-zig/src/io/ply.zig), and [src/geometry/mesh_transform.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_transform.zig).
 
 This is the shortest path for new work. If a feature can be demonstrated directly, prefer adding a CLI route before routing it through the node runtime.
 
@@ -101,6 +101,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/math.zig](/Users/s3nik/Desktop/blender-zig/src/math.zig): vector math and bounds
 - [src/mesh.zig](/Users/s3nik/Desktop/blender-zig/src/mesh.zig): mesh topology container
 - [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline, seed/step parser, and recipe loader
+- [src/geometry/mesh_transform.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_transform.zig): bounded mesh-space translate, scale, rotate-z, and array helpers
 - [src/geometry/primitives/](/Users/s3nik/Desktop/blender-zig/src/geometry/primitives): primitive mesh builders
 - [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig): curve kernel
 - [src/geometry/curves_to_mesh.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves_to_mesh.zig): wire and sweep conversion
