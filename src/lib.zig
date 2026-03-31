@@ -37,6 +37,8 @@ pub const geometry = struct {
     pub const dissolvePlanar = @import("geometry/mesh_dissolve.zig").dissolvePlanar;
     pub const ExtrudeOptions = @import("geometry/mesh_extrude.zig").ExtrudeOptions;
     pub const extrudeIndividual = @import("geometry/mesh_extrude.zig").extrudeIndividual;
+    pub const ExtrudeRegionOptions = @import("geometry/mesh_extrude_region.zig").ExtrudeRegionOptions;
+    pub const extrudeRegion = @import("geometry/mesh_extrude_region.zig").extrudeRegion;
     pub const InsetOptions = @import("geometry/mesh_inset.zig").InsetOptions;
     pub const insetIndividual = @import("geometry/mesh_inset.zig").insetIndividual;
     pub const SubdivideOptions = @import("geometry/mesh_subdivide.zig").SubdivideOptions;
@@ -84,6 +86,7 @@ test {
     _ = @import("geometry/mesh_delete_loose.zig");
     _ = @import("geometry/mesh_dissolve.zig");
     _ = @import("geometry/mesh_extrude.zig");
+    _ = @import("geometry/mesh_extrude_region.zig");
     _ = @import("geometry/mesh_inset.zig");
     _ = @import("geometry/mesh_transform.zig");
     _ = @import("geometry/mesh_subdivide.zig");

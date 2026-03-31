@@ -55,6 +55,7 @@ Open phases:
 - `zig build run -- mesh-inset zig-out/mesh-inset.obj`
 - `zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj`
 - `zig build run -- mesh-extrude zig-out/mesh-extrude.obj`
+- `zig build run -- mesh-extrude-region zig-out/mesh-extrude-region.obj`
 - `zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj`
 - `zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj`
 - `zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj`
@@ -74,7 +75,7 @@ Open phases:
 
 ## Next Targets
 
-- Port a bevel-like or region-growth mesh op to strengthen direct modeling beyond cleanup passes.
+- Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current extrude and inset stack.
 - Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
@@ -86,6 +87,7 @@ The repo is past bootstrap and now behaves like a native Zig geometry tool on ma
 Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides, bounded transforms, and array composition.
 Composed scene files can now combine multiple `.bzrecipe` studies or imported `.obj` meshes through `mesh-scene`, with scene-level translate, scale, and rotate-z placement tokens on each part.
 Direct cleanup now includes `mesh-delete-loose`, which removes loose edges and isolated points while compacting the surviving face mesh deterministically.
+Direct modeling now includes `mesh-extrude-region`, which extrudes the mesh-wide open face region as one shell and bridges only the boundary instead of building per-face internal walls.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

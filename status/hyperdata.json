@@ -9,6 +9,7 @@
     "individual-face inset modeling on the face-corner mesh",
     "bounded shared-edge dissolve that merges two faces into one ngon",
     "bounded individual-face extrusion along the face normal",
+    "bounded open-region extrusion along averaged vertex normals",
     "limited planar dissolve for coplanar shared edges",
     "bounded face subdivision with shared edge midpoints",
     "parameterized mesh pipeline CLI over existing primitives and ops",
@@ -24,7 +25,7 @@
   "status": [
     "phase 0 bootstrap through phase 10 runnable graph demo are in",
     "phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`",
-    "phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-planar-dissolve`, and `mesh-subdivide`",
+    "phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`",
     "phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies",
     "phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import",
     "`GeometrySet` OBJ import and export are in for mixed mesh and curve output",
@@ -67,6 +68,7 @@
     "zig build run -- mesh-inset zig-out/mesh-inset.obj",
     "zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj",
     "zig build run -- mesh-extrude zig-out/mesh-extrude.obj",
+    "zig build run -- mesh-extrude-region zig-out/mesh-extrude-region.obj",
     "zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj",
     "zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj",
     "zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj",
@@ -99,6 +101,7 @@
     "zig build run -- mesh-inset zig-out/mesh-inset.obj",
     "zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj",
     "zig build run -- mesh-extrude zig-out/mesh-extrude.obj",
+    "zig build run -- mesh-extrude-region zig-out/mesh-extrude-region.obj",
     "zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj",
     "zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj",
     "zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj",
@@ -132,6 +135,7 @@
     "mesh-inset",
     "mesh-dissolve",
     "mesh-extrude",
+    "mesh-extrude-region",
     "mesh-planar-dissolve",
     "mesh-subdivide",
     "mesh-pipeline",
@@ -224,7 +228,7 @@
     }
   ],
   "next_targets": [
-    "Port a bevel-like or region-growth mesh op to strengthen direct modeling beyond cleanup passes.",
+    "Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current extrude and inset stack.",
     "Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.",
     "Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.",
     "Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.",
@@ -235,6 +239,7 @@
     "Saved recipe files now sit on top of the same `SeedSpec` and `StepSpec` model as inline pipeline runs, including primitive size and resolution overrides, bounded transforms, and array composition.",
     "Composed scene files can now combine multiple `.bzrecipe` studies or imported `.obj` meshes through `mesh-scene`, with scene-level translate, scale, and rotate-z placement tokens on each part.",
     "Direct cleanup now includes `mesh-delete-loose`, which removes loose edges and isolated points while compacting the surviving face mesh deterministically.",
+    "Direct modeling now includes `mesh-extrude-region`, which extrudes the mesh-wide open face region as one shell and bridges only the boundary instead of building per-face internal walls.",
     "Mesh commands can now write ASCII PLY when the output path ends in `.ply`.",
     "Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.",
     "The next meaningful improvement is still in `src/`, not in more planning artifacts."

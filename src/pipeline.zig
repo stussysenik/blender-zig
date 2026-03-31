@@ -7,6 +7,7 @@ const uv_sphere = @import("geometry/primitives/uv_sphere.zig");
 const mesh_delete_loose = @import("geometry/mesh_delete_loose.zig");
 const mesh_dissolve = @import("geometry/mesh_dissolve.zig");
 const mesh_extrude = @import("geometry/mesh_extrude.zig");
+const mesh_extrude_region = @import("geometry/mesh_extrude_region.zig");
 const mesh_inset = @import("geometry/mesh_inset.zig");
 const mesh_merge = @import("geometry/mesh_merge_by_distance.zig");
 const mesh_subdivide = @import("geometry/mesh_subdivide.zig");
@@ -48,6 +49,7 @@ pub const SeedSpec = struct {
 pub const Step = enum {
     subdivide,
     extrude,
+    extrude_region,
     inset,
     triangulate,
     delete_loose,
@@ -62,6 +64,7 @@ pub const Step = enum {
     pub fn parse(name: []const u8) !Step {
         if (std.mem.eql(u8, name, "subdivide")) return .subdivide;
         if (std.mem.eql(u8, name, "extrude")) return .extrude;
+        if (std.mem.eql(u8, name, "extrude-region")) return .extrude_region;
         if (std.mem.eql(u8, name, "inset")) return .inset;
         if (std.mem.eql(u8, name, "triangulate")) return .triangulate;
         if (std.mem.eql(u8, name, "delete-loose")) return .delete_loose;
@@ -224,6 +227,9 @@ fn applyStep(
     return switch (step_spec.step) {
         .subdivide => mesh_subdivide.subdivideFaces(allocator, mesh, .{}),
         .extrude => mesh_extrude.extrudeIndividual(allocator, mesh, .{
+            .distance = step_spec.extrude_distance orelse 0.5,
+        }),
+        .extrude_region => mesh_extrude_region.extrudeRegion(allocator, mesh, .{
             .distance = step_spec.extrude_distance orelse 0.5,
         }),
         .inset => mesh_inset.insetIndividual(allocator, mesh, .{
@@ -411,7 +417,7 @@ pub fn parseStepSpec(token: []const u8) !StepSpec {
             }
 
             switch (spec.step) {
-                .extrude => {
+                .extrude, .extrude_region => {
                     if (std.mem.eql(u8, key, "distance")) {
                         spec.extrude_distance = try parseFloat(value_text);
                     } else {
@@ -846,6 +852,7 @@ test "pipeline can parse transform and array steps" {
     const scale = try parseStepSpec("scale:x=0.5,y=2.0,z=1.0");
     const rotate = try parseStepSpec("rotate-z:degrees=22.5");
     const cleanup = try parseStepSpec("delete-loose:repeat=2");
+    const extrude_region = try parseStepSpec("extrude-region:distance=0.8");
     const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
     const grid_array = try parseStepSpec("array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95");
 
@@ -858,6 +865,8 @@ test "pipeline can parse transform and array steps" {
     try std.testing.expectEqual(@as(f32, 22.5), rotate.rotate_degrees.?);
     try std.testing.expectEqual(Step.delete_loose, cleanup.step);
     try std.testing.expectEqual(@as(usize, 2), cleanup.repeat);
+    try std.testing.expectEqual(Step.extrude_region, extrude_region.step);
+    try std.testing.expectEqual(@as(f32, 0.8), extrude_region.extrude_distance.?);
     try std.testing.expectEqual(Step.array, linear_array.step);
     try std.testing.expectEqual(@as(usize, 6), linear_array.array_count.?);
     try std.testing.expectEqual(@as(f32, 1.5), linear_array.array_offset_x.?);
@@ -889,6 +898,27 @@ test "pipeline can build transform and array scenes" {
     try std.testing.expect(mesh.bounds != null);
     try std.testing.expect(mesh.bounds.?.max.x > mesh.bounds.?.min.x);
     try std.testing.expect(mesh.bounds.?.max.y > mesh.bounds.?.min.y);
+}
+
+test "pipeline can build region extrude shells" {
+    const steps = [_]StepSpec{
+        .{ .step = .extrude_region, .extrude_distance = 1.0 },
+    };
+
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 3,
+        .verts_y = 2,
+        .size_x = 2.0,
+        .size_y = 1.0,
+        .with_uvs = true,
+    }, &steps);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 12), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 10), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 20), mesh.edges.items.len);
+    try std.testing.expect(mesh.hasCornerUvs());
 }
 
 test "pipeline seed overrides parse equivalently inline and in recipes" {

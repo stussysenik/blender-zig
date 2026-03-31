@@ -31,6 +31,7 @@ Current ops in tree:
 - inset
 - shared-edge dissolve
 - individual-face extrude
+- open-region extrude
 - limited planar dissolve
 - face subdivision with shared edge midpoints
 - mesh-to-curve and curve-to-mesh conversions

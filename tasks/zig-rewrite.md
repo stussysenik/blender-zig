@@ -87,6 +87,7 @@
 - [x] port a bounded individual-face inset path with UV-preserving face generation
 - [x] port a bounded dissolve-edge pass that merges two manifold faces into one ngon
 - [x] port a bounded individual-face extrude along the face normal
+- [x] port a bounded open-region extrude that bridges only the outer boundary
 - [x] port a limited planar dissolve pass for coplanar shared edges
 - [x] port a bounded face subdivision pass with shared edge midpoints
 - [x] port a bounded delete-loose cleanup pass that removes loose edges and isolated points

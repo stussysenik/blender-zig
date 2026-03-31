@@ -124,7 +124,7 @@ pub fn main() !void {
     }
     // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
     // regression path for contributors who want to validate one feature in isolation.
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-delete-loose") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset") or std.mem.eql(u8, command, "mesh-dissolve") or std.mem.eql(u8, command, "mesh-extrude") or std.mem.eql(u8, command, "mesh-planar-dissolve") or std.mem.eql(u8, command, "mesh-subdivide")) {
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-delete-loose") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset") or std.mem.eql(u8, command, "mesh-dissolve") or std.mem.eql(u8, command, "mesh-extrude") or std.mem.eql(u8, command, "mesh-extrude-region") or std.mem.eql(u8, command, "mesh-planar-dissolve") or std.mem.eql(u8, command, "mesh-subdivide")) {
         var mesh = try buildDerivedMeshCommand(allocator, command);
         defer mesh.deinit();
 
@@ -168,7 +168,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -184,6 +184,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-inset zig-out/mesh-inset.obj
         \\  zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
         \\  zig build run -- mesh-extrude zig-out/mesh-extrude.obj
+        \\  zig build run -- mesh-extrude-region zig-out/mesh-extrude-region.obj
         \\  zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj
         \\  zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
         \\  zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
@@ -376,6 +377,11 @@ fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !b
         var source_mesh = try blendzig.geometry.createGridMesh(allocator, 2, 2, 2.0, 2.0, true);
         defer source_mesh.deinit();
         return blendzig.geometry.extrudeIndividual(allocator, &source_mesh, .{ .distance = 1.25 });
+    }
+    if (std.mem.eql(u8, command, "mesh-extrude-region")) {
+        var source_mesh = try blendzig.geometry.createGridMesh(allocator, 3, 2, 2.0, 1.0, true);
+        defer source_mesh.deinit();
+        return blendzig.geometry.extrudeRegion(allocator, &source_mesh, .{ .distance = 1.0 });
     }
     if (std.mem.eql(u8, command, "mesh-planar-dissolve")) {
         var source_mesh = try blendzig.geometry.createGridMesh(allocator, 2, 2, 2.0, 2.0, true);
@@ -663,6 +669,16 @@ test "mesh extrude command builds a capped shell with side walls" {
     try std.testing.expectEqual(@as(usize, 8), mesh.vertexCount());
     try std.testing.expectEqual(@as(usize, 6), mesh.faceCount());
     try std.testing.expectEqual(@as(usize, 12), mesh.edges.items.len);
+    try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "mesh extrude region command bridges only the outer boundary" {
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-extrude-region");
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 12), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 10), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 20), mesh.edges.items.len);
     try std.testing.expect(mesh.hasCornerUvs());
 }
 
