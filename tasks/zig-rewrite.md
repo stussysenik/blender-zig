@@ -85,7 +85,8 @@
 - [x] expose `mesh-triangulate` through the CLI
 - [x] port a bounded `merge-by-distance` cleanup pass with face and loose-edge remapping
 - [x] port a bounded individual-face inset path with UV-preserving face generation
-- [ ] port another narrow mesh op such as dissolve
+- [x] port a bounded dissolve-edge pass that merges two manifold faces into one ngon
+- [ ] port another narrow mesh op such as extrude or limited planar dissolve
 
 ## Explicit deferrals
 - [ ] do not touch rendering, viewport, or UI/editor code yet

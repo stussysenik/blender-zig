@@ -22,7 +22,7 @@
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as dissolve.
+- Port another narrow mesh operation such as extrude or limited planar dissolve.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

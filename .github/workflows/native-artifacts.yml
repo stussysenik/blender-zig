@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - run: npm run status:check
       - name: Install Zig
         run: brew install zig
       - name: Report packaging mode

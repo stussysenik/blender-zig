@@ -8,6 +8,7 @@ Use `npm run status:live` for the current branch and commit readout.
 Contributor surfaces:
 - [ARCHITECTURE.md](/Users/s3nik/Desktop/blender-zig/ARCHITECTURE.md)
 - [CONTRIBUTING.md](/Users/s3nik/Desktop/blender-zig/CONTRIBUTING.md)
+- [implementation-plan.md](/Users/s3nik/Desktop/blender-zig/docs/implementation-plan.md)
 - [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md)
 
 Current focus:
@@ -19,6 +20,7 @@ Current focus:
 - bounded direct mesh ops beginning with triangulation
 - mesh cleanup ops beginning with merge-by-distance
 - individual-face inset modeling on the face-corner mesh
+- bounded shared-edge dissolve that merges two faces into one ngon
 - mesh-edge extraction into curves
 - OBJ export so generated geometry can be inspected immediately
 - OMX/Ralphy-inspired team and release scaffolding around the rewrite effort
@@ -28,7 +30,7 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, and `mesh-inset`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, and `mesh-dissolve`
 - `GeometrySet` OBJ export is in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
 - the next recommended slices are tighter mesh ops and broader export paths, not UI or rendering
@@ -72,6 +74,7 @@ zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
 zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
 zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
 zig build run -- mesh-inset zig-out/mesh-inset.obj
+zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
 zig build run -- mesh-edges zig-out/mesh-edges.obj
 zig build run -- graph-demo zig-out/graph-demo.obj
 npm run dist
@@ -82,7 +85,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-edges|graph-demo> [output.obj]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-inset|mesh-dissolve|mesh-edges|graph-demo> [output.obj]
 ```
 <!-- status:auto:cli-usage:end -->
 

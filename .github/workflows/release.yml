@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - run: npm run status:check
       - run: npm run release:dry-run
         if: github.event_name == 'pull_request'
         env:

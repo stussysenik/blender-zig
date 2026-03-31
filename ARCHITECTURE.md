@@ -134,3 +134,5 @@ These are deliberate limits, not oversights:
 - no full dependency graph
 
 Those would be different projects. The current repo is proving out core geometry and execution slices first.
+
+For the staged path from this geometry kernel toward a usable standalone tool, see [docs/implementation-plan.md](/Users/s3nik/Desktop/blender-zig/docs/implementation-plan.md).
