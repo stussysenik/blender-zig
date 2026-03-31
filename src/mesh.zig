@@ -1,6 +1,9 @@
 const std = @import("std");
 const math = @import("math.zig");
 
+// This is the core polygon container for the rewrite: explicit vertices and edges,
+// plus flat face-corner arrays that mirror Blender's topology model closely enough
+// for narrow algorithm ports.
 pub const Vec2 = math.Vec2;
 pub const Vec3 = math.Vec3;
 pub const Aabb = math.Aabb;

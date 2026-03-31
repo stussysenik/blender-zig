@@ -15,6 +15,8 @@ pub fn triangulateMesh(
         _ = try result.appendVertex(position);
     }
 
+    // Track which source edges came from faces so any extra loose edges can be appended
+    // back afterwards without duplicating the face-derived edge table.
     var face_edge_keys = std.AutoHashMap(u64, void).init(allocator);
     defer face_edge_keys.deinit();
 

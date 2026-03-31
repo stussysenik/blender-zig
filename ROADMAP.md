@@ -5,7 +5,7 @@
 ## Active Head
 
 - branch: `main`
-- head: `42828047`
+- head: `9e82115e`
 
 ## Phase Map
 
@@ -27,7 +27,7 @@
 ## Current Targets
 
 - Add another export path beyond OBJ once the mesh-plus-curves model stabilizes.
-- Port another narrow mesh operation such as merge-by-distance.
+- Port another narrow mesh operation such as dissolve or inset.
 - Add notarization only after Apple credentials exist.
 
 ## Detailed Backlog

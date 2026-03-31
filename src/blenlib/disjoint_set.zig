@@ -1,5 +1,7 @@
 const std = @import("std");
 
+// Union-find is the smallest useful subset of Blender's disjoint-set utilities for
+// grouping vertices and indices during geometry cleanup passes.
 pub const DisjointSet = struct {
     allocator: std.mem.Allocator,
     parents: []u32,

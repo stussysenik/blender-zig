@@ -4,6 +4,8 @@ const geometry_mod = @import("../geometry/realize_instances.zig");
 const math = @import("../math.zig");
 const mesh_mod = @import("../mesh.zig");
 
+// OBJ is the current inspection format for the rewrite: simple, ubiquitous, and a
+// good fit for the mesh-plus-curves model without claiming Blender file parity.
 pub fn write(mesh: *const mesh_mod.Mesh, writer: anytype) !void {
     try writeMeshVertices(mesh, writer);
     try writeMeshUvs(mesh, writer);
@@ -15,6 +17,8 @@ pub fn writeGeometry(geometry: *const geometry_mod.GeometrySet, writer: anytype)
 
     var curve_vertex_offset: u32 = 1;
 
+    // Write mesh vertices first so curve line indices can be offset into the combined
+    // vertex stream when both components exist in one GeometrySet.
     if (geometry.mesh) |*mesh| {
         try writeMeshVertices(mesh, writer);
         curve_vertex_offset += @as(u32, @intCast(mesh.vertexCount()));

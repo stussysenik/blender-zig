@@ -4,6 +4,8 @@ const math = @import("../math.zig");
 const mesh_mod = @import("../mesh.zig");
 const offset_indices = @import("../blenlib/offset_indices.zig");
 
+// Convert explicit mesh edge connectivity into polyline curves. This stays edge-first
+// and intentionally ignores richer spline types until the curve model expands.
 const EdgeAdjacency = struct {
     allocator: std.mem.Allocator,
     offsets: []u32,
@@ -40,6 +42,8 @@ pub fn meshEdgesToCurves(
     defer allocator.free(used_edges);
     @memset(used_edges, false);
 
+    // Start open curves from non-manifold or endpoint vertices, then consume the
+    // remaining untouched edge loops as cyclic curves.
     for (0..mesh.positions.items.len) |vertex_index| {
         const incident = adjacency.incidentRange(vertex_index);
         if (incident.len() == 0 or incident.len() == 2) {

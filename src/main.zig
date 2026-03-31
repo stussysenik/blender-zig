@@ -1,6 +1,8 @@
 const std = @import("std");
 const blendzig = @import("blendzig");
 
+// The CLI is intentionally small and explicit. Each command is both a runnable demo
+// and a stable regression surface for one bounded rewrite slice.
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -21,7 +23,7 @@ pub fn main() !void {
     const command = args[1];
     // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
     // regression path for contributors who want to validate one feature in isolation.
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate")) {
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-merge-by-distance")) {
         var mesh = try buildDerivedMeshCommand(allocator, command);
         defer mesh.deinit();
 
@@ -65,7 +67,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-edges|graph-demo> [output.obj]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-merge-by-distance|mesh-edges|graph-demo> [output.obj]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -74,6 +76,7 @@ fn printUsage() !void {
         \\  zig build run -- curve-tube zig-out/curve-tube.obj
         \\  zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
         \\  zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
+        \\  zig build run -- mesh-merge-by-distance zig-out/mesh-merge-by-distance.obj
         \\  zig build run -- mesh-edges zig-out/mesh-edges.obj
         \\  zig build run -- cuboid zig-out/cuboid.obj
         \\  zig build run -- graph-demo zig-out/graph-demo.obj
@@ -179,6 +182,11 @@ fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !b
         var source_mesh = try blendzig.geometry.createGridMesh(allocator, 6, 5, 6.0, 4.0, true);
         defer source_mesh.deinit();
         return blendzig.geometry.triangulateMesh(allocator, &source_mesh);
+    }
+    if (std.mem.eql(u8, command, "mesh-merge-by-distance")) {
+        var source_mesh = try createDuplicatedSeamMesh(allocator);
+        defer source_mesh.deinit();
+        return blendzig.geometry.mergeByDistance(allocator, &source_mesh, .{ .distance = 0.01 });
     }
     return error.UnknownPrimitive;
 }
@@ -316,6 +324,33 @@ fn createCircleProfile(
     return curves;
 }
 
+fn createDuplicatedSeamMesh(allocator: std.mem.Allocator) !blendzig.mesh.Mesh {
+    var mesh = try blendzig.mesh.Mesh.init(allocator);
+    errdefer mesh.deinit();
+
+    // Build two quads with duplicated seam vertices so merge-by-distance has a
+    // deterministic weld case that changes topology without needing imported assets.
+    _ = try mesh.appendVertex(.{ .x = -1, .y = -1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = 0, .y = -1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = 0, .y = 1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = -1, .y = 1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = 0, .y = -1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = 1, .y = -1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = 1, .y = 1, .z = 0 });
+    _ = try mesh.appendVertex(.{ .x = 0, .y = 1, .z = 0 });
+
+    const face_uvs = [_]blendzig.math.Vec2{
+        .{ .x = 0, .y = 0 },
+        .{ .x = 1, .y = 0 },
+        .{ .x = 1, .y = 1 },
+        .{ .x = 0, .y = 1 },
+    };
+    try mesh.appendFace(&[_]u32{ 0, 1, 2, 3 }, &face_uvs);
+    try mesh.appendFace(&[_]u32{ 4, 5, 6, 7 }, &face_uvs);
+    try mesh.rebuildEdgesFromFaces();
+    return mesh;
+}
+
 test "curve tube command builds faces" {
     var mesh = try buildDerivedMeshCommand(std.testing.allocator, "curve-tube");
     defer mesh.deinit();
@@ -354,4 +389,14 @@ test "mesh triangulate command triangulates grid faces" {
         const range = mesh.faceVertexRange(face_index);
         try std.testing.expectEqual(@as(usize, 3), range.end - range.start);
     }
+}
+
+test "mesh merge by distance command welds duplicated seam vertices" {
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-merge-by-distance");
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 6), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 2), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 7), mesh.edges.items.len);
+    try std.testing.expect(mesh.hasCornerUvs());
 }

@@ -1,5 +1,7 @@
 const std = @import("std");
 
+// `lib.zig` is the public map of the rewrite. Export every supported subsystem here so
+// contributors can discover the runtime surface without scanning the whole tree.
 pub const math = @import("math.zig");
 pub const mesh = @import("mesh.zig");
 
@@ -22,6 +24,8 @@ pub const geometry = struct {
     pub const curveToWireMesh = @import("geometry/curves_to_mesh.zig").curveToWireMesh;
     pub const curveToMeshSweep = @import("geometry/curves_to_mesh.zig").curveToMeshSweep;
     pub const meshEdgesToCurves = @import("geometry/mesh_to_curve.zig").meshEdgesToCurves;
+    pub const MergeByDistanceOptions = @import("geometry/mesh_merge_by_distance.zig").MergeByDistanceOptions;
+    pub const mergeByDistance = @import("geometry/mesh_merge_by_distance.zig").mergeByDistance;
     pub const triangulateMesh = @import("geometry/mesh_triangulate.zig").triangulateMesh;
     pub const GeometrySet = @import("geometry/realize_instances.zig").GeometrySet;
     pub const Instances = @import("geometry/realize_instances.zig").Instances;
@@ -57,6 +61,7 @@ test {
     _ = @import("geometry/curves.zig");
     _ = @import("geometry/curves_to_mesh.zig");
     _ = @import("geometry/mesh_to_curve.zig");
+    _ = @import("geometry/mesh_merge_by_distance.zig");
     _ = @import("geometry/mesh_triangulate.zig");
     _ = @import("geometry/realize_instances.zig");
     _ = @import("geometry/primitives/line.zig");

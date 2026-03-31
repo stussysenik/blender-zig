@@ -1,5 +1,7 @@
 const std = @import("std");
 
+// Keep the math layer intentionally tiny: just enough vector and bounds support for
+// geometry ports without importing a larger numeric dependency surface.
 pub const Vec2 = struct {
     x: f32,
     y: f32,
