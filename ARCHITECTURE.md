@@ -104,6 +104,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 - [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline, seed/step parser, and recipe loader
 - [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig): multi-part scene recipe parser and mesh composition runtime
 - [src/geometry/mesh_delete_loose.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_delete_loose.zig): bounded cleanup that removes loose edges and isolated points
+- [src/geometry/mesh_delete_faces.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_delete_faces.zig): bounded face deletion that keeps the deleted border as loose wire
 - [src/geometry/mesh_extrude_region.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_extrude_region.zig): bounded region-style shell extrusion for open face regions
 - [src/geometry/mesh_inset_region.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_inset_region.zig): bounded planar region inset that preserves the cap layout and fills the new border ring
 - [src/geometry/mesh_transform.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/mesh_transform.zig): bounded mesh-space translate, scale, rotate-z, and array helpers

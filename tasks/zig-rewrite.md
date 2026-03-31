@@ -91,8 +91,9 @@
 - [x] port a bounded planar region inset that offsets one open face region inward
 - [x] port a limited planar dissolve pass for coplanar shared edges
 - [x] port a bounded face subdivision pass with shared edge midpoints
+- [x] port a bounded face delete/edit pass that keeps the deleted region border as loose wire
 - [x] port a bounded delete-loose cleanup pass that removes loose edges and isolated points
-- [ ] port another narrow mesh op such as bevel-like growth or a bounded face deletion/edit cleanup
+- [ ] port another narrow mesh op such as bevel-like growth or a constrained edge/face selection edit
 
 ## Phase 14: Composable local authoring
 - [x] add a bounded mesh pipeline CLI that chains existing primitives and ops

@@ -23,7 +23,7 @@
 
 ## Current Targets
 
-- Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current individual and region inset/extrude stack.
+- Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current delete/inset/extrude stack.
 - Add more reusable saved studies and scene recipes so authoring keeps moving toward a daily-use geometry tool.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
