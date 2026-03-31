@@ -26,6 +26,23 @@ pub const Seed = enum {
     }
 };
 
+pub const SeedSpec = struct {
+    seed: Seed,
+    verts_x: ?usize = null,
+    verts_y: ?usize = null,
+    verts_z: ?usize = null,
+    size_x: ?f32 = null,
+    size_y: ?f32 = null,
+    size_z: ?f32 = null,
+    radius: ?f32 = null,
+    height: ?f32 = null,
+    segments: ?usize = null,
+    rings: ?usize = null,
+    top_cap: ?bool = null,
+    bottom_cap: ?bool = null,
+    with_uvs: ?bool = null,
+};
+
 pub const Step = enum {
     subdivide,
     extrude,
@@ -58,7 +75,7 @@ pub const StepSpec = struct {
 };
 
 pub const ParsedArgs = struct {
-    seed: Seed,
+    seed: SeedSpec,
     steps: std.ArrayList(StepSpec),
     output_path: ?[]const u8,
     owned_recipe_text: ?[]u8 = null,
@@ -115,7 +132,7 @@ pub fn parseArgs(allocator: std.mem.Allocator, args: []const []const u8) !*Parse
 
 pub fn runMeshPipeline(
     allocator: std.mem.Allocator,
-    seed: Seed,
+    seed: SeedSpec,
     steps: []const StepSpec,
 ) !mesh_mod.Mesh {
     var mesh = try buildSeedMesh(allocator, seed);
@@ -132,12 +149,44 @@ pub fn runMeshPipeline(
     return mesh;
 }
 
-fn buildSeedMesh(allocator: std.mem.Allocator, seed: Seed) !mesh_mod.Mesh {
-    return switch (seed) {
-        .grid => grid.createGridMesh(allocator, 3, 2, 2.0, 1.0, true),
-        .cuboid => cuboid.createCuboidMesh(allocator, .{ .x = 2.0, .y = 2.0, .z = 2.0 }, 2, 2, 2, true),
-        .cylinder => cylinder_cone.createCylinderMesh(allocator, 1.0, 2.0, 16, true, true, true),
-        .sphere => uv_sphere.createUvSphereMesh(allocator, 1.25, 12, 6, true),
+fn buildSeedMesh(allocator: std.mem.Allocator, seed_spec: SeedSpec) !mesh_mod.Mesh {
+    return switch (seed_spec.seed) {
+        .grid => grid.createGridMesh(
+            allocator,
+            seed_spec.verts_x orelse 3,
+            seed_spec.verts_y orelse 2,
+            seed_spec.size_x orelse 2.0,
+            seed_spec.size_y orelse 1.0,
+            seed_spec.with_uvs orelse true,
+        ),
+        .cuboid => cuboid.createCuboidMesh(
+            allocator,
+            .{
+                .x = seed_spec.size_x orelse 2.0,
+                .y = seed_spec.size_y orelse 2.0,
+                .z = seed_spec.size_z orelse 2.0,
+            },
+            seed_spec.verts_x orelse 2,
+            seed_spec.verts_y orelse 2,
+            seed_spec.verts_z orelse 2,
+            seed_spec.with_uvs orelse true,
+        ),
+        .cylinder => cylinder_cone.createCylinderMesh(
+            allocator,
+            seed_spec.radius orelse 1.0,
+            seed_spec.height orelse 2.0,
+            seed_spec.segments orelse 16,
+            seed_spec.top_cap orelse true,
+            seed_spec.bottom_cap orelse true,
+            seed_spec.with_uvs orelse true,
+        ),
+        .sphere => uv_sphere.createUvSphereMesh(
+            allocator,
+            seed_spec.radius orelse 1.25,
+            seed_spec.segments orelse 12,
+            seed_spec.rings orelse 6,
+            seed_spec.with_uvs orelse true,
+        ),
     };
 }
 
@@ -180,7 +229,7 @@ fn parseInlineTokens(
     var parsed = try allocator.create(ParsedArgs);
     errdefer allocator.destroy(parsed);
     parsed.* = .{
-        .seed = try Seed.parse(inline_tokens[0]),
+        .seed = try parseSeedSpec(inline_tokens[0]),
         .steps = .empty,
         .output_path = output_path,
     };
@@ -209,7 +258,7 @@ fn parseRecipeText(
     var parsed = try allocator.create(ParsedArgs);
     errdefer allocator.destroy(parsed);
     parsed.* = .{
-        .seed = .grid,
+        .seed = .{ .seed = .grid },
         .steps = .empty,
         .output_path = null,
         .owned_recipe_text = owned_recipe_text,
@@ -218,7 +267,7 @@ fn parseRecipeText(
     errdefer parsed.steps.deinit(allocator);
     errdefer if (parsed.owned_output_path) |buffer| allocator.free(buffer);
 
-    var seed: ?Seed = null;
+    var seed: ?SeedSpec = null;
     var lines = std.mem.splitScalar(u8, owned_recipe_text, '\n');
     while (lines.next()) |line| {
         const trimmed = std.mem.trim(u8, line, " \t\r");
@@ -234,7 +283,7 @@ fn parseRecipeText(
 
         if (std.mem.eql(u8, key, "seed")) {
             if (seed != null) return error.DuplicateRecipeSeed;
-            seed = try Seed.parse(value);
+            seed = try parseSeedSpec(value);
             continue;
         }
         if (std.mem.eql(u8, key, "write")) {
@@ -357,8 +406,148 @@ fn parseStepSpec(token: []const u8) !StepSpec {
     return spec;
 }
 
+// Seed overrides use the same `name:param=value,...` shape as steps so saved
+// recipes and inline authoring both map onto one small, teachable grammar.
+fn parseSeedSpec(token: []const u8) !SeedSpec {
+    var iterator = std.mem.splitScalar(u8, token, ':');
+    const seed_name = iterator.first();
+    const params_text = iterator.next();
+    if (iterator.next() != null) return error.InvalidPipelineSeedSyntax;
+
+    var spec = SeedSpec{
+        .seed = try Seed.parse(seed_name),
+    };
+
+    var seen_verts_x = false;
+    var seen_verts_y = false;
+    var seen_verts_z = false;
+    var seen_size_x = false;
+    var seen_size_y = false;
+    var seen_size_z = false;
+    var seen_radius = false;
+    var seen_height = false;
+    var seen_segments = false;
+    var seen_rings = false;
+    var seen_top_cap = false;
+    var seen_bottom_cap = false;
+    var seen_with_uvs = false;
+
+    if (params_text) |raw_params| {
+        var params = std.mem.splitScalar(u8, raw_params, ',');
+        while (params.next()) |assignment| {
+            if (assignment.len == 0) continue;
+
+            var pair = std.mem.splitScalar(u8, assignment, '=');
+            const key = pair.first();
+            const value_text = pair.next() orelse return error.InvalidPipelineSeedSyntax;
+            if (pair.next() != null) return error.InvalidPipelineSeedSyntax;
+
+            if (std.mem.eql(u8, key, "verts-x")) {
+                if (spec.seed != .grid and spec.seed != .cuboid) return error.UnsupportedSeedParameter;
+                if (seen_verts_x) return error.DuplicateSeedParameter;
+                seen_verts_x = true;
+                spec.verts_x = try parsePositiveInt(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "verts-y")) {
+                if (spec.seed != .grid and spec.seed != .cuboid) return error.UnsupportedSeedParameter;
+                if (seen_verts_y) return error.DuplicateSeedParameter;
+                seen_verts_y = true;
+                spec.verts_y = try parsePositiveInt(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "verts-z")) {
+                if (spec.seed != .cuboid) return error.UnsupportedSeedParameter;
+                if (seen_verts_z) return error.DuplicateSeedParameter;
+                seen_verts_z = true;
+                spec.verts_z = try parsePositiveInt(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "size-x")) {
+                if (spec.seed != .grid and spec.seed != .cuboid) return error.UnsupportedSeedParameter;
+                if (seen_size_x) return error.DuplicateSeedParameter;
+                seen_size_x = true;
+                spec.size_x = try parseFloat(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "size-y")) {
+                if (spec.seed != .grid and spec.seed != .cuboid) return error.UnsupportedSeedParameter;
+                if (seen_size_y) return error.DuplicateSeedParameter;
+                seen_size_y = true;
+                spec.size_y = try parseFloat(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "size-z")) {
+                if (spec.seed != .cuboid) return error.UnsupportedSeedParameter;
+                if (seen_size_z) return error.DuplicateSeedParameter;
+                seen_size_z = true;
+                spec.size_z = try parseFloat(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "radius")) {
+                if (spec.seed != .cylinder and spec.seed != .sphere) return error.UnsupportedSeedParameter;
+                if (seen_radius) return error.DuplicateSeedParameter;
+                seen_radius = true;
+                spec.radius = try parseFloat(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "height")) {
+                if (spec.seed != .cylinder) return error.UnsupportedSeedParameter;
+                if (seen_height) return error.DuplicateSeedParameter;
+                seen_height = true;
+                spec.height = try parseFloat(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "segments")) {
+                if (spec.seed != .cylinder and spec.seed != .sphere) return error.UnsupportedSeedParameter;
+                if (seen_segments) return error.DuplicateSeedParameter;
+                seen_segments = true;
+                spec.segments = try parsePositiveInt(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "rings")) {
+                if (spec.seed != .sphere) return error.UnsupportedSeedParameter;
+                if (seen_rings) return error.DuplicateSeedParameter;
+                seen_rings = true;
+                spec.rings = try parsePositiveInt(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "top-cap")) {
+                if (spec.seed != .cylinder) return error.UnsupportedSeedParameter;
+                if (seen_top_cap) return error.DuplicateSeedParameter;
+                seen_top_cap = true;
+                spec.top_cap = try parseBool(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "bottom-cap")) {
+                if (spec.seed != .cylinder) return error.UnsupportedSeedParameter;
+                if (seen_bottom_cap) return error.DuplicateSeedParameter;
+                seen_bottom_cap = true;
+                spec.bottom_cap = try parseBool(value_text);
+                continue;
+            }
+            if (std.mem.eql(u8, key, "uvs")) {
+                if (seen_with_uvs) return error.DuplicateSeedParameter;
+                seen_with_uvs = true;
+                spec.with_uvs = try parseBool(value_text);
+                continue;
+            }
+
+            return error.UnsupportedSeedParameter;
+        }
+    }
+
+    return spec;
+}
+
 fn parseFloat(text: []const u8) !f32 {
     return std.fmt.parseFloat(f32, text);
+}
+
+fn parseBool(text: []const u8) !bool {
+    if (std.mem.eql(u8, text, "true")) return true;
+    if (std.mem.eql(u8, text, "false")) return false;
+    return error.InvalidPipelineBool;
 }
 
 fn parsePositiveInt(text: []const u8) !usize {
@@ -382,7 +571,7 @@ fn unpackUndirectedEdge(key: u64) mesh_mod.Edge {
 
 test "pipeline can parse parameterized steps and output path" {
     var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{
-        "grid",
+        "grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0,uvs=true",
         "subdivide:repeat=2",
         "extrude:distance=0.75",
         "inset:factor=0.1",
@@ -391,7 +580,12 @@ test "pipeline can parse parameterized steps and output path" {
     });
     defer parsed.deinit(std.testing.allocator);
 
-    try std.testing.expectEqual(Seed.grid, parsed.seed);
+    try std.testing.expectEqual(Seed.grid, parsed.seed.seed);
+    try std.testing.expectEqual(@as(usize, 8), parsed.seed.verts_x.?);
+    try std.testing.expectEqual(@as(usize, 5), parsed.seed.verts_y.?);
+    try std.testing.expectEqual(@as(f32, 4.0), parsed.seed.size_x.?);
+    try std.testing.expectEqual(@as(f32, 2.0), parsed.seed.size_y.?);
+    try std.testing.expectEqual(true, parsed.seed.with_uvs.?);
     try std.testing.expectEqual(@as(usize, 3), parsed.steps.items.len);
     try std.testing.expectEqual(Step.subdivide, parsed.steps.items[0].step);
     try std.testing.expectEqual(@as(usize, 2), parsed.steps.items[0].repeat);
@@ -405,7 +599,7 @@ test "pipeline can parse parameterized steps and output path" {
 test "pipeline can parse a persisted recipe file" {
     const recipe_text =
         \\# blender-zig pipeline v1
-        \\seed=grid
+        \\seed=grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0,uvs=true
         \\write=zig-out/recipe.obj
         \\
         \\step=subdivide:repeat=2
@@ -417,7 +611,11 @@ test "pipeline can parse a persisted recipe file" {
     var parsed = try parseRecipeText(std.testing.allocator, owned_text, "recipes/grid-study.bzrecipe");
     defer parsed.deinit(std.testing.allocator);
 
-    try std.testing.expectEqual(Seed.grid, parsed.seed);
+    try std.testing.expectEqual(Seed.grid, parsed.seed.seed);
+    try std.testing.expectEqual(@as(usize, 8), parsed.seed.verts_x.?);
+    try std.testing.expectEqual(@as(usize, 5), parsed.seed.verts_y.?);
+    try std.testing.expectEqual(@as(f32, 4.0), parsed.seed.size_x.?);
+    try std.testing.expectEqual(@as(f32, 2.0), parsed.seed.size_y.?);
     try std.testing.expectEqualStrings("recipes/zig-out/recipe.obj", parsed.output_path.?);
     try std.testing.expectEqual(@as(usize, 3), parsed.steps.items.len);
     try std.testing.expectEqual(Step.subdivide, parsed.steps.items[0].step);
@@ -433,7 +631,7 @@ test "pipeline recipe args can override write path" {
     try temp.dir.writeFile(.{
         .sub_path = "authoring.bzrecipe",
         .data =
-        \\seed=cuboid
+        \\seed=cuboid:size-x=3.0,size-y=2.0,size-z=1.5,verts-x=4,verts-y=3,verts-z=2,uvs=true
         \\write=zig-out/from-recipe.obj
         \\step=triangulate
         ,
@@ -450,7 +648,9 @@ test "pipeline recipe args can override write path" {
     });
     defer parsed.deinit(std.testing.allocator);
 
-    try std.testing.expectEqual(Seed.cuboid, parsed.seed);
+    try std.testing.expectEqual(Seed.cuboid, parsed.seed.seed);
+    try std.testing.expectEqual(@as(f32, 3.0), parsed.seed.size_x.?);
+    try std.testing.expectEqual(@as(usize, 4), parsed.seed.verts_x.?);
     try std.testing.expectEqual(@as(usize, 1), parsed.steps.items.len);
     try std.testing.expectEqualStrings("zig-out/from-cli.obj", parsed.output_path.?);
 }
@@ -460,7 +660,14 @@ test "pipeline can build a parameterized modeling stack" {
         .{ .step = .subdivide, .repeat = 2 },
         .{ .step = .extrude, .extrude_distance = 0.75 },
     };
-    var mesh = try runMeshPipeline(std.testing.allocator, .grid, &steps);
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 8,
+        .verts_y = 5,
+        .size_x = 4.0,
+        .size_y = 2.0,
+        .with_uvs = true,
+    }, &steps);
     defer mesh.deinit();
 
     try std.testing.expect(mesh.vertexCount() > 20);
@@ -468,8 +675,109 @@ test "pipeline can build a parameterized modeling stack" {
     try std.testing.expect(mesh.hasCornerUvs());
 }
 
+test "pipeline seed overrides parse equivalently inline and in recipes" {
+    const inline_spec = try parseSeedSpec("cylinder:radius=1.25,height=3.0,segments=24,top-cap=true,bottom-cap=false,uvs=true");
+    const from_recipe_text =
+        \\seed=cylinder:radius=1.25,height=3.0,segments=24,top-cap=true,bottom-cap=false,uvs=true
+        \\step=triangulate
+        \\
+    ;
+    const owned_text = try std.testing.allocator.dupe(u8, from_recipe_text);
+    var parsed = try parseRecipeText(std.testing.allocator, owned_text, "recipes/cylinder-panel-study.bzrecipe");
+    defer parsed.deinit(std.testing.allocator);
+
+    try std.testing.expectEqualDeep(inline_spec, parsed.seed);
+}
+
+test "pipeline seed overrides are deterministic across parameter order" {
+    const ordered = try parseSeedSpec("grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0,uvs=true");
+    const reordered = try parseSeedSpec("grid:size-y=2.0,uvs=true,verts-y=5,size-x=4.0,verts-x=8");
+
+    try std.testing.expectEqualDeep(ordered, reordered);
+}
+
+test "pipeline seed overrides preserve default behavior when defaults are explicit" {
+    const implicit_steps = [_]StepSpec{
+        .{ .step = .subdivide },
+        .{ .step = .extrude, .extrude_distance = 0.75 },
+    };
+    var implicit = try runMeshPipeline(std.testing.allocator, .{ .seed = .grid }, &implicit_steps);
+    defer implicit.deinit();
+
+    var explicit = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 3,
+        .verts_y = 2,
+        .size_x = 2.0,
+        .size_y = 1.0,
+        .with_uvs = true,
+    }, &implicit_steps);
+    defer explicit.deinit();
+
+    try std.testing.expectEqual(implicit.vertexCount(), explicit.vertexCount());
+    try std.testing.expectEqual(implicit.faceCount(), explicit.faceCount());
+    try std.testing.expectEqual(implicit.edges.items.len, explicit.edges.items.len);
+    try std.testing.expectEqualDeep(implicit.corner_verts.items, explicit.corner_verts.items);
+}
+
+test "pipeline seed overrides support partial override merges" {
+    const spec = try parseSeedSpec("sphere:segments=16");
+
+    try std.testing.expectEqual(Seed.sphere, spec.seed);
+    try std.testing.expectEqual(@as(usize, 16), spec.segments.?);
+    try std.testing.expect(spec.radius == null);
+    try std.testing.expect(spec.rings == null);
+    try std.testing.expect(spec.with_uvs == null);
+}
+
+test "pipeline seed overrides build the same mesh inline and from recipe text" {
+    const steps = [_]StepSpec{
+        .{ .step = .subdivide, .repeat = 2 },
+        .{ .step = .extrude, .extrude_distance = 0.75 },
+        .{ .step = .inset, .inset_factor = 0.1 },
+    };
+    const inline_seed = try parseSeedSpec("grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0,uvs=true");
+    var inline_mesh = try runMeshPipeline(std.testing.allocator, inline_seed, &steps);
+    defer inline_mesh.deinit();
+
+    const recipe_text =
+        \\seed=grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0,uvs=true
+        \\step=subdivide:repeat=2
+        \\step=extrude:distance=0.75
+        \\step=inset:factor=0.1
+        \\
+    ;
+    const owned_text = try std.testing.allocator.dupe(u8, recipe_text);
+    var parsed = try parseRecipeText(std.testing.allocator, owned_text, "recipes/grid-study.bzrecipe");
+    defer parsed.deinit(std.testing.allocator);
+
+    var recipe_mesh = try runMeshPipeline(std.testing.allocator, parsed.seed, parsed.steps.items);
+    defer recipe_mesh.deinit();
+
+    try std.testing.expectEqual(inline_mesh.vertexCount(), recipe_mesh.vertexCount());
+    try std.testing.expectEqual(inline_mesh.faceCount(), recipe_mesh.faceCount());
+    try std.testing.expectEqual(inline_mesh.edges.items.len, recipe_mesh.edges.items.len);
+    try std.testing.expectEqualDeep(inline_mesh.positions.items, recipe_mesh.positions.items);
+    try std.testing.expectEqualDeep(inline_mesh.edges.items, recipe_mesh.edges.items);
+    try std.testing.expectEqualDeep(inline_mesh.face_offsets.items, recipe_mesh.face_offsets.items);
+    try std.testing.expectEqualDeep(inline_mesh.corner_verts.items, recipe_mesh.corner_verts.items);
+    try std.testing.expectEqualDeep(inline_mesh.corner_edges.items, recipe_mesh.corner_edges.items);
+    try std.testing.expectEqualDeep(inline_mesh.corner_uvs.items, recipe_mesh.corner_uvs.items);
+}
+
 test "pipeline rejects unsupported parameters for a step" {
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
+}
+
+test "pipeline rejects unsupported or duplicate seed parameters" {
+    try std.testing.expectError(error.UnsupportedSeedParameter, parseSeedSpec("grid:segments=8"));
+    try std.testing.expectError(error.DuplicateSeedParameter, parseSeedSpec("grid:verts-x=8,verts-x=9"));
+}
+
+test "pipeline rejects invalid seed values and malformed syntax" {
+    try std.testing.expectError(error.InvalidPipelineBool, parseSeedSpec("cylinder:top-cap=yes"));
+    try std.testing.expectError(error.InvalidPipelineSeedSyntax, parseSeedSpec("grid:verts-x=8=9"));
+    try std.testing.expectError(error.InvalidPipelineRepeat, parseSeedSpec("sphere:segments=0"));
 }
 
 test "pipeline recipe rejects mixed inline and file sources" {

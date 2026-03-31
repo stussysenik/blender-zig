@@ -2,7 +2,7 @@
 # Uses the cylindrical seed to stress inset plus capped shell growth while staying
 # inside the current direct mesh-op surface.
 
-seed=cylinder
+seed=cylinder:radius=1.25,height=3.0,segments=24,top-cap=true,bottom-cap=true,uvs=true
 write=../zig-out/cylinder-panel-study.obj
 
 step=inset:factor=0.14

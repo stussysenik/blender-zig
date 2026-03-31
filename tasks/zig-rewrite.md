@@ -96,6 +96,7 @@
 - [x] add parameterized pipeline steps instead of fixed defaults
 - [x] add a persisted scene or recipe format beyond argv tokens
 - [x] add multiple recipe studies that cover different direct-ops authoring patterns
+- [x] add recipe-level seed overrides so saved studies can vary primitive resolution and size
 
 ## Phase 15: Mesh IO surfaces
 - [x] add ASCII PLY mesh export alongside OBJ

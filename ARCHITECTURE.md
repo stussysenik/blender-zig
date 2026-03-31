@@ -100,7 +100,7 @@ It is not the main contributor entrypoint. Start with direct geometry ops first.
 
 - [src/math.zig](/Users/s3nik/Desktop/blender-zig/src/math.zig): vector math and bounds
 - [src/mesh.zig](/Users/s3nik/Desktop/blender-zig/src/mesh.zig): mesh topology container
-- [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline and recipe loader
+- [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig): bounded composable modeling pipeline, seed/step parser, and recipe loader
 - [src/geometry/primitives/](/Users/s3nik/Desktop/blender-zig/src/geometry/primitives): primitive mesh builders
 - [src/geometry/curves.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves.zig): curve kernel
 - [src/geometry/curves_to_mesh.zig](/Users/s3nik/Desktop/blender-zig/src/geometry/curves_to_mesh.zig): wire and sweep conversion

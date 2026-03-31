@@ -25,7 +25,7 @@ Current focus:
 - limited planar dissolve for coplanar shared edges
 - bounded face subdivision with shared edge midpoints
 - parameterized mesh pipeline CLI over existing primitives and ops
-- saved mesh-pipeline recipes for repeatable local authoring studies
+- saved mesh-pipeline recipes with seed overrides for repeatable local authoring studies
 - ASCII PLY mesh export alongside OBJ
 - narrow ASCII OBJ mesh import for inspect-edit-export roundtrips
 - mesh-edge extraction into curves
@@ -38,11 +38,11 @@ Current status:
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
 - phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-dissolve`, `mesh-extrude`, `mesh-planar-dissolve`, and `mesh-subdivide`
-- phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, and multiple checked-in studies
+- phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export and a narrow ASCII OBJ import path
 - `GeometrySet` OBJ export is in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
-- the next recommended slices are broader recipe coverage and mesh-plus-curves IO depth, not UI or rendering
+- the next recommended slices are deeper mesh-plus-curves IO and recipe-driven scene breadth, not UI or rendering
 <!-- status:auto:status:end -->
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:
@@ -89,7 +89,7 @@ zig build run -- mesh-dissolve zig-out/mesh-dissolve.obj
 zig build run -- mesh-extrude zig-out/mesh-extrude.obj
 zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj
 zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
-zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
+zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
 zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
 zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
 zig build run -- mesh-pipeline --recipe recipes/cylinder-panel-study.bzrecipe

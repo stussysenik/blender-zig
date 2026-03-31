@@ -2,7 +2,7 @@
 # Starts from a boxy seed, grows panels outward, then preserves the faceted result
 # in ASCII PLY without forcing everything through OBJ.
 
-seed=cuboid
+seed=cuboid:size-x=3.0,size-y=2.0,size-z=1.5,verts-x=4,verts-y=3,verts-z=2,uvs=true
 write=../zig-out/cuboid-facet-study.ply
 
 step=subdivide

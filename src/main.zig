@@ -136,7 +136,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-extrude zig-out/mesh-extrude.obj
         \\  zig build run -- mesh-planar-dissolve zig-out/mesh-planar-dissolve.obj
         \\  zig build run -- mesh-subdivide zig-out/mesh-subdivide.obj
-        \\  zig build run -- mesh-pipeline grid subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
+        \\  zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75 inset:factor=0.1 --write zig-out/pipeline.obj
         \\  zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe
         \\  zig build run -- mesh-pipeline --recipe recipes/cuboid-facet-study.bzrecipe
         \\  zig build run -- cylinder zig-out/cylinder.ply
@@ -592,7 +592,14 @@ test "mesh pipeline command can build a chained modeling stack" {
         .{ .step = .subdivide, .repeat = 2 },
         .{ .step = .extrude, .extrude_distance = 0.75 },
     };
-    var mesh = try blendzig.pipeline.runMeshPipeline(std.testing.allocator, .grid, &steps);
+    var mesh = try blendzig.pipeline.runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 8,
+        .verts_y = 5,
+        .size_x = 4.0,
+        .size_y = 2.0,
+        .with_uvs = true,
+    }, &steps);
     defer mesh.deinit();
 
     try std.testing.expect(mesh.vertexCount() > 20);

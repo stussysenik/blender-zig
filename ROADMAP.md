@@ -23,8 +23,8 @@
 
 ## Current Targets
 
-- Add seed or step parameter overrides inside recipe studies so saved authoring sessions can vary primitive resolution and sizes.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
+- Broaden saved studies from single object recipes into small reusable scene-style authoring sets.
 - Widen import beyond the narrow OBJ subset only when a concrete modeling need appears.
 - Add notarization only after Apple credentials exist.
 
