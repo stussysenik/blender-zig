@@ -69,6 +69,8 @@ Open phases:
 - `zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-inspect recipes/phase-17/persistence-workbench.bzscene`
 - `zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-create-primitive sphere zig-out/phase-19-starter-sphere.bzrecipe`
 - `zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-transform zig-out/phase-19-starter-sphere.bzrecipe 1.2 1.1 0.9 22 2.5 -1.0 0.75`
+- `zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-subdivide zig-out/phase-19-starter-sphere.bzrecipe on`
+- `zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-subdivide zig-out/phase-19-starter-sphere.bzrecipe off`
 - `bash scripts/verify-local.sh`
 - `bash scripts/verify-phase-16.sh`
 - `bash scripts/verify-phase-17.sh`
@@ -79,9 +81,9 @@ Open phases:
 ## Next Targets
 
 - Verify the viewport MVP through tests and a real local run on `recipes/phase-19/viewport-gallery.bzscene`, using `bash scripts/demo-phase-19.sh` as the concrete demo path.
-- Define the first focused-recipe direct modeling slice around one bounded `subdivide` route that preserves the trailing transform block.
-- Implement one shell route that inserts or rewrites the bounded `subdivide` step before the current transform block without losing focus.
-- Keep the next widened export or handoff path on a universal/open format with explicit semantics instead of inventing opaque app-only files.
+- Verify the Ralph/operator flow against `tasks/phase-19.md` and the daily-driver OpenSpec bundle.
+- Confirm the phase remains bounded, testable, and not dependent on rendering beyond the viewport MVP.
+- Keep the first phase-20 reopen hardening slice ready without widening scope beyond the current bounded shell loop.
 
 ## Readout
 
@@ -114,4 +116,5 @@ Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The file-format rule is now explicit: `.bz*` stays human-readable authored or packaged state, while external handoff should prefer universal/open formats with declared semantics.
 The native shell now persists focused recipe-root `scale`, `rotate-z`, and `translate` edits back into `.bzrecipe` text, reruns the helper-backed preview, and keeps the same focused object selected.
-The next meaningful improvement is the first focused recipe direct modeling route: one bounded `subdivide` step exposed through the shell while the manual viewport orbit/pan/zoom proof stays explicitly open.
+The native shell now applies or removes one bounded `subdivide` step immediately before the trailing transform block on focused `.bzrecipe` studies, preserving transform editability and the helper-backed preview rerun.
+The remaining open interaction proof is still the human-confirmed orbit/pan/zoom pass on `recipes/phase-19/viewport-gallery.bzscene`.

@@ -10,6 +10,7 @@ public struct ShellInspectedDocument: Equatable, Sendable {
     public let focusTargets: [ShellFocusTarget]
     public let defaultFocusTargetID: String?
     public let recipeTransformState: ShellRecipeTransformState?
+    public let recipeSubdivideState: ShellRecipeSubdivideState?
 
     public init(
         request: ShellOpenRequest,
@@ -20,7 +21,8 @@ public struct ShellInspectedDocument: Equatable, Sendable {
         isEditable: Bool,
         focusTargets: [ShellFocusTarget] = [],
         defaultFocusTargetID: String? = nil,
-        recipeTransformState: ShellRecipeTransformState? = nil
+        recipeTransformState: ShellRecipeTransformState? = nil,
+        recipeSubdivideState: ShellRecipeSubdivideState? = nil
     ) {
         self.request = request
         self.formatVersion = formatVersion
@@ -31,5 +33,6 @@ public struct ShellInspectedDocument: Equatable, Sendable {
         self.focusTargets = focusTargets
         self.defaultFocusTargetID = defaultFocusTargetID
         self.recipeTransformState = recipeTransformState
+        self.recipeSubdivideState = recipeSubdivideState
     }
 }

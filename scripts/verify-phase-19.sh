@@ -55,6 +55,31 @@ grep -q '^step=scale:x=1.2,y=1.1,z=0.9$' "$CREATED_STUDY"
 grep -q '^step=rotate-z:degrees=22.0$' "$CREATED_STUDY"
 grep -q '^step=translate:x=2.5,y=-1.0,z=0.75$' "$CREATED_STUDY"
 
+subdivide_output="$("$APP_BIN" --smoke-save-recipe-subdivide "$CREATED_STUDY" on)"
+printf '%s\n' "$subdivide_output"
+grep -q "inspect kind=recipe" <<<"$subdivide_output"
+grep -q "subdivide-editable=true" <<<"$subdivide_output"
+grep -q "subdivide-applied=true" <<<"$subdivide_output"
+grep -q "transform-editable=true" <<<"$subdivide_output"
+grep -q "wrote .*phase-19-starter-sphere.obj" <<<"$subdivide_output"
+grep -q '^step=subdivide:repeat=1$' "$CREATED_STUDY"
+subdivide_line="$(grep -n '^step=subdivide:repeat=1$' "$CREATED_STUDY" | cut -d: -f1)"
+scale_line="$(grep -n '^step=scale:x=1.2,y=1.1,z=0.9$' "$CREATED_STUDY" | cut -d: -f1)"
+test "$subdivide_line" -lt "$scale_line"
+
+subdivide_remove_output="$("$APP_BIN" --smoke-save-recipe-subdivide "$CREATED_STUDY" off)"
+printf '%s\n' "$subdivide_remove_output"
+grep -q "inspect kind=recipe" <<<"$subdivide_remove_output"
+grep -q "subdivide-editable=true" <<<"$subdivide_remove_output"
+grep -q "subdivide-applied=false" <<<"$subdivide_remove_output"
+grep -q "transform-editable=true" <<<"$subdivide_remove_output"
+grep -q "transform-scale=(1.2,1.1,0.9)" <<<"$subdivide_remove_output"
+grep -q "wrote .*phase-19-starter-sphere.obj" <<<"$subdivide_remove_output"
+if grep -q '^step=subdivide:repeat=1$' "$CREATED_STUDY"; then
+    echo "unexpected subdivide step remained in $CREATED_STUDY" >&2
+    exit 1
+fi
+
 npm run status:update
 npm run status:check
 npm run status:live

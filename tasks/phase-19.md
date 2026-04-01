@@ -27,10 +27,10 @@ The first four unchecked items are intentionally ordered for `scripts/team-loop.
 - [x] refresh phase notes and execution docs after the transform path lands
 
 ## Round 4: Direct Modeling Exposure
-- [ ] define the first focused-recipe direct modeling slice around one bounded `subdivide` route that preserves the trailing transform block
-- [ ] wire one shell interaction route to invoke the bounded `subdivide` op before the current transform block
-- [ ] verify the exposed `subdivide` route through tests and a real run that uses the same underlying geometry kernel as the CLI
-- [ ] update the OpenSpec daily-driver bundle and generated docs after the interaction route lands
+- [x] define the first focused-recipe direct modeling slice around one bounded `subdivide` route that preserves the trailing transform block
+- [x] wire one shell interaction route to invoke the bounded `subdivide` op before the current transform block
+- [x] verify the exposed `subdivide` route through tests and a real run that uses the same underlying geometry kernel as the CLI
+- [x] update the OpenSpec daily-driver bundle and generated docs after the interaction route lands
 
 ## Round 5: Workflow Follow-Through
 - [ ] verify the Ralph/operator flow against `tasks/phase-19.md` and the daily-driver OpenSpec bundle

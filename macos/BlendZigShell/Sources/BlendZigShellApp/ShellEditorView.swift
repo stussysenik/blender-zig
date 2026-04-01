@@ -26,6 +26,11 @@ struct ShellEditorView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                if let subdivideState = model.recipeSubdivideState {
+                    Divider()
+                    subdivideEditor(subdivideState: subdivideState)
+                }
+
                 if let transformState = model.recipeTransformState {
                     Divider()
                     transformEditor(transformState: transformState)
@@ -41,6 +46,38 @@ struct ShellEditorView: View {
 
     private func saveRecipeTransform() {
         model.saveRecipeTransform()
+    }
+
+    private func toggleRecipeSubdivide() {
+        model.toggleRecipeSubdivide()
+    }
+
+    @ViewBuilder
+    private func subdivideEditor(subdivideState: ShellRecipeSubdivideState) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Focused Recipe Tool")
+                .font(.headline)
+
+            Text("Own one bounded `subdivide` step immediately before the trailing transform block.")
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                Button(
+                    subdivideState.isApplied ? "Remove Subdivide" : "Apply Subdivide",
+                    systemImage: subdivideState.isApplied ? "minus.square" : "square.grid.3x3",
+                    action: toggleRecipeSubdivide
+                )
+                .disabled(!model.canToggleRecipeSubdivide || model.isSaving || model.isOpening)
+
+                Text(subdivideState.isApplied ? "The shell-owned `subdivide` step is active." : "No shell-owned `subdivide` step is active.")
+                    .foregroundStyle(.secondary)
+            }
+
+            if let message = subdivideState.message {
+                Text(message)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     @ViewBuilder

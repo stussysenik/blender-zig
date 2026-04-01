@@ -5,6 +5,7 @@ public enum ShellDocumentStoreError: LocalizedError, Equatable {
     case documentChangedSinceOpen(ShellDocumentKind)
     case inspectOnlyDocument(ShellDocumentKind)
     case unsupportedRecipeTransformEditing
+    case unsupportedRecipeSubdivideEditing
 
     public var errorDescription: String? {
         switch self {
@@ -26,6 +27,8 @@ public enum ShellDocumentStoreError: LocalizedError, Equatable {
             }
         case .unsupportedRecipeTransformEditing:
             "transform editing is unavailable because recipe transform steps are not isolated in a trailing block"
+        case .unsupportedRecipeSubdivideEditing:
+            "subdivide editing is unavailable because the recipe does not isolate one trailing shell-owned subdivide step"
         }
     }
 }

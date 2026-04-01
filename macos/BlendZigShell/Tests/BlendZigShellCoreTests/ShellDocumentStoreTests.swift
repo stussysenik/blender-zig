@@ -349,3 +349,158 @@ import Testing
         ), in: session)
     }
 }
+
+@Test func inspectRecipeSurfacesEditableTrailingSubdivideState() throws {
+    let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+    let recipeURL = tempDirectory.appendingPathComponent("study.bzrecipe")
+    try """
+    format-version=1
+    id=phase-19/test-subdivide-study
+    title=Subdivide Study
+    seed=sphere:radius=1.25,segments=12,rings=6,uvs=true
+    write=/tmp/subdivide-study.obj
+    step=delete-face:index=1
+    step=subdivide
+    step=scale:x=1.2,y=1.1,z=0.9
+    step=rotate-z:degrees=22
+    step=translate:x=2.5,y=-1.0,z=0.75
+    """.write(to: recipeURL, atomically: true, encoding: .utf8)
+
+    let inspection = try ShellDocumentStore().inspect(ShellOpenRequest(url: recipeURL))
+
+    #expect(inspection.recipeSubdivideState == .init(
+        isApplied: true,
+        isEditable: true,
+        message: nil
+    ))
+    #expect(inspection.recipeTransformState?.isEditable == true)
+}
+
+@Test func saveRecipeSubdivideInsertsOwnedStepBeforeTrailingTransformBlock() throws {
+    let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+    let recipeURL = tempDirectory.appendingPathComponent("study.bzrecipe")
+    try """
+    format-version=1
+    id=phase-19/test-subdivide-study
+    title=Subdivide Study
+    seed=grid
+    write=/tmp/subdivide-study.obj
+    step=delete-face:index=1
+    step=scale:x=1.2,y=1.1,z=0.9
+    step=rotate-z:degrees=22
+    step=translate:x=2.5,y=-1.0,z=0.75
+    """.write(to: recipeURL, atomically: true, encoding: .utf8)
+
+    let store = ShellDocumentStore()
+    let session = try store.inspectSession(ShellOpenRequest(url: recipeURL))
+    let updatedSession = try store.saveRecipeSubdivide(true, in: session)
+
+    let text = try String(contentsOf: recipeURL, encoding: .utf8)
+    let expectedText = """
+    format-version=1
+    id=phase-19/test-subdivide-study
+    title=Subdivide Study
+    seed=grid
+    write=/tmp/subdivide-study.obj
+    step=delete-face:index=1
+    step=subdivide:repeat=1
+    step=scale:x=1.2,y=1.1,z=0.9
+    step=rotate-z:degrees=22
+    step=translate:x=2.5,y=-1.0,z=0.75
+    """ + "\n"
+
+    #expect(updatedSession.inspection.recipeSubdivideState == .init(
+        isApplied: true,
+        isEditable: true,
+        message: nil
+    ))
+    #expect(updatedSession.inspection.recipeTransformState?.isEditable == true)
+    #expect(text == expectedText)
+}
+
+@Test func saveRecipeSubdivideRemovesOwnedStepWithoutTouchingTransformBlock() throws {
+    let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+    let recipeURL = tempDirectory.appendingPathComponent("study.bzrecipe")
+    try """
+    format-version=1
+    id=phase-19/test-subdivide-study
+    title=Subdivide Study
+    seed=grid
+    write=/tmp/subdivide-study.obj
+    step=delete-face:index=1
+    step=subdivide:repeat=1
+    step=scale:x=1.2,y=1.1,z=0.9
+    step=rotate-z:degrees=22
+    step=translate:x=2.5,y=-1.0,z=0.75
+    """.write(to: recipeURL, atomically: true, encoding: .utf8)
+
+    let store = ShellDocumentStore()
+    let session = try store.inspectSession(ShellOpenRequest(url: recipeURL))
+    let updatedSession = try store.saveRecipeSubdivide(false, in: session)
+
+    let text = try String(contentsOf: recipeURL, encoding: .utf8)
+    let expectedText = """
+    format-version=1
+    id=phase-19/test-subdivide-study
+    title=Subdivide Study
+    seed=grid
+    write=/tmp/subdivide-study.obj
+    step=delete-face:index=1
+    step=scale:x=1.2,y=1.1,z=0.9
+    step=rotate-z:degrees=22
+    step=translate:x=2.5,y=-1.0,z=0.75
+    """ + "\n"
+
+    #expect(updatedSession.inspection.recipeSubdivideState == .init(
+        isApplied: false,
+        isEditable: true,
+        message: nil
+    ))
+    #expect(updatedSession.inspection.recipeTransformState?.isEditable == true)
+    #expect(text == expectedText)
+}
+
+@Test func saveRecipeSubdivideRejectsNonOwnedHistory() throws {
+    let tempDirectory = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+    let recipeURL = tempDirectory.appendingPathComponent("study.bzrecipe")
+    try """
+    format-version=1
+    id=phase-19/test-subdivide-study
+    title=Subdivide Study
+    seed=grid
+    write=/tmp/subdivide-study.obj
+    step=subdivide:repeat=2
+    step=delete-face:index=1
+    step=scale:x=1.2,y=1.1,z=0.9
+    """.write(to: recipeURL, atomically: true, encoding: .utf8)
+
+    let store = ShellDocumentStore()
+    let request = try ShellOpenRequest(url: recipeURL)
+    let inspection = try store.inspect(request)
+    let session = try store.inspectSession(request)
+
+    #expect(inspection.recipeSubdivideState == .init(
+        isApplied: false,
+        isEditable: false,
+        message: "subdivide editing is unavailable because the recipe does not isolate one trailing shell-owned subdivide step"
+    ))
+    #expect(throws: ShellDocumentStoreError.unsupportedRecipeSubdivideEditing) {
+        _ = try store.saveRecipeSubdivide(true, in: session)
+    }
+}

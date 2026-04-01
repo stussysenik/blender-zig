@@ -26,6 +26,15 @@ actor ShellDocumentSessionService {
         return (updatedSession, result)
     }
 
+    func saveRecipeSubdivide(
+        _ isApplied: Bool,
+        in session: ShellDocumentSession
+    ) throws -> (ShellDocumentSession, ShellOpenResult) {
+        let updatedSession = try documentStore.saveRecipeSubdivide(isApplied, in: session)
+        let result = try runtime.open(updatedSession.inspection.request)
+        return (updatedSession, result)
+    }
+
     func createPrimitiveStudy(
         template: ShellPrimitiveTemplate,
         at url: URL,

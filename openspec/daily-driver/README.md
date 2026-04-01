@@ -15,7 +15,7 @@ Generated status docs are dashboards only. They point here; they do not define s
 
 - Phase 19
 - phase charter: [openspec/daily-driver/phases/phase-19-viewport-and-tools.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-19-viewport-and-tools.md)
-- active slice: [openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md)
+- active slice: [openspec/daily-driver/slices/phase-19-workflow-follow-through.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-19-workflow-follow-through.md)
 
 ## Doc Map
 
@@ -41,6 +41,7 @@ Phase charters:
 
 Current slice spec:
 
+- [slices/phase-19-workflow-follow-through.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-19-workflow-follow-through.md)
 - [slices/phase-19-focused-recipe-subdivide.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md)
 
 Compatibility pointers kept for older links:

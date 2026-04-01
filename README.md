@@ -65,7 +65,7 @@ Current status:
 - the daily-driver planning surface now has a stronger OpenSpec stack: product contract, system contracts, phase charters, and slice specs under `openspec/daily-driver/`
 - phase 17 is complete through `openspec/daily-driver/phases/phase-17-persistence-and-bundles.md`, with replay metadata, bundle format, study coverage, and workflow follow-through all green under `openspec/daily-driver/slices/`
 - phase 18 is complete through `openspec/daily-driver/phases/phase-18-app-shell.md`, with shell-open, inspect/save, and workflow follow-through slices all green on the native macOS path
-- phase 19 is now active through `openspec/daily-driver/phases/phase-19-viewport-and-tools.md`, and the current slice `openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md` targets the first shell-exposed direct modeling op over the focused recipe-root path
+- phase 19 is now active through `openspec/daily-driver/phases/phase-19-viewport-and-tools.md`, and the current slice `openspec/daily-driver/slices/phase-19-workflow-follow-through.md` closes the interaction batch after the focused recipe-root `subdivide` route landed
 - the stable-version path is now explicit in `openspec/daily-driver/system/stable-modeling-and-graph-path.md`: close the viewport MVP, then land object focus plus primitive creation, then persisted transforms, then one direct modeling op before widening into a graph-backed saved study
 - the interchange contract is now explicit in `openspec/daily-driver/system/interchange-and-file-format-strategy.md`: keep `.bz*` as text-first authored state and prefer universal/open formats for external handoff
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
@@ -77,6 +77,7 @@ Current status:
 - phase-17 study coverage now includes `recipes/phase-17/pocket-platform-study.bzrecipe`, `recipes/phase-17/rail-bevel-study.bzrecipe`, and `recipes/phase-17/persistence-workbench.bzscene`, which replay recipe transforms, scene placement, and one imported OBJ reference together
 - the phase-17 verification batch now replays the persistence studies, checks that missing scene parts fail clearly, and reruns the same path from a temporary clean-room worktree before phase 18 starts
 - the new `zig-out/BlendZigShell.app` bundle opens recipes, scenes, and bundles through one native macOS window while delegating replay back to the bundled `blender-zig-direct` helper
+- the native shell now owns one bounded `step=subdivide:repeat=1` route for focused `.bzrecipe` files, preserving the trailing transform block while rerunning the same helper-backed preview path as the CLI
 <!-- status:auto:status:end -->
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:
@@ -156,6 +157,7 @@ zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-inspect recipes/p
 zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-inspect recipes/phase-17/persistence-workbench.bzscene
 zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-create-primitive sphere zig-out/phase-19-starter-sphere.bzrecipe
 zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-transform zig-out/phase-19-starter-sphere.bzrecipe 1.2 1.1 0.9 22 2.5 -1.0 0.75
+zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-subdivide zig-out/phase-19-starter-sphere.bzrecipe on
 bash scripts/verify-phase-17.sh
 bash scripts/verify-phase-18.sh
 zig build run -- geometry-bundle-pack zig-out/phase-17-bundle-mixed.obj zig-out/phase-17-bundle-mixed.bzbundle

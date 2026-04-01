@@ -18,6 +18,7 @@ Demo file:
 Manual viewport checklist:
   - create: choose "New Primitive" and save a starter `.bzrecipe`
   - focus: select one object or scene part in the "Object Focus" panel
+  - subdivide: use "Apply Subdivide" in the "Focused Recipe Tool" section on a recipe-backed study
   - orbit: click-drag in the viewport
   - pan: secondary-drag or two-finger drag
   - zoom: scroll or pinch

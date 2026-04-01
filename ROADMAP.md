@@ -29,9 +29,9 @@
 ## Current Targets
 
 - Verify the viewport MVP through tests and a real local run on `recipes/phase-19/viewport-gallery.bzscene`, using `bash scripts/demo-phase-19.sh` as the concrete demo path.
-- Define the first focused-recipe direct modeling slice around one bounded `subdivide` route that preserves the trailing transform block.
-- Implement one shell route that inserts or rewrites the bounded `subdivide` step before the current transform block without losing focus.
-- Keep the next widened export or handoff path on a universal/open format with explicit semantics instead of inventing opaque app-only files.
+- Verify the Ralph/operator flow against `tasks/phase-19.md` and the daily-driver OpenSpec bundle.
+- Confirm the phase remains bounded, testable, and not dependent on rendering beyond the viewport MVP.
+- Keep the first phase-20 reopen hardening slice ready without widening scope beyond the current bounded shell loop.
 
 ## Detailed Backlog
 

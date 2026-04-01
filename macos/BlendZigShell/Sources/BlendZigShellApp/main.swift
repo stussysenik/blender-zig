@@ -70,6 +70,26 @@ case .smokeCreatePrimitive(let template, let path):
         FileHandle.standardError.write(Data("error: \(message)\n".utf8))
         exit(1)
     }
+case .smokeSaveRecipeSubdivide(let request, let isApplied):
+    do {
+        let store = ShellDocumentStore()
+        let session = try store.inspectSession(request)
+        let updatedSession = try store.saveRecipeSubdivide(isApplied, in: session)
+        FileHandle.standardOutput.write(Data(renderInspection(updatedSession.inspection).utf8))
+
+        let result = try ShellRuntime().open(request)
+        if !result.standardOutput.isEmpty {
+            FileHandle.standardOutput.write(Data(result.standardOutput.utf8))
+        }
+        if !result.standardError.isEmpty {
+            FileHandle.standardError.write(Data(result.standardError.utf8))
+        }
+        exit(result.exitCode)
+    } catch {
+        let message = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+        FileHandle.standardError.write(Data("error: \(message)\n".utf8))
+        exit(1)
+    }
 case .smokeSaveRecipeTransform(let request, let values):
     do {
         let store = ShellDocumentStore()
@@ -154,6 +174,10 @@ private func renderInspection(_ inspection: ShellInspectedDocument) -> String {
         fields.append("transform-scale=\(renderTransformVector(transformState.values.scaleX, transformState.values.scaleY, transformState.values.scaleZ))")
         fields.append("transform-rotate-z=\(transformState.values.rotateZDegrees)")
         fields.append("transform-translate=\(renderTransformVector(transformState.values.translateX, transformState.values.translateY, transformState.values.translateZ))")
+    }
+    if let subdivideState = inspection.recipeSubdivideState {
+        fields.append("subdivide-editable=\(subdivideState.isEditable ? "true" : "false")")
+        fields.append("subdivide-applied=\(subdivideState.isApplied ? "true" : "false")")
     }
     return fields.joined(separator: " ") + "\n"
 }

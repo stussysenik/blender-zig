@@ -6,6 +6,7 @@ public enum ShellLaunchMode: Equatable, Sendable {
     case smokeInspect(ShellOpenRequest)
     case smokePreview(ShellOpenRequest)
     case smokeCreatePrimitive(template: ShellPrimitiveTemplate, path: URL)
+    case smokeSaveRecipeSubdivide(request: ShellOpenRequest, isApplied: Bool)
     case smokeSaveRecipeTransform(request: ShellOpenRequest, values: ShellRecipeTransformValues)
     case smokeSaveTitle(request: ShellOpenRequest, title: String)
     case smokeSaveTitleConflict(request: ShellOpenRequest, externalTitle: String, title: String)
@@ -47,6 +48,16 @@ public enum ShellLaunchMode: Equatable, Sendable {
             return .smokeCreatePrimitive(
                 template: try ShellPrimitiveTemplate(name: filteredArguments[1]),
                 path: URL(fileURLWithPath: filteredArguments[2])
+            )
+        }
+
+        if filteredArguments.first == "--smoke-save-recipe-subdivide" {
+            guard filteredArguments.count == 3 else {
+                throw ShellLaunchModeError.missingSmokeRecipeSubdivideArguments
+            }
+            return .smokeSaveRecipeSubdivide(
+                request: try ShellOpenRequest(url: URL(fileURLWithPath: filteredArguments[1])),
+                isApplied: try parseBooleanToggle(filteredArguments[2], field: "recipe-subdivide")
             )
         }
 
@@ -100,9 +111,11 @@ public enum ShellLaunchMode: Equatable, Sendable {
 public enum ShellLaunchModeError: LocalizedError, Equatable {
     case missingSmokePath
     case missingSmokePrimitiveArguments
+    case missingSmokeRecipeSubdivideArguments
     case missingSmokeRecipeTransformArguments
     case missingSmokeTitle
     case missingConflictSmokeTitles
+    case invalidSmokeBooleanToggle(field: String, value: String)
     case invalidSmokeRecipeTransformValue(field: String, value: String)
     case unexpectedArguments([String])
 
@@ -112,12 +125,16 @@ public enum ShellLaunchModeError: LocalizedError, Equatable {
             "missing path after smoke command"
         case .missingSmokePrimitiveArguments:
             "missing primitive template or path after --smoke-create-primitive"
+        case .missingSmokeRecipeSubdivideArguments:
+            "missing path or mode after --smoke-save-recipe-subdivide"
         case .missingSmokeRecipeTransformArguments:
             "missing path or transform values after --smoke-save-recipe-transform"
         case .missingSmokeTitle:
             "missing title after --smoke-save-title"
         case .missingConflictSmokeTitles:
             "missing external or requested title after --smoke-save-title-conflict"
+        case .invalidSmokeBooleanToggle(let field, let value):
+            "invalid toggle value for \(field): \(value)"
         case .invalidSmokeRecipeTransformValue(let field, let value):
             "invalid numeric value for \(field): \(value)"
         case .unexpectedArguments(let arguments):
@@ -131,4 +148,15 @@ private func parseDouble(_ rawValue: String, field: String) throws -> Double {
         throw ShellLaunchModeError.invalidSmokeRecipeTransformValue(field: field, value: rawValue)
     }
     return value
+}
+
+private func parseBooleanToggle(_ rawValue: String, field: String) throws -> Bool {
+    switch rawValue.lowercased() {
+    case "on", "true", "apply":
+        true
+    case "off", "false", "remove":
+        false
+    default:
+        throw ShellLaunchModeError.invalidSmokeBooleanToggle(field: field, value: rawValue)
+    }
 }

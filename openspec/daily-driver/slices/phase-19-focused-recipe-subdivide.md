@@ -58,12 +58,13 @@ swift test --package-path macos/BlendZigShell
 bash scripts/build-phase-18-shell.sh
 zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-create-primitive sphere zig-out/phase-19-starter-sphere.bzrecipe
 zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-transform zig-out/phase-19-starter-sphere.bzrecipe 1.2 1.1 0.9 22 2.5 -1.0 0.75
+zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-subdivide zig-out/phase-19-starter-sphere.bzrecipe on
+zig-out/BlendZigShell.app/Contents/MacOS/BlendZigShell --smoke-save-recipe-subdivide zig-out/phase-19-starter-sphere.bzrecipe off
 bash scripts/verify-phase-19.sh
 open zig-out/BlendZigShell.app
 ```
 
 ## Follow-On Slice
 
-Once one shell-exposed direct modeling op is stable, the next honest work is to
-promote that same focused recipe model into the first saved graph-backed study
-surface instead of widening phase 19 into a larger editor rewrite.
+Once one shell-exposed direct modeling op is stable, the next honest work is
+`openspec/daily-driver/slices/phase-19-workflow-follow-through.md`.

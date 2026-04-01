@@ -62,6 +62,19 @@ import Testing
     ))
 }
 
+@Test func launchModeBuildsSmokeSaveRecipeSubdivideRequest() throws {
+    let mode = try ShellLaunchMode.parse(arguments: [
+        "BlendZigShell",
+        "--smoke-save-recipe-subdivide",
+        "/tmp/starter-sphere.bzrecipe",
+        "on",
+    ])
+    #expect(mode == .smokeSaveRecipeSubdivide(
+        request: try ShellOpenRequest(url: .init(fileURLWithPath: "/tmp/starter-sphere.bzrecipe")),
+        isApplied: true
+    ))
+}
+
 @Test func launchModeBuildsSmokeSaveTitleRequest() throws {
     let mode = try ShellLaunchMode.parse(arguments: ["BlendZigShell", "--smoke-save-title", "/tmp/example.bzscene", "Updated Title"])
     #expect(mode == .smokeSaveTitle(
@@ -105,6 +118,12 @@ import Testing
 @Test func launchModeRejectsMissingSmokeRecipeTransformArguments() {
     #expect(throws: ShellLaunchModeError.missingSmokeRecipeTransformArguments) {
         _ = try ShellLaunchMode.parse(arguments: ["BlendZigShell", "--smoke-save-recipe-transform", "/tmp/starter-sphere.bzrecipe", "1.2"])
+    }
+}
+
+@Test func launchModeRejectsMissingSmokeRecipeSubdivideArguments() {
+    #expect(throws: ShellLaunchModeError.missingSmokeRecipeSubdivideArguments) {
+        _ = try ShellLaunchMode.parse(arguments: ["BlendZigShell", "--smoke-save-recipe-subdivide", "/tmp/starter-sphere.bzrecipe"])
     }
 }
 

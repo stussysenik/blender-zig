@@ -156,7 +156,7 @@ Execution surface: [tasks/phase-19.md](/Users/s3nik/Desktop/blender-zig/tasks/ph
 - [ ] add a minimal viewport with orbit, pan, and zoom
 - [x] add object focus and one primitive-backed create path before widening into element inspection
 - [x] add translate, rotate, and scale interaction over the current geometry kernel
-- [ ] expose a narrow set of direct modeling ops through the interaction layer
+- [x] expose a narrow set of direct modeling ops through the interaction layer
 
 ## Phase 20: Daily-driver hardening
 

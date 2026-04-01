@@ -133,6 +133,10 @@ final class ShellAppModel {
         currentInspection?.recipeTransformState
     }
 
+    var recipeSubdivideState: ShellRecipeSubdivideState? {
+        currentInspection?.recipeSubdivideState
+    }
+
     var canSaveRecipeTransform: Bool {
         guard
             currentInspection?.request.kind == .recipe,
@@ -143,6 +147,16 @@ final class ShellAppModel {
             return false
         }
         return values != recipeTransformState.values
+    }
+
+    var canToggleRecipeSubdivide: Bool {
+        guard
+            currentInspection?.request.kind == .recipe,
+            let recipeSubdivideState
+        else {
+            return false
+        }
+        return recipeSubdivideState.isEditable
     }
 
     var focusTargets: [ShellFocusTarget] {
@@ -186,6 +200,42 @@ final class ShellAppModel {
             }
             guard operationState.contains(generation) else { return }
             isOpening = false
+        }
+    }
+
+    func toggleRecipeSubdivide() {
+        guard
+            let currentSession,
+            currentInspection?.request.kind == .recipe,
+            let recipeSubdivideState,
+            recipeSubdivideState.isEditable
+        else {
+            return
+        }
+
+        errorMessage = nil
+        saveMessage = nil
+        isSaving = true
+
+        let desiredApplied = !recipeSubdivideState.isApplied
+        let generation = startOperation()
+        let sessionService = self.sessionService
+        activeTask = Task {
+            do {
+                let payload = try await sessionService.saveRecipeSubdivide(desiredApplied, in: currentSession)
+                guard operationState.contains(generation) else { return }
+
+                applyPayload(payload.0, result: payload.1)
+                saveMessage = desiredApplied
+                    ? "applied subdivide to \(payload.0.inspection.request.url.lastPathComponent)"
+                    : "removed subdivide from \(payload.0.inspection.request.url.lastPathComponent)"
+            } catch is CancellationError {
+            } catch {
+                guard operationState.contains(generation) else { return }
+                errorMessage = describe(error)
+            }
+            guard operationState.contains(generation) else { return }
+            isSaving = false
         }
     }
 
