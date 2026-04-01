@@ -7,13 +7,15 @@ inside the application instead of only through exported files and CLI output.
 
 ## Workflows Unlocked
 
-- orbit, pan, and zoom local work
+- orbit, pan, and zoom one local saved work unit first
+- start one primitive-backed study from the shell
 - inspect geometry directly
 - make narrow interactive transforms and selections
 
 ## In Scope
 
-- viewport MVP
+- viewport MVP starting with one mesh-backed saved recipe or scene
+- object focus and one primitive-backed create path before element editing
 - narrow selection model
 - translate/rotate/scale interaction
 - first shell-exposed modeling tools
@@ -21,6 +23,7 @@ inside the application instead of only through exported files and CLI output.
 ## Exit Criteria
 
 - one saved work unit can be opened and inspected visually
+- one primitive-backed study can be created and focused in the shell
 - the same geometry kernel backs CLI and viewport edits
 - interaction remains bounded enough to stay testable
 

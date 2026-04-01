@@ -37,6 +37,17 @@ That script:
 
 The current output is a native CLI binary and is launchable from Terminal on macOS.
 
+The first native shell bundle now builds locally with:
+
+```bash
+bash scripts/build-phase-18-shell.sh
+open zig-out/BlendZigShell.app
+```
+
+That bundle keeps the SwiftUI shell executable beside the bundled
+`blender-zig-direct` helper under `zig-out/BlendZigShell.app/Contents/MacOS/`.
+It is a local launch surface for development, not the final release artifact yet.
+
 For local signing scaffolding on macOS:
 
 ```bash
@@ -58,7 +69,7 @@ npm run dist
 ```
 
 What is not configured yet:
-- `.app` bundling
+- release packaging for the `.app` bundle
 - Apple credentials in CI
 - stapling or end-user Gatekeeper validation for a bundled app flow
 

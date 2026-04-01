@@ -15,6 +15,7 @@ The daily-driver promise is narrower than "rewrite all of Blender":
 
 - strong local modeling loop over a bounded geometry kernel
 - repeatable save, reopen, and export path
+- explicit text-first authored state plus a documented universal/open interchange path
 - native app shell with a minimal but real viewport and interaction layer
 - contributor workflow that can be reproduced from a fresh clone
 
@@ -79,6 +80,7 @@ All of these must be true:
 - a saved work unit can be reopened after interruption
 - the shell and viewport exercise the same geometry code used by the CLI
 - the app supports a real inspect-edit-save-export loop
+- exported work uses documented universal/open format semantics instead of shell-only state
 - recovery expectations are explicit, not implied
 - packaging and contributor handoff are documented enough to survive a machine change
 

@@ -1,0 +1,15 @@
+# blender-zig pipeline v1
+# Start from a low rail blank, grow a chamfer on the first shared edge, remove
+# the next seam, and keep the authored rail placement in replayable transforms.
+
+format-version=1
+id=phase-17/rail-bevel
+title=Phase 17 Rail Bevel
+seed=cuboid:size-x=2.8,size-y=1.1,size-z=0.4,verts-x=2,verts-y=2,verts-z=2,uvs=true
+write=../../zig-out/phase-17-rail-bevel.obj
+
+step=bevel-edge:width=0.1
+step=delete-edge
+step=dissolve
+step=rotate-z:degrees=8
+step=translate:x=0.0,y=2.1,z=0.15

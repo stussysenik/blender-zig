@@ -1,0 +1,15 @@
+# blender-zig pipeline v1
+# Grow one chamfer on a thin block, delete the next shared edge, collapse the
+# temporary seam, and restamp the surface so the edit chain is visibly layered.
+
+format-version=1
+id=phase-16/chamfer-recovery
+title=Phase 16 Chamfer Recovery
+seed=cuboid:size-x=2.2,size-y=1.6,size-z=0.45,verts-x=2,verts-y=2,verts-z=2,uvs=true
+write=../../zig-out/phase-16-chamfer-recovery.obj
+
+step=bevel-edge:width=0.12
+step=delete-edge
+step=dissolve
+step=inset:factor=0.18
+step=extrude:distance=0.12

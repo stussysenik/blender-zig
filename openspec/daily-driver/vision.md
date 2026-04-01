@@ -14,6 +14,7 @@ A daily-driver `blender-zig` must satisfy all of these:
 
 - launch from a fresh clone and documented build path on macOS without local source edits
 - create, import, edit, save, and export mesh and curve data
+- keep authored state readable and keep external handoff on documented universal/open formats
 - support repeatable studies or scenes instead of one-off demos
 - run the core modeling loop deterministically from the CLI or a small native shell
 - provide a minimal viewport and interaction path for inspection and transforms

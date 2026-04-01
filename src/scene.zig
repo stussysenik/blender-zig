@@ -3,6 +3,7 @@ const obj = @import("io/obj.zig");
 const mesh_transform = @import("geometry/mesh_transform.zig");
 const mesh_mod = @import("mesh.zig");
 const pipeline = @import("pipeline.zig");
+const replay_metadata = @import("replay_metadata.zig");
 
 pub const PartKind = enum {
     pipeline_recipe,
@@ -16,6 +17,7 @@ pub const PartSpec = struct {
 };
 
 pub const ParsedArgs = struct {
+    metadata: replay_metadata.ReplayMetadata = .{},
     parts: std.ArrayList(PartSpec),
     output_path: ?[]const u8,
     owned_scene_text: ?[]u8 = null,
@@ -72,13 +74,19 @@ pub fn runMeshScene(allocator: std.mem.Allocator, parsed: *const ParsedArgs) !me
     for (parsed.parts.items) |part| {
         var part_mesh = switch (part.kind) {
             .pipeline_recipe => blk: {
-                var pipeline_args = try pipeline.parseArgs(allocator, &[_][]const u8{ "--recipe", part.path });
+                var pipeline_args = pipeline.parseArgs(allocator, &[_][]const u8{ "--recipe", part.path }) catch |err| switch (err) {
+                    error.FileNotFound => return error.ScenePartFileNotFound,
+                    else => return err,
+                };
                 defer pipeline_args.deinit(allocator);
 
                 break :blk try pipeline.runMeshPipeline(allocator, pipeline_args.seed, pipeline_args.steps.items);
             },
             .obj_mesh => blk: {
-                var imported = try obj.readFile(allocator, part.path);
+                var imported = obj.readFile(allocator, part.path) catch |err| switch (err) {
+                    error.FileNotFound => return error.ScenePartFileNotFound,
+                    else => return err,
+                };
                 defer imported.deinit();
 
                 switch (imported) {
@@ -150,6 +158,7 @@ fn parseSceneText(
         return err;
     };
     parsed.* = .{
+        .metadata = .{},
         .parts = .empty,
         .output_path = null,
         .owned_scene_text = owned_scene_text,
@@ -157,6 +166,7 @@ fn parseSceneText(
     };
     errdefer parsed.deinit(allocator);
 
+    var seen_metadata = replay_metadata.SeenFields{};
     var lines = std.mem.splitScalar(u8, owned_scene_text, '\n');
     while (lines.next()) |line| {
         const trimmed = std.mem.trim(u8, line, " \t\r");
@@ -166,6 +176,10 @@ fn parseSceneText(
         const key = std.mem.trim(u8, trimmed[0..separator_index], " \t");
         const value = std.mem.trim(u8, trimmed[separator_index + 1 ..], " \t");
         if (value.len == 0) return error.InvalidSceneLineSyntax;
+
+        if (try replay_metadata.parseMetadataLine(&parsed.metadata, &seen_metadata, key, value)) {
+            continue;
+        }
 
         if (std.mem.eql(u8, key, "write")) {
             if (parsed.output_path != null) return error.DuplicateSceneWritePath;
@@ -281,6 +295,58 @@ test "scene args parse recipe parts and CLI write override" {
     try std.testing.expectEqualStrings("zig-out/from-cli.obj", parsed.output_path.?);
 }
 
+test "scene can parse replay metadata from a persisted scene file" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "part-a.bzrecipe",
+        .data =
+        \\seed=grid
+        ,
+    });
+    try temp.dir.writeFile(.{
+        .sub_path = "scene.bzscene",
+        .data =
+        \\format-version=1
+        \\id=phase-17/modeling-bench
+        \\title=Phase 17 Modeling Bench
+        \\part=part-a.bzrecipe
+        ,
+    });
+
+    const scene_path = try temp.dir.realpathAlloc(std.testing.allocator, "scene.bzscene");
+    defer std.testing.allocator.free(scene_path);
+
+    var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{ "--recipe", scene_path });
+    defer parsed.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u32, 1), parsed.metadata.format_version);
+    try std.testing.expectEqualStrings("phase-17/modeling-bench", parsed.metadata.id.?);
+    try std.testing.expectEqualStrings("Phase 17 Modeling Bench", parsed.metadata.title.?);
+}
+
+test "scene rejects unsupported replay metadata format versions" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "scene.bzscene",
+        .data =
+        \\format-version=2
+        \\part=piece.obj
+        ,
+    });
+
+    const scene_path = try temp.dir.realpathAlloc(std.testing.allocator, "scene.bzscene");
+    defer std.testing.allocator.free(scene_path);
+
+    try std.testing.expectError(
+        error.UnsupportedReplayFormatVersion,
+        parseArgs(std.testing.allocator, &[_][]const u8{ "--recipe", scene_path }),
+    );
+}
+
 test "scene runtime composes multiple pipeline recipes into one mesh" {
     var temp = std.testing.tmpDir(.{});
     defer temp.cleanup();
@@ -359,6 +425,48 @@ test "scene runtime applies per-part placement steps in file order" {
     try std.testing.expectApproxEqAbs(@as(f32, 3.0), mesh.bounds.?.max.z, 0.0001);
 }
 
+test "scene runtime composes recipe parts even when only some parts keep corner uvs" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "wire.bzrecipe",
+        .data =
+        \\seed=grid:verts-x=3,verts-y=2,size-x=4.0,size-y=2.0,uvs=true
+        \\step=delete-edge
+        \\step=fill-hole
+        ,
+    });
+    try temp.dir.writeFile(.{
+        .sub_path = "panel.bzrecipe",
+        .data =
+        \\seed=grid:verts-x=3,verts-y=2,size-x=2.0,size-y=1.0,uvs=true
+        \\step=inset-region:width=0.15
+        ,
+    });
+    try temp.dir.writeFile(.{
+        .sub_path = "scene.bzscene",
+        .data =
+        \\part=wire.bzrecipe
+        \\part=panel.bzrecipe|translate:x=3.0,y=0.0,z=0.0
+        ,
+    });
+
+    const scene_path = try temp.dir.realpathAlloc(std.testing.allocator, "scene.bzscene");
+    defer std.testing.allocator.free(scene_path);
+
+    var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{ "--recipe", scene_path });
+    defer parsed.deinit(std.testing.allocator);
+
+    var mesh = try runMeshScene(std.testing.allocator, parsed);
+    defer mesh.deinit();
+
+    try std.testing.expect(mesh.hasCornerUvs());
+    try std.testing.expectEqual(mesh.corner_verts.items.len, mesh.corner_uvs.items.len);
+    try std.testing.expectEqual(@as(usize, 18), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 9), mesh.faceCount());
+}
+
 test "scene runtime can combine recipe parts with imported obj parts" {
     var temp = std.testing.tmpDir(.{});
     defer temp.cleanup();
@@ -404,6 +512,26 @@ test "scene runtime can combine recipe parts with imported obj parts" {
     try std.testing.expectEqual(@as(usize, 12), mesh.vertexCount());
     try std.testing.expectEqual(@as(usize, 7), mesh.faceCount());
     try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "scene runtime fails clearly when a scene part file is missing" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "scene.bzscene",
+        .data =
+        \\part=missing.obj
+        ,
+    });
+
+    const scene_path = try temp.dir.realpathAlloc(std.testing.allocator, "scene.bzscene");
+    defer std.testing.allocator.free(scene_path);
+
+    var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{ "--recipe", scene_path });
+    defer parsed.deinit(std.testing.allocator);
+
+    try std.testing.expectError(error.ScenePartFileNotFound, runMeshScene(std.testing.allocator, parsed));
 }
 
 test "scene recipe rejects unsupported part formats" {

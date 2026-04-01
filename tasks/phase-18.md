@@ -9,28 +9,28 @@ The first four unchecked items are intentionally ordered for `scripts/team-loop.
 - `release-manager`
 
 ## Round 1: Shell Scope
-- [ ] define the minimum native app shell scope and project/session model
-- [ ] implement the smallest shell entrypoint that can open a local project or study file
-- [ ] verify shell launch and open paths through a real CLI smoke run
-- [ ] refresh generated status surfaces after the shell scope lands
+- [x] define the minimum native app shell scope and project/session model
+- [x] implement the smallest shell entrypoint that can open a local project or study file
+- [x] verify shell launch and open paths through a real CLI smoke run
+- [x] refresh generated status surfaces after the shell scope lands
 
 ## Round 2: Kernel Bridge
-- [ ] define the exact bridge between shell commands and the current geometry kernel
-- [ ] implement one shell command that calls the existing modeling runtime
-- [ ] verify shell-to-kernel execution through tests and command output
-- [ ] update phase notes after the bridge lands
+- [x] define the exact bridge between shell commands and the current geometry kernel
+- [x] implement one shell command that calls the existing modeling runtime
+- [x] verify shell-to-kernel execution through tests and command output
+- [x] update phase notes after the bridge lands
 
 ## Round 3: Inspect And Save
-- [ ] define the minimal inspect/save loop the shell must support before viewport work
-- [ ] implement one inspect path and one save path for local work
-- [ ] verify open-edit-save-reopen through a bounded smoke test
-- [ ] refresh docs once the loop is stable
+- [x] define the bounded inspect/save floor: inspect metadata for recipe, scene, and bundle; save `title` only for recipe and scene; keep bundles inspect-only
+- [x] implement metadata inspection plus in-place `title` save for `.bzrecipe` and `.bzscene`, with `.bzbundle` manifest inspection read-only
+- [x] verify inspect-save-reopen for recipe and scene, and verify bundle save fails narrowly, through the built shell app smoke path
+- [x] refresh docs and generated status surfaces once the bounded loop is green
 
 ## Round 4: Workflow Follow-Through
-- [ ] verify the Ralph/operator flow against `tasks/phase-18.md`
-- [ ] confirm the shell work stays narrower than viewport or editor UI
-- [ ] capture the next interaction gap that should become phase 19
-- [ ] update generated status surfaces after the phase-18 batch lands
+- [x] verify the Ralph/operator flow against `tasks/phase-18.md`
+- [x] confirm the shell work stays narrower than viewport or editor UI
+- [x] capture the next interaction gap that should become phase 19
+- [x] update generated status surfaces after the phase-18 batch lands
 
 ## Exit Condition
 

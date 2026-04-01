@@ -4,7 +4,9 @@ const std = @import("std");
 // contributors can discover the runtime surface without scanning the whole tree.
 pub const math = @import("math.zig");
 pub const mesh = @import("mesh.zig");
+pub const bundle = @import("bundle.zig");
 pub const pipeline = @import("pipeline.zig");
+pub const replay_metadata = @import("replay_metadata.zig");
 pub const scene = @import("scene.zig");
 
 pub const blenlib = struct {
@@ -89,7 +91,9 @@ test {
     _ = @import("blenlib/disjoint_set.zig");
     _ = @import("blenlib/offset_indices.zig");
     _ = @import("mesh.zig");
+    _ = @import("bundle.zig");
     _ = @import("pipeline.zig");
+    _ = @import("replay_metadata.zig");
     _ = @import("scene.zig");
     _ = @import("geometry/curves.zig");
     _ = @import("geometry/curves_to_mesh.zig");

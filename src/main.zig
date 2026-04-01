@@ -24,13 +24,72 @@ pub fn main() !void {
     const stderr = &stderr_writer.interface;
 
     const command = args[1];
+    if (std.mem.eql(u8, command, "geometry-bundle-pack")) {
+        if (args.len != 4) {
+            try printUsage();
+            return;
+        }
+
+        const input_path = args[2];
+        const bundle_path = args[3];
+
+        var imported = try readImportedGeometry(allocator, input_path);
+        defer imported.deinit();
+        switch (imported) {
+            .geometry => |*geometry| {
+                const metadata = bundleMetadataFromPath(bundle_path);
+                const components = try blendzig.bundle.GeometryComponents.fromGeometry(geometry);
+                try blendzig.bundle.writeBundle(allocator, bundle_path, geometry, metadata);
+                try printReplayMetadata(stdout, "bundle", metadata);
+                try printBundleSummary(stdout, bundle_path, components);
+                try printGeometrySummary(stdout, command, geometry);
+                try stdout.print("wrote {s}\n", .{bundle_path});
+                try stdout.flush();
+                return;
+            },
+            .parse_failure => |failure| {
+                try printObjParseFailure(stderr, input_path, failure);
+                try stderr.flush();
+                return error.InvalidImportedGeometry;
+            },
+        }
+    }
+    if (std.mem.eql(u8, command, "geometry-bundle-open")) {
+        if (args.len < 3 or args.len > 4) {
+            try printUsage();
+            return;
+        }
+
+        const bundle_path = args[2];
+        const output_path = if (args.len == 4) args[3] else null;
+        var bundle = try blendzig.bundle.readBundle(allocator, bundle_path);
+        defer bundle.deinit(allocator);
+
+        try printReplayMetadata(stdout, "bundle", bundle.metadata);
+        try printBundleSummary(stdout, bundle_path, bundle.components);
+        try printGeometrySummary(stdout, command, &bundle.geometry);
+        if (output_path) |path| {
+            try writeGeometryOutput(&bundle.geometry, path);
+            try stdout.print("wrote {s}\n", .{path});
+        }
+        try stdout.flush();
+        return;
+    }
     if (std.mem.eql(u8, command, "mesh-scene")) {
         var parsed = try blendzig.scene.parseArgs(allocator, args[2..]);
         defer parsed.deinit(allocator);
 
-        var mesh = try blendzig.scene.runMeshScene(allocator, parsed);
+        var mesh = blendzig.scene.runMeshScene(allocator, parsed) catch |err| switch (err) {
+            error.ScenePartFileNotFound => {
+                try stderr.writeAll("error: scene part file is missing\n");
+                try stderr.flush();
+                std.process.exit(1);
+            },
+            else => return err,
+        };
         defer mesh.deinit();
 
+        try printReplayMetadata(stdout, "scene", parsed.metadata);
         try printMeshSummary(stdout, command, &mesh);
         if (parsed.output_path) |output_path| {
             try writeMeshOutput(&mesh, output_path);
@@ -114,6 +173,7 @@ pub fn main() !void {
         var mesh = try blendzig.pipeline.runMeshPipeline(allocator, parsed.seed, parsed.steps.items);
         defer mesh.deinit();
 
+        try printReplayMetadata(stdout, "recipe", parsed.metadata);
         try printMeshSummary(stdout, command, &mesh);
         if (parsed.output_path) |output_path| {
             try writeMeshOutput(&mesh, output_path);
@@ -168,12 +228,14 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|geometry-bundle-pack|geometry-bundle-open|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
         \\  zig build run -- mesh-import zig-out/sphere.obj zig-out/sphere-roundtrip.obj
         \\  zig build run -- geometry-import zig-out/graph-demo.obj zig-out/graph-demo-roundtrip.obj
+        \\  zig build run -- geometry-bundle-pack zig-out/graph-demo.obj zig-out/graph-demo.bzbundle
+        \\  zig build run -- geometry-bundle-open zig-out/graph-demo.bzbundle zig-out/graph-demo-reopened.obj
         \\  zig build run -- cone zig-out/cone.obj
         \\  zig build run -- curve-wire zig-out/curve-wire.obj
         \\  zig build run -- curve-tube zig-out/curve-tube.obj
@@ -256,6 +318,47 @@ fn printMeshSummary(writer: anytype, label: []const u8, mesh: *const blendzig.me
             .{ bounds.min.x, bounds.min.y, bounds.min.z, bounds.max.x, bounds.max.y, bounds.max.z },
         );
     }
+}
+
+fn printReplayMetadata(
+    writer: anytype,
+    kind: []const u8,
+    metadata: blendzig.replay_metadata.ReplayMetadata,
+) !void {
+    if (!metadata.hasFields()) return;
+
+    try writer.print("replay kind={s} format-version={d}", .{ kind, metadata.format_version });
+    if (metadata.id) |id| {
+        try writer.print(" id={s}", .{id});
+    }
+    if (metadata.title) |title| {
+        try writer.print(" title={s}", .{title});
+    }
+    try writer.writeByte('\n');
+}
+
+fn printBundleSummary(
+    writer: anytype,
+    bundle_path: []const u8,
+    components: blendzig.bundle.GeometryComponents,
+) !void {
+    try writer.print(
+        "bundle path={s} components={s} geometry-format=obj manifest={s}\n",
+        .{ bundle_path, components.label(), blendzig.bundle.manifest_filename },
+    );
+}
+
+fn bundleMetadataFromPath(bundle_path: []const u8) blendzig.replay_metadata.ReplayMetadata {
+    const basename = std.fs.path.basename(bundle_path);
+    const stem = if (std.mem.endsWith(u8, basename, ".bzbundle"))
+        basename[0 .. basename.len - ".bzbundle".len]
+    else
+        basename;
+
+    return .{
+        .format_version = 1,
+        .title = if (stem.len == 0) null else stem,
+    };
 }
 
 fn printGeometrySummary(writer: anytype, label: []const u8, geometry: *const blendzig.geometry.GeometrySet) !void {

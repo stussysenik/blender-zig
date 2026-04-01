@@ -2,14 +2,15 @@
 
 ## Intent
 
-Move from replayable studies to durable local work units that can be reopened and
-shared across machines without rebuilding state by hand.
+Move from replayable studies to durable local work units that can be reopened,
+replayed, and verified cleanly across machines without rebuilding state by hand.
 
 ## Workflows Unlocked
 
 - save authored work as something stronger than ad hoc recipes
 - reopen mixed geometry work after closing the tool
-- roundtrip scenes, imports, and project metadata through one documented path
+- roundtrip scenes, imports, and replay or bundle metadata through one
+  documented path
 
 ## In Scope
 
@@ -23,6 +24,7 @@ shared across machines without rebuilding state by hand.
 - one documented durable project or bundle unit exists
 - mesh-only, curve-only, and mixed scenes can roundtrip
 - imported asset references survive replay or fail clearly
+- the current tree can rerun the persistence path from a clean-room checkout
 - persistence semantics align with the project-state contract
 
 ## Execution Surface

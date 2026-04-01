@@ -20,18 +20,18 @@
 - [~] Phase 13: Direct mesh ops
 - [x] Phase 14: Composable local authoring
 - [~] Phase 15: Mesh IO surfaces
-- [~] Phase 16: Directed modeling and phase execution
-- [ ] Phase 17: Scene persistence and mixed packaging
-- [ ] Phase 18: App shell foundation
-- [ ] Phase 19: Viewport and interaction MVP
+- [x] Phase 16: Directed modeling and phase execution
+- [x] Phase 17: Scene persistence and mixed packaging
+- [x] Phase 18: App shell foundation
+- [~] Phase 19: Viewport and interaction MVP
 - [ ] Phase 20: Daily-driver hardening
 
 ## Current Targets
 
-- Add edit-heavy saved studies and one composed scene for the phase-16 stack now that `mesh-delete-edge` is landed and verified.
-- Start phase 17 by landing replayable study metadata and mixed-scene packaging from `tasks/phase-17.md`.
-- Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
-- Add notarization only after Apple credentials exist.
+- Verify the viewport MVP through tests and a real local run on `recipes/phase-19/viewport-gallery.bzscene`, using `bash scripts/demo-phase-19.sh` as the concrete demo path.
+- Define the first focused-recipe direct modeling slice around one bounded `subdivide` route that preserves the trailing transform block.
+- Implement one shell route that inserts or rewrites the bounded `subdivide` step before the current transform block without losing focus.
+- Keep the next widened export or handoff path on a universal/open format with explicit semantics instead of inventing opaque app-only files.
 
 ## Detailed Backlog
 

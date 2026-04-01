@@ -1,5 +1,6 @@
 const std = @import("std");
 const mesh_mod = @import("mesh.zig");
+const replay_metadata = @import("replay_metadata.zig");
 const cuboid = @import("geometry/primitives/cuboid.zig");
 const cylinder_cone = @import("geometry/primitives/cylinder_cone.zig");
 const grid = @import("geometry/primitives/grid.zig");
@@ -122,6 +123,7 @@ pub const StepSpec = struct {
 };
 
 pub const ParsedArgs = struct {
+    metadata: replay_metadata.ReplayMetadata = .{},
     seed: SeedSpec,
     steps: std.ArrayList(StepSpec),
     output_path: ?[]const u8,
@@ -325,6 +327,7 @@ fn parseInlineTokens(
     var parsed = try allocator.create(ParsedArgs);
     errdefer allocator.destroy(parsed);
     parsed.* = .{
+        .metadata = .{},
         .seed = try parseSeedSpec(inline_tokens[0]),
         .steps = .empty,
         .output_path = output_path,
@@ -354,6 +357,7 @@ fn parseRecipeText(
     var parsed = try allocator.create(ParsedArgs);
     errdefer allocator.destroy(parsed);
     parsed.* = .{
+        .metadata = .{},
         .seed = .{ .seed = .grid },
         .steps = .empty,
         .output_path = null,
@@ -364,6 +368,7 @@ fn parseRecipeText(
     errdefer if (parsed.owned_output_path) |buffer| allocator.free(buffer);
 
     var seed: ?SeedSpec = null;
+    var seen_metadata = replay_metadata.SeenFields{};
     var lines = std.mem.splitScalar(u8, owned_recipe_text, '\n');
     while (lines.next()) |line| {
         const trimmed = std.mem.trim(u8, line, " \t\r");
@@ -376,6 +381,10 @@ fn parseRecipeText(
         const key = std.mem.trim(u8, raw_key, " \t");
         const value = std.mem.trim(u8, raw_value, " \t");
         if (value.len == 0) return error.InvalidRecipeLineSyntax;
+
+        if (try replay_metadata.parseMetadataLine(&parsed.metadata, &seen_metadata, key, value)) {
+            continue;
+        }
 
         if (std.mem.eql(u8, key, "seed")) {
             if (seed != null) return error.DuplicateRecipeSeed;
@@ -917,6 +926,45 @@ test "pipeline recipe args can override write path" {
     try std.testing.expectEqual(@as(usize, 4), parsed.seed.verts_x.?);
     try std.testing.expectEqual(@as(usize, 1), parsed.steps.items.len);
     try std.testing.expectEqualStrings("zig-out/from-cli.obj", parsed.output_path.?);
+}
+
+test "pipeline can parse replay metadata from a persisted recipe file" {
+    var temp = std.testing.tmpDir(.{});
+    defer temp.cleanup();
+
+    try temp.dir.writeFile(.{
+        .sub_path = "study.bzrecipe",
+        .data =
+        \\format-version=1
+        \\id=phase-17/wire-rebuild
+        \\title=Phase 17 Wire Rebuild
+        \\seed=grid:verts-x=3,verts-y=2,size-x=4.0,size-y=2.0,uvs=true
+        \\step=delete-edge
+        ,
+    });
+
+    const recipe_path = try temp.dir.realpathAlloc(std.testing.allocator, "study.bzrecipe");
+    defer std.testing.allocator.free(recipe_path);
+
+    var parsed = try parseArgs(std.testing.allocator, &[_][]const u8{ "--recipe", recipe_path });
+    defer parsed.deinit(std.testing.allocator);
+
+    try std.testing.expectEqual(@as(u32, 1), parsed.metadata.format_version);
+    try std.testing.expectEqualStrings("phase-17/wire-rebuild", parsed.metadata.id.?);
+    try std.testing.expectEqualStrings("Phase 17 Wire Rebuild", parsed.metadata.title.?);
+}
+
+test "pipeline rejects unsupported replay metadata format versions" {
+    const recipe_text =
+        \\format-version=2
+        \\seed=grid
+        \\
+    ;
+    const owned_text = try std.testing.allocator.dupe(u8, recipe_text);
+    try std.testing.expectError(
+        error.UnsupportedReplayFormatVersion,
+        parseRecipeText(std.testing.allocator, owned_text, "recipes/bad-version.bzrecipe"),
+    );
 }
 
 test "pipeline can build a parameterized modeling stack" {

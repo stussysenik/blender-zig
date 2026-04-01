@@ -97,6 +97,11 @@ Acceptance criteria:
 - a user can inspect and manipulate a model without leaving the app
 - the interaction layer still exercises the same tested geometry code paths
 
+Implementation note:
+
+- start M5 with object-focused primitive creation and persisted transforms
+- bridge geometry nodes through a text-backed graph study before any visual node canvas
+
 ## M6. Releaseable Daily Driver
 
 Exit conditions:

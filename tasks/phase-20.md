@@ -44,4 +44,5 @@ Phase 20 ends when the repo can:
 - reopen and resume local work reliably
 - protect the critical save/load and interaction paths with regression coverage
 - produce repeatable optimized macOS builds for the app shell
+- document at least one stable universal/open interchange path beyond the internal `.bz*` authored formats
 - hand the documented daily-driver workflow to another contributor without special recovery steps

@@ -13,9 +13,9 @@ Generated status docs are dashboards only. They point here; they do not define s
 
 ## Active Phase
 
-- Phase 16
-- phase charter: [openspec/daily-driver/phases/phase-16-modeling-stack.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-16-modeling-stack.md)
-- active slice: [openspec/daily-driver/slices/phase-16-delete-edge.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-16-delete-edge.md)
+- Phase 19
+- phase charter: [openspec/daily-driver/phases/phase-19-viewport-and-tools.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-19-viewport-and-tools.md)
+- active slice: [openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md)
 
 ## Doc Map
 
@@ -23,8 +23,11 @@ Authoritative product and system contracts:
 
 - [daily-driver-contract.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/daily-driver-contract.md)
 - [vision.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/vision.md)
+- [design.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/design.md)
 - [milestones.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/milestones.md)
 - [execution.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/execution.md)
+- [system/interchange-and-file-format-strategy.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/system/interchange-and-file-format-strategy.md)
+- [system/stable-modeling-and-graph-path.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/system/stable-modeling-and-graph-path.md)
 - [system/project-state-and-recovery.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/system/project-state-and-recovery.md)
 - [system/verification-and-release-gates.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/system/verification-and-release-gates.md)
 
@@ -38,7 +41,7 @@ Phase charters:
 
 Current slice spec:
 
-- [slices/phase-16-delete-edge.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-16-delete-edge.md)
+- [slices/phase-19-focused-recipe-subdivide.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-19-focused-recipe-subdivide.md)
 
 Compatibility pointers kept for older links:
 

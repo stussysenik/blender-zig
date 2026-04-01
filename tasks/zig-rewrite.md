@@ -124,37 +124,38 @@ Constrained-edit spec: [openspec/daily-driver/slices/phase-16-delete-edge.md](/U
 - [x] port one bounded bevel-like topology-growth op with direct CLI and pipeline coverage
 - [x] define the constrained selection edit contract in `openspec/daily-driver/slices/phase-16-delete-edge.md`
 - [x] port one constrained selection edit that pairs with the current delete/inset/extrude stack
-- [ ] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
-- [ ] add one `.bzscene` composition that reuses the new edit-heavy studies
-- [ ] allow the Ralph/operator workflow to target `tasks/phase-16.md` as an intentional phase run surface
-- [ ] refresh generated status surfaces once the phase-16 slices land
+- [x] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
+- [x] add one `.bzscene` composition that reuses the new edit-heavy studies
+- [x] allow the Ralph/operator workflow to target `tasks/phase-16.md` as an intentional phase run surface
+- [x] refresh generated status surfaces once the phase-16 slices land
 
 ## Phase 17: Scene persistence and mixed packaging
 
 Execution surface: [tasks/phase-17.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-17.md)
 
-- [ ] extend saved recipes so selections, operator parameters, and part-level transforms survive replay
-- [ ] add a study file path that replays a small stack of modeling steps from disk
-- [ ] add a manifest-based bundle format for mixed mesh-plus-curve scenes with explicit roundtrip semantics
-- [ ] add roundtrip regression tests for mesh-only, curve-only, and mixed scenes
-- [ ] keep the phase documented and runnable through the existing CLI/status tooling
+- [x] add replay metadata and authored persistence studies so saved recipes and scenes replay from disk with stable identity
+- [x] verify the phase through bundle reopen, clear missing-scene-part failure, and clean-room determinism
+- [x] add a manifest-based bundle format for mixed mesh-plus-curve scenes with explicit roundtrip semantics
+- [x] add roundtrip regression tests for mesh-only, curve-only, and mixed scenes
+- [x] keep the phase documented and runnable through the existing CLI/status tooling
 
 ## Phase 18: App shell foundation
 
 Execution surface: [tasks/phase-18.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-18.md)
 
-- [ ] define the minimum native app shell that can open, inspect, and save local work
-- [ ] add a small app shell that loads a project or study without routing everything through ad hoc CLI commands
-- [ ] bridge the current geometry kernel into the app shell command path
-- [ ] keep the project/session surface simple enough to stay testable
+- [x] define the minimum native app shell and read-only shell session floor for launchable local open flows
+- [x] add a small app shell that loads a study, scene, or bundle without routing everything through ad hoc CLI flags
+- [x] bridge the current geometry kernel into the app shell command path through a bundled helper binary
+- [x] add the bounded inspect/save loop before viewport work: inspect recipe, scene, and bundle metadata; save `title` in place for `.bzrecipe` and `.bzscene`; keep `.bzbundle` inspect-only
+- [x] close the phase with conflict-safe save rejection, Ralph/team dry-run coverage, and an explicit phase-19 viewport launch slice
 
 ## Phase 19: Viewport and interaction MVP
 
 Execution surface: [tasks/phase-19.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-19.md)
 
 - [ ] add a minimal viewport with orbit, pan, and zoom
-- [ ] add a basic selection path for object or element inspection
-- [ ] add translate, rotate, and scale interaction over the current geometry kernel
+- [x] add object focus and one primitive-backed create path before widening into element inspection
+- [x] add translate, rotate, and scale interaction over the current geometry kernel
 - [ ] expose a narrow set of direct modeling ops through the interaction layer
 
 ## Phase 20: Daily-driver hardening
@@ -167,6 +168,6 @@ Execution surface: [tasks/phase-20.md](/Users/s3nik/Desktop/blender-zig/tasks/ph
 - [ ] keep the daily-driver spec and the execution backlog aligned as the app shell matures
 
 ## Explicit deferrals
-- [ ] do not touch rendering, viewport, or UI/editor code yet
+- [ ] do not widen beyond the bounded phase-19 viewport MVP into full editor UI, rendering polish, or production rendering features yet
 - [ ] do not port DNA/RNA, asset systems, or the full dependency graph yet
 - [ ] do not claim file-format or production compatibility yet

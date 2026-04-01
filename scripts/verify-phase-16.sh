@@ -9,6 +9,10 @@ cd "$ROOT_DIR"
 bash scripts/verify-local.sh "$BIN_PATH"
 "$BIN_PATH" mesh-delete-edge zig-out/mesh-delete-edge.obj
 "$BIN_PATH" mesh-pipeline --recipe recipes/phase-16/wire-cleanup.bzrecipe
+"$BIN_PATH" mesh-pipeline --recipe recipes/phase-16/wire-rebuild.bzrecipe
+"$BIN_PATH" mesh-pipeline --recipe recipes/phase-16/panel-lift.bzrecipe
+"$BIN_PATH" mesh-pipeline --recipe recipes/phase-16/chamfer-recovery.bzrecipe
+"$BIN_PATH" mesh-scene --recipe recipes/phase-16/modeling-bench.bzscene
 npm run status:update
 npm run status:check
 npm run status:live

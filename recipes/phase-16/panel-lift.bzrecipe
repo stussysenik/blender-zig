@@ -1,0 +1,13 @@
+# blender-zig pipeline v1
+# Remove one face from a larger panel, then push the surrounding open region
+# inward and upward so the study reads as a repaired lifted section.
+
+format-version=1
+id=phase-16/panel-lift
+title=Phase 16 Panel Lift
+seed=grid:verts-x=4,verts-y=3,size-x=4.0,size-y=2.6,uvs=true
+write=../../zig-out/phase-16-panel-lift.obj
+
+step=delete-face:index=1
+step=inset-region:width=0.18
+step=extrude-region:distance=0.3

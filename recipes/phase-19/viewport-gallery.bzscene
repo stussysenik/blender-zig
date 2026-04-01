@@ -1,0 +1,12 @@
+# blender-zig scene v1
+# Phase-19 viewport demo: keep one imported ground plate and three replayable
+# studies in frame so orbit, pan, and zoom show useful depth and spacing.
+
+format-version=1
+id=phase-19/viewport-gallery
+title=Phase 19 Viewport Gallery
+part=../phase-17/reference-plate.obj|translate:x=0.0,y=0.0,z=-0.02
+part=../phase-17/pocket-platform-study.bzrecipe|translate:x=-1.15,y=0.1,z=0.0
+part=../phase-17/rail-bevel-study.bzrecipe|translate:x=1.2,y=-0.15,z=0.0|rotate-z:degrees=10
+part=../phase-16/panel-lift.bzrecipe|translate:x=0.2,y=1.15,z=0.0|rotate-z:degrees=-12
+write=../../zig-out/phase-19-viewport-gallery.obj

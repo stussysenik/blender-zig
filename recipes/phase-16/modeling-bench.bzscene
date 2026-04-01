@@ -1,0 +1,11 @@
+# blender-zig scene v1
+# Compose the phase-16 edit studies into one review mesh so contributors can
+# inspect the constrained-edit, open-region, and chamfer-recovery paths together.
+
+format-version=1
+id=phase-16/modeling-bench
+title=Phase 16 Modeling Bench
+part=wire-rebuild.bzrecipe|translate:x=-3.2,y=-1.4,z=0.0|rotate-z:degrees=-10
+part=panel-lift.bzrecipe|translate:x=1.4,y=-0.2,z=0.0|rotate-z:degrees=8
+part=chamfer-recovery.bzrecipe|translate:x=-0.4,y=2.2,z=0.18|rotate-z:degrees=20
+write=../../zig-out/phase-16-modeling-bench.obj

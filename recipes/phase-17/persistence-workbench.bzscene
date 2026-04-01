@@ -1,0 +1,12 @@
+# blender-zig scene v1
+# Keep one imported reference plate on the ground, then replay the two phase-17
+# studies above it so persistence covers authored recipes, placement, and one
+# imported asset path in the same reopenable scene.
+
+format-version=1
+id=phase-17/persistence-workbench
+title=Phase 17 Persistence Workbench
+part=reference-plate.obj|translate:x=0.0,y=0.0,z=-0.02
+part=pocket-platform-study.bzrecipe
+part=rail-bevel-study.bzrecipe|translate:x=0.8,y=-0.1,z=0.0|rotate-z:degrees=6
+write=../../zig-out/phase-17-persistence-workbench.obj

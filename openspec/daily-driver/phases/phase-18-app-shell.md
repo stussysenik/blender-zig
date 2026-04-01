@@ -8,20 +8,23 @@ work is no longer trapped behind one-off CLI invocations.
 ## Workflows Unlocked
 
 - open local work from an app shell
-- inspect and save without scripting commands manually
+- inspect current durable work and save bounded metadata without scripting commands manually
+- reject external-save conflicts without silently overwriting durable work
 - keep the CLI and shell pointed at the same underlying project model
 
 ## In Scope
 
 - minimal native shell
 - session lifecycle
-- open/save bridge to project state
+- bounded metadata inspect/save bridge to project state
 - shell-level error handling
 
 ## Exit Criteria
 
 - shell can open current project or study state
-- shell can save changes back through the documented persistence path
+- shell can inspect durable metadata and save bounded recipe/scene changes back
+  through the documented persistence path
+- shell save fails narrowly when the opened recipe or scene changed on disk
 - shell path does not fork the geometry logic away from the CLI
 
 ## Execution Surface

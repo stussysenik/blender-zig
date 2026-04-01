@@ -1,0 +1,14 @@
+# blender-zig pipeline v1
+# Remove one floor panel from a wider platform, rebuild the open region into a
+# raised pocket, and preserve the authored offset directly in the study file.
+
+format-version=1
+id=phase-17/pocket-platform
+title=Phase 17 Pocket Platform
+seed=grid:verts-x=4,verts-y=3,size-x=4.5,size-y=2.8,uvs=true
+write=../../zig-out/phase-17-pocket-platform.obj
+
+step=delete-face:index=2
+step=inset-region:width=0.16
+step=extrude-region:distance=0.35
+step=translate:x=-0.6,y=0.3,z=0.0

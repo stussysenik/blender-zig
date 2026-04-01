@@ -27,10 +27,10 @@ The first four unchecked items are intentionally ordered for `scripts/team-loop.
 - [x] update phase notes after the constrained selection edit lands
 
 ## Round 4: Authoring Studies
-- [ ] define the edit-heavy recipe and scene study set for the phase-16 stack
-- [ ] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
-- [ ] verify the new recipe studies and one `.bzscene` composition through real runtime output
-- [ ] refresh generated status surfaces once the new studies land
+- [x] define the edit-heavy recipe and scene study set for the phase-16 stack
+- [x] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
+- [x] verify the new recipe studies and one `.bzscene` composition through real runtime output
+- [x] refresh generated status surfaces once the new studies land
 
 ## Round 5: Workflow Follow-Through
-- [ ] verify the Ralph/operator flow against `tasks/phase-16.md` and the global phase-16 backlog
+- [x] verify the Ralph/operator flow against `tasks/phase-16.md` and the global phase-16 backlog

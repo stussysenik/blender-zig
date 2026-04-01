@@ -71,6 +71,8 @@ pub const Mesh = struct {
         const vertex_offset: u32 = @intCast(self.positions.items.len);
         const edge_offset: u32 = @intCast(self.edges.items.len);
         const corner_offset: u32 = @intCast(self.corner_verts.items.len);
+        const self_has_corner_uvs = self.hasCornerUvs();
+        const other_has_corner_uvs = other.hasCornerUvs();
 
         // Append in topology order so the face/corner arrays remain index-compatible
         // after the source mesh is rebased into the destination mesh.
@@ -97,10 +99,19 @@ pub const Mesh = struct {
             self.corner_edges.appendAssumeCapacity(edge + edge_offset);
         }
 
-        if (self.corner_uvs.items.len > 0 or other.corner_uvs.items.len > 0) {
-            std.debug.assert(self.corner_uvs.items.len == corner_offset);
-            std.debug.assert(other.corner_uvs.items.len == other.corner_verts.items.len);
-            try self.corner_uvs.appendSlice(self.allocator, other.corner_uvs.items);
+        if (self_has_corner_uvs or other_has_corner_uvs) {
+            std.debug.assert(self.corner_uvs.items.len == 0 or self.corner_uvs.items.len == corner_offset);
+            std.debug.assert(other.corner_uvs.items.len == 0 or other.corner_uvs.items.len == other.corner_verts.items.len);
+
+            if (!self_has_corner_uvs and other_has_corner_uvs and corner_offset > 0) {
+                try self.appendDefaultCornerUvs(corner_offset);
+            }
+
+            if (other_has_corner_uvs) {
+                try self.corner_uvs.appendSlice(self.allocator, other.corner_uvs.items);
+            } else if (self.corner_uvs.items.len > 0) {
+                try self.appendDefaultCornerUvs(other.corner_verts.items.len);
+            }
         }
 
         try self.face_offsets.ensureUnusedCapacity(self.allocator, other.faceCount());
@@ -128,6 +139,13 @@ pub const Mesh = struct {
 
     pub fn hasCornerUvs(self: *const Mesh) bool {
         return self.corner_uvs.items.len == self.corner_verts.items.len and self.corner_uvs.items.len > 0;
+    }
+
+    fn appendDefaultCornerUvs(self: *Mesh, count: usize) !void {
+        try self.corner_uvs.ensureUnusedCapacity(self.allocator, count);
+        for (0..count) |_| {
+            self.corner_uvs.appendAssumeCapacity(Vec2.init(0, 0));
+        }
     }
 
     pub fn appendVertex(self: *Mesh, position: Vec3) !u32 {
@@ -261,4 +279,37 @@ test "mesh append combines topology with index remapping" {
     try std.testing.expectEqual(@as(usize, 4), left.edges.items.len);
     try std.testing.expectEqual(@as(u32, 2), left.corner_verts.items[0]);
     try std.testing.expect(math.vec3ApproxEq(left.bounds.?.max, Vec3.init(6, 1, 0), 0.0001));
+}
+
+test "mesh append backfills default corner uvs when only one side has them" {
+    var left = try Mesh.init(std.testing.allocator);
+    defer left.deinit();
+    _ = try left.appendVertex(Vec3.init(-1, 0, 0));
+    _ = try left.appendVertex(Vec3.init(0, 0, 0));
+    _ = try left.appendVertex(Vec3.init(0, 1, 0));
+    try left.appendFace(&[_]u32{ 0, 1, 2 }, null);
+    try left.rebuildEdgesFromFaces();
+
+    var right = try Mesh.init(std.testing.allocator);
+    defer right.deinit();
+    _ = try right.appendVertex(Vec3.init(2, 0, 0));
+    _ = try right.appendVertex(Vec3.init(3, 0, 0));
+    _ = try right.appendVertex(Vec3.init(3, 1, 0));
+    try right.appendFace(&[_]u32{ 0, 1, 2 }, &[_]Vec2{
+        Vec2.init(0, 0),
+        Vec2.init(1, 0),
+        Vec2.init(1, 1),
+    });
+    try right.rebuildEdgesFromFaces();
+
+    try left.appendMesh(&right);
+
+    try std.testing.expect(left.hasCornerUvs());
+    try std.testing.expectEqual(left.corner_verts.items.len, left.corner_uvs.items.len);
+    try std.testing.expect(math.vec2ApproxEq(left.corner_uvs.items[0], Vec2.init(0, 0), 0.0001));
+    try std.testing.expect(math.vec2ApproxEq(left.corner_uvs.items[1], Vec2.init(0, 0), 0.0001));
+    try std.testing.expect(math.vec2ApproxEq(left.corner_uvs.items[2], Vec2.init(0, 0), 0.0001));
+    try std.testing.expect(math.vec2ApproxEq(left.corner_uvs.items[3], Vec2.init(0, 0), 0.0001));
+    try std.testing.expect(math.vec2ApproxEq(left.corner_uvs.items[4], Vec2.init(1, 0), 0.0001));
+    try std.testing.expect(math.vec2ApproxEq(left.corner_uvs.items[5], Vec2.init(1, 1), 0.0001));
 }

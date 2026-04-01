@@ -3,6 +3,7 @@
 .worktrees/
 .zig-cache/
 zig-out/
+macos/BlendZigShell/.build/
 node_modules/
 dist/
 coverage/

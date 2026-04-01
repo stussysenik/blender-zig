@@ -38,13 +38,17 @@ Current host-safe local verification:
 ```bash
 bash scripts/verify-local.sh
 bash scripts/verify-phase-16.sh
+bash scripts/verify-phase-17.sh
+bash scripts/verify-phase-18.sh
+bash scripts/verify-phase-19.sh
+bash scripts/verify-clean-room.sh
 ```
 
 Phase dry-run surfaces:
 
 ```bash
-bash scripts/ralph-loop.sh --task-file tasks/phase-16.md --dry-run --once
-bash scripts/team-loop.sh --task-file tasks/phase-16.md --dry-run
+bash scripts/ralph-loop.sh --task-file tasks/phase-19.md --dry-run --once
+bash scripts/team-loop.sh --task-file tasks/phase-19.md --dry-run
 ```
 
 Status surfaces:

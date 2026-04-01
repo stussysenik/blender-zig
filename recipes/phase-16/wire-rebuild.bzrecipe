@@ -1,0 +1,14 @@
+# blender-zig pipeline v1
+# Start from the phase-16 constrained-edit baseline, reopen the strip by
+# deleting one shared edge, then rebuild the patch into a shallow raised plate.
+
+format-version=1
+id=phase-16/wire-rebuild
+title=Phase 16 Wire Rebuild
+seed=grid:verts-x=3,verts-y=2,size-x=4.0,size-y=2.0,uvs=true
+write=../../zig-out/phase-16-wire-rebuild.obj
+
+step=delete-edge
+step=fill-hole
+step=inset:factor=0.18
+step=extrude:distance=0.28

@@ -26,6 +26,17 @@ Rules:
 - scene placement is explicit and ordered
 - imported assets must preserve source path and import mode
 
+### Bundle
+
+`.bzbundle` is the current narrow durable packaging unit for reopened geometry.
+
+Rules:
+
+- bundle contents are explicit and portable
+- one manifest describes one bundled geometry payload
+- the manifest must declare what geometry components are expected
+- reopening a bundle must validate the payload instead of trusting silent drift
+
 ### Project
 
 Future project state will group recipes, scenes, imports, and local metadata into
@@ -43,11 +54,23 @@ Session state is the reopenable working context around a project:
 
 Session state should never become the only place where essential geometry exists.
 
+The first phase-18 shell session is intentionally smaller than the eventual
+session model:
+
+- active document path
+- last helper replay summary
+- last shell error
+
+That floor is enough for launchable open flows, but not enough for save or
+recovery claims yet.
+
 ## Persistence Rules
 
 - recipes and scenes are durable authored state
+- bundles are durable packaged state for reopen and handoff
 - session state is recoverable convenience state
 - exports are outputs, not canonical editable state
+- exports should prefer documented universal/open interchange formats over app-only packaging
 - generated status docs are not project state
 
 ## Undo And Redo Model
@@ -69,8 +92,12 @@ Daily-driver status requires:
 Phase expectations:
 
 - Phase 16: no autosave yet, but authored studies stay deterministic
-- Phase 17: define durable project and session model
-- Phase 18: shell must open and save against that model
+- Phase 17: durable replay and bundle behavior are explicit, deterministic, and
+  fail clearly when scene parts are missing
+- Phase 18: shell must open the current durable surfaces directly, then add
+  bounded metadata inspection plus recipe/scene `title` save without mutating
+  bundles, reject external-save conflicts narrowly, and avoid forking the
+  project and session model away from those same files
 - Phase 20: recovery flow must be tested and documented
 
 ## Failure Handling
