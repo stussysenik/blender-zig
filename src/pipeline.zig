@@ -4,6 +4,7 @@ const cuboid = @import("geometry/primitives/cuboid.zig");
 const cylinder_cone = @import("geometry/primitives/cylinder_cone.zig");
 const grid = @import("geometry/primitives/grid.zig");
 const uv_sphere = @import("geometry/primitives/uv_sphere.zig");
+const mesh_bevel_edge = @import("geometry/mesh_bevel_edge.zig");
 const mesh_delete_faces = @import("geometry/mesh_delete_faces.zig");
 const mesh_fill_hole = @import("geometry/mesh_fill_hole.zig");
 const mesh_delete_loose = @import("geometry/mesh_delete_loose.zig");
@@ -56,6 +57,7 @@ pub const Step = enum {
     inset,
     inset_region,
     triangulate,
+    bevel_edge,
     delete_face,
     fill_hole,
     delete_loose,
@@ -74,6 +76,7 @@ pub const Step = enum {
         if (std.mem.eql(u8, name, "inset")) return .inset;
         if (std.mem.eql(u8, name, "inset-region")) return .inset_region;
         if (std.mem.eql(u8, name, "triangulate")) return .triangulate;
+        if (std.mem.eql(u8, name, "bevel-edge")) return .bevel_edge;
         if (std.mem.eql(u8, name, "delete-face")) return .delete_face;
         if (std.mem.eql(u8, name, "fill-hole")) return .fill_hole;
         if (std.mem.eql(u8, name, "delete-loose")) return .delete_loose;
@@ -92,6 +95,7 @@ pub const StepSpec = struct {
     step: Step,
     repeat: usize = 1,
     extrude_distance: ?f32 = null,
+    bevel_edge_width: ?f32 = null,
     inset_factor: ?f32 = null,
     inset_region_width: ?f32 = null,
     delete_face_index: ?usize = null,
@@ -250,6 +254,15 @@ fn applyStep(
             .width = step_spec.inset_region_width orelse 0.2,
         }),
         .triangulate => mesh_triangulate.triangulateMesh(allocator, mesh),
+        .bevel_edge => {
+            if (pickFirstSharedEdge(mesh)) |edge| {
+                const edges = [_]mesh_mod.Edge{edge};
+                return mesh_bevel_edge.bevelEdges(allocator, mesh, &edges, .{
+                    .width = step_spec.bevel_edge_width orelse 0.12,
+                });
+            }
+            return try mesh.clone(allocator);
+        },
         .delete_face => {
             const face_index = step_spec.delete_face_index orelse return error.MissingPipelineFaceIndex;
             const faces = [_]usize{face_index};
@@ -454,6 +467,13 @@ pub fn parseStepSpec(token: []const u8) !StepSpec {
                 .inset_region => {
                     if (std.mem.eql(u8, key, "width")) {
                         spec.inset_region_width = try parseFloat(value_text);
+                    } else {
+                        return error.UnsupportedPipelineParameter;
+                    }
+                },
+                .bevel_edge => {
+                    if (std.mem.eql(u8, key, "width")) {
+                        spec.bevel_edge_width = try parseFloat(value_text);
                     } else {
                         return error.UnsupportedPipelineParameter;
                     }
@@ -895,6 +915,7 @@ test "pipeline can parse transform and array steps" {
     const fill_hole = try parseStepSpec("fill-hole");
     const extrude_region = try parseStepSpec("extrude-region:distance=0.8");
     const inset_region = try parseStepSpec("inset-region:width=0.2");
+    const bevel_edge = try parseStepSpec("bevel-edge:width=0.12,repeat=2");
     const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
     const grid_array = try parseStepSpec("array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95");
 
@@ -914,6 +935,9 @@ test "pipeline can parse transform and array steps" {
     try std.testing.expectEqual(@as(f32, 0.8), extrude_region.extrude_distance.?);
     try std.testing.expectEqual(Step.inset_region, inset_region.step);
     try std.testing.expectEqual(@as(f32, 0.2), inset_region.inset_region_width.?);
+    try std.testing.expectEqual(Step.bevel_edge, bevel_edge.step);
+    try std.testing.expectEqual(@as(f32, 0.12), bevel_edge.bevel_edge_width.?);
+    try std.testing.expectEqual(@as(usize, 2), bevel_edge.repeat);
     try std.testing.expectEqual(Step.array, linear_array.step);
     try std.testing.expectEqual(@as(usize, 6), linear_array.array_count.?);
     try std.testing.expectEqual(@as(f32, 1.5), linear_array.array_offset_x.?);
@@ -1032,6 +1056,27 @@ test "pipeline can build region inset border rings" {
     try std.testing.expect(mesh.hasCornerUvs());
 }
 
+test "pipeline can bevel one shared grid edge" {
+    const steps = [_]StepSpec{
+        .{ .step = .bevel_edge, .bevel_edge_width = 0.12 },
+    };
+
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 3,
+        .verts_y = 2,
+        .size_x = 2.0,
+        .size_y = 1.0,
+        .with_uvs = true,
+    }, &steps);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 10), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 3), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 10), mesh.edges.items.len);
+    try std.testing.expect(mesh.hasCornerUvs());
+}
+
 test "pipeline seed overrides parse equivalently inline and in recipes" {
     const inline_spec = try parseSeedSpec("cylinder:radius=1.25,height=3.0,segments=24,top-cap=true,bottom-cap=false,uvs=true");
     const from_recipe_text =
@@ -1124,6 +1169,7 @@ test "pipeline seed overrides build the same mesh inline and from recipe text" {
 
 test "pipeline rejects unsupported parameters for a step" {
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
+    try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("bevel-edge:distance=1"));
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("delete-loose:distance=1"));
     try std.testing.expectError(error.MissingPipelineFaceIndex, parseStepSpec("delete-face"));
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("fill-hole:index=0"));

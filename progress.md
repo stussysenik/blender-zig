@@ -54,6 +54,7 @@ Open phases:
 - `zig build run -- curve-tube zig-out/curve-tube.obj`
 - `zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj`
 - `zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj`
+- `zig build run -- mesh-bevel-edge zig-out/mesh-bevel-edge.obj`
 - `zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj`
 - `zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj`
 - `zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj`
@@ -82,8 +83,8 @@ Open phases:
 
 ## Next Targets
 
-- Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current delete/inset/extrude stack.
-- Add edit-heavy saved studies and one composed scene for the phase-16 stack.
+- Port one constrained selection edit that pairs cleanly with the current delete/inset/extrude stack.
+- Add edit-heavy saved studies and one composed scene for the phase-16 stack now that `mesh-bevel-edge` is in.
 - Start phase 17 by landing replayable study metadata and mixed-scene packaging from `tasks/phase-17.md`.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Add notarization only after Apple credentials exist.
@@ -96,6 +97,7 @@ Composed scene files can now combine multiple `.bzrecipe` studies or imported `.
 Direct cleanup now includes `mesh-delete-loose`, which removes loose edges and isolated points while compacting the surviving face mesh deterministically.
 Direct editing now includes `mesh-delete-face`, which removes selected faces while keeping the exposed border as loose wire and preserving unrelated loose edges.
 Direct repair now includes `mesh-fill-hole`, which turns one simple planar loose loop back into one face while preserving unrelated faces and loose edges.
+Direct topology growth now includes `mesh-bevel-edge`, which bevels one selected manifold shared edge by rewriting the two incident face loops and bridging them with one chamfer quad strip.
 Direct modeling now includes `mesh-extrude-region`, which extrudes the mesh-wide open face region as one shell and bridges only the boundary instead of building per-face internal walls.
 Direct modeling now includes `mesh-inset-region`, which offsets one planar open face region inward, preserves the source cap layout, and fills the new border ring with quads.
 Phase-scoped operator runs are now supported through `scripts/ralph-loop.sh --phase N` and `scripts/team-loop.sh --phase N --dry-run`, and dedicated task files now exist from `tasks/phase-16.md` through `tasks/phase-20.md` for the daily-driver path.

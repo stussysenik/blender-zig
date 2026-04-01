@@ -15,10 +15,10 @@ The first four unchecked items are intentionally ordered for `scripts/team-loop.
 - [x] update generated status surfaces and phase notes after `mesh-fill-hole` lands
 
 ## Round 2: Topology Growth
-- [ ] define the exact bounded bevel-like growth slice and regression matrix for the current face-corner mesh
-- [ ] implement the first bounded bevel-like topology-growth op with direct CLI and pipeline coverage
-- [ ] verify the first bounded bevel-like topology-growth op through tests and real CLI runs
-- [ ] refresh generated docs after the first topology-growth op lands
+- [x] define the exact bounded bevel-like growth slice and regression matrix for the current face-corner mesh
+- [x] implement the first bounded bevel-like topology-growth op with direct CLI and pipeline coverage
+- [x] verify the first bounded bevel-like topology-growth op through tests and real CLI runs
+- [x] refresh generated docs after the first topology-growth op lands
 
 ## Round 3: Constrained Edit Stack
 - [ ] define one constrained selection edit that pairs with delete-face, inset-region, and extrude-region

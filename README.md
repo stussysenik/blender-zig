@@ -31,6 +31,7 @@ Current focus:
 - bounded individual-face extrusion along the face normal
 - bounded open-region extrusion along averaged vertex normals
 - bounded planar region inset that offsets one open face region inward and fills the border ring with quads
+- bounded single-edge bevel growth that replaces one shared manifold edge with a chamfer strip
 - limited planar dissolve for coplanar shared edges
 - bounded face subdivision with shared edge midpoints
 - parameterized mesh pipeline CLI over existing primitives and ops
@@ -48,10 +49,10 @@ Current status:
 <!-- status:auto:status:start -->
 - phase 0 bootstrap through phase 10 runnable graph demo are in
 - phase 11 direct curve modeling is in with `curve-wire`, `curve-tube`, `mesh-edges`, and `mesh-roundtrip`
-- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-delete-face`, `mesh-fill-hole`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-inset-region`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
+- phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-bevel-edge`, `mesh-delete-face`, `mesh-fill-hole`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-inset-region`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import
-- phase 16 is now defined in `docs/phase-16-plan.md` and `tasks/phase-16.md`, and `mesh-fill-hole` is the first landed repair/edit recovery slice
+- phase 16 is now defined in `docs/phase-16-plan.md` and `tasks/phase-16.md`, and `mesh-fill-hole` plus `mesh-bevel-edge` are the first landed repair/edit recovery and topology-growth slices
 - an OpenSpec-style daily-driver bundle now lives under `openspec/daily-driver/`, and phase task files now exist through phase 20 for the path from the current CLI tool to a realistic local daily driver
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
@@ -98,6 +99,7 @@ zig build run -- curve-wire zig-out/curve-wire.obj
 zig build run -- curve-tube zig-out/curve-tube.obj
 zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
 zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
+zig build run -- mesh-bevel-edge zig-out/mesh-bevel-edge.obj
 zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj
 zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj
 zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj
@@ -131,7 +133,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
 ```
 <!-- status:auto:cli-usage:end -->
 

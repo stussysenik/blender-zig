@@ -46,7 +46,9 @@ Planned slices:
    - scope: fill one simple planar boundary loop back into one ngon cap
    - reason: make `mesh-delete-face` reversible enough to support a real edit loop
 2. bounded bevel-like growth op
-   - likely a narrow chamfer or edge-bevel slice, not full Blender bevel
+   - landed slice: `mesh-bevel-edge`
+   - exact scope: bevel one selected manifold shared edge, rewrite only the two incident face loops, and bridge them with one quad strip
+   - regression matrix: direct hinge demo, grid-backed `mesh-pipeline` run, module tests for loose-edge preservation and non-manifold no-op behavior
    - must preserve the current face-corner model and keep UV behavior deterministic
 3. constrained selection edit
    - examples: delete-edge with wire preservation, dissolve-wire, or another bounded selection-based edit

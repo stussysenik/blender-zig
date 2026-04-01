@@ -93,7 +93,7 @@
 - [x] port a bounded face subdivision pass with shared edge midpoints
 - [x] port a bounded face delete/edit pass that keeps the deleted region border as loose wire
 - [x] port a bounded delete-loose cleanup pass that removes loose edges and isolated points
-- [ ] port another narrow mesh op such as bevel-like growth or a constrained edge/face selection edit
+- [x] port another narrow mesh op such as bevel-like growth or a constrained edge/face selection edit
 
 ## Phase 14: Composable local authoring
 - [x] add a bounded mesh pipeline CLI that chains existing primitives and ops
@@ -118,8 +118,8 @@ Execution surface: [tasks/phase-16.md](/Users/s3nik/Desktop/blender-zig/tasks/ph
 
 - [x] define the exact `mesh-fill-hole` scope and regression matrix for one simple planar boundary loop
 - [x] port `mesh-fill-hole` with direct CLI and pipeline coverage
-- [ ] define the exact bounded bevel-like growth slice and regression matrix for the current face-corner mesh
-- [ ] port one bounded bevel-like topology-growth op with direct CLI and pipeline coverage
+- [x] define the exact bounded bevel-like growth slice and regression matrix for the current face-corner mesh
+- [x] port one bounded bevel-like topology-growth op with direct CLI and pipeline coverage
 - [ ] port one constrained selection edit that pairs with the current delete/inset/extrude stack
 - [ ] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
 - [ ] add one `.bzscene` composition that reuses the new edit-heavy studies
