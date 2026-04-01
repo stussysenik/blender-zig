@@ -13,16 +13,17 @@ This repo moves best when changes are narrow, test-backed, and visible through a
 If you are new here:
 
 1. Read [ARCHITECTURE.md](/Users/s3nik/Desktop/blender-zig/ARCHITECTURE.md).
-2. Read [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md).
-3. Run `zig build test`.
-4. Run one CLI command such as `zig build run -- curve-tube zig-out/curve-tube.obj`.
-5. Run `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`.
-6. Run one inline override example such as `zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75`.
-7. Run one direct edit-style op such as `zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj`.
-8. Run the paired repair op `zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj`.
-9. Run one scene-style recipe such as `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`.
-10. Run one composed scene such as `zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene` and inspect how the scene file places reused parts without rewriting their source studies.
-11. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig).
+2. Check [openspec/daily-driver/README.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/README.md) if it exists and treat it as the active spec for the current slice.
+3. Read [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md).
+4. Run `zig build test`.
+5. Run one CLI command such as `zig build run -- curve-tube zig-out/curve-tube.obj`.
+6. Run `zig build run -- mesh-pipeline --recipe recipes/grid-study.bzrecipe`.
+7. Run one inline override example such as `zig build run -- mesh-pipeline grid:verts-x=8,verts-y=5,size-x=4.0,size-y=2.0 subdivide:repeat=2 extrude:distance=0.75`.
+8. Run one direct edit-style op such as `zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj`.
+9. Run the paired repair op `zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj`.
+10. Run one scene-style recipe such as `zig build run -- mesh-pipeline --recipe recipes/courtyard-plaza-study.bzrecipe`.
+11. Run one composed scene such as `zig build run -- mesh-scene --recipe recipes/courtyard-tower-scene.bzscene` and inspect how the scene file places reused parts without rewriting their source studies.
+12. Open [src/main.zig](/Users/s3nik/Desktop/blender-zig/src/main.zig), [src/pipeline.zig](/Users/s3nik/Desktop/blender-zig/src/pipeline.zig), and [src/scene.zig](/Users/s3nik/Desktop/blender-zig/src/scene.zig).
 
 That gets you from zero to a concrete, debuggable feature slice quickly.
 

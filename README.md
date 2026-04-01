@@ -11,6 +11,8 @@ Use `npm run status:live` for the current branch and commit readout.
 Contributor surfaces:
 - [ARCHITECTURE.md](/Users/s3nik/Desktop/blender-zig/ARCHITECTURE.md)
 - [CONTRIBUTING.md](/Users/s3nik/Desktop/blender-zig/CONTRIBUTING.md)
+- [openspec/daily-driver/README.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/README.md)
+- [tasks/README.md](/Users/s3nik/Desktop/blender-zig/tasks/README.md)
 - [implementation-plan.md](/Users/s3nik/Desktop/blender-zig/docs/implementation-plan.md)
 - [tasks/zig-rewrite.md](/Users/s3nik/Desktop/blender-zig/tasks/zig-rewrite.md)
 
@@ -50,6 +52,7 @@ Current status:
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import
 - phase 16 is now defined in `docs/phase-16-plan.md` and `tasks/phase-16.md`, and `mesh-fill-hole` is the first landed repair/edit recovery slice
+- an OpenSpec-style daily-driver bundle now lives under `openspec/daily-driver/`, and phase task files now exist through phase 20 for the path from the current CLI tool to a realistic local daily driver
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
 - the next recommended slices are broader direct modeling coverage, deeper mesh-plus-curves IO, and richer saved scene studies, not UI or rendering

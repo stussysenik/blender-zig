@@ -37,7 +37,10 @@ Active phases:
 - Phase 16: Directed modeling and phase execution
 
 Open phases:
-- none
+- Phase 17: Scene persistence and mixed packaging
+- Phase 18: App shell foundation
+- Phase 19: Viewport and interaction MVP
+- Phase 20: Daily-driver hardening
 
 ## What Runs Today
 
@@ -81,6 +84,7 @@ Open phases:
 
 - Port a bevel-like topology-growth mesh op to strengthen direct modeling beyond the current delete/inset/extrude stack.
 - Add edit-heavy saved studies and one composed scene for the phase-16 stack.
+- Start phase 17 by landing replayable study metadata and mixed-scene packaging from `tasks/phase-17.md`.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Add notarization only after Apple credentials exist.
 
@@ -94,7 +98,8 @@ Direct editing now includes `mesh-delete-face`, which removes selected faces whi
 Direct repair now includes `mesh-fill-hole`, which turns one simple planar loose loop back into one face while preserving unrelated faces and loose edges.
 Direct modeling now includes `mesh-extrude-region`, which extrudes the mesh-wide open face region as one shell and bridges only the boundary instead of building per-face internal walls.
 Direct modeling now includes `mesh-inset-region`, which offsets one planar open face region inward, preserves the source cap layout, and fills the new border ring with quads.
-Phase-scoped operator runs are now supported through `scripts/ralph-loop.sh --phase N` and `scripts/team-loop.sh --phase N --dry-run`, and the dedicated `tasks/phase-16.md` file exists for an explicit phase backlog.
+Phase-scoped operator runs are now supported through `scripts/ralph-loop.sh --phase N` and `scripts/team-loop.sh --phase N --dry-run`, and dedicated task files now exist from `tasks/phase-16.md` through `tasks/phase-20.md` for the daily-driver path.
+The OpenSpec bundle under `openspec/daily-driver/` is now the planning contract for the path to a local daily-driver `blender-zig`.
 Mesh commands can now write ASCII PLY when the output path ends in `.ply`.
 Mesh commands can now re-import a narrow ASCII OBJ subset through `mesh-import`, and mixed OBJ geometry can roundtrip through `geometry-import`.
 The next meaningful improvement is still in `src/`, not in more planning artifacts.

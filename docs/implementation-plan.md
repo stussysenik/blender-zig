@@ -2,6 +2,8 @@
 
 This repo is not trying to outrun Blender by rewriting everything at once. The long-term plan is to grow a usable native Zig geometry application in layers, keeping each layer runnable before moving wider.
 
+Active spec location: [openspec/daily-driver/README.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/README.md). Treat it as the source of truth for the path from the current repo state to a realistic daily-driver `blender-zig`, and keep the broader planning docs here aligned to it instead of duplicating the slice definition in multiple places.
+
 ## Stage 1: Core geometry kernel
 
 Status: largely in place.
