@@ -124,7 +124,7 @@ pub fn main() !void {
     }
     // Keep the direct CLI explicit. It doubles as a runnable demo surface and a stable
     // regression path for contributors who want to validate one feature in isolation.
-    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-bevel-edge") or std.mem.eql(u8, command, "mesh-delete-face") or std.mem.eql(u8, command, "mesh-fill-hole") or std.mem.eql(u8, command, "mesh-delete-loose") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset") or std.mem.eql(u8, command, "mesh-inset-region") or std.mem.eql(u8, command, "mesh-dissolve") or std.mem.eql(u8, command, "mesh-extrude") or std.mem.eql(u8, command, "mesh-extrude-region") or std.mem.eql(u8, command, "mesh-planar-dissolve") or std.mem.eql(u8, command, "mesh-subdivide")) {
+    if (std.mem.eql(u8, command, "curve-wire") or std.mem.eql(u8, command, "curve-tube") or std.mem.eql(u8, command, "mesh-roundtrip") or std.mem.eql(u8, command, "mesh-triangulate") or std.mem.eql(u8, command, "mesh-bevel-edge") or std.mem.eql(u8, command, "mesh-delete-edge") or std.mem.eql(u8, command, "mesh-delete-face") or std.mem.eql(u8, command, "mesh-fill-hole") or std.mem.eql(u8, command, "mesh-delete-loose") or std.mem.eql(u8, command, "mesh-merge-by-distance") or std.mem.eql(u8, command, "mesh-inset") or std.mem.eql(u8, command, "mesh-inset-region") or std.mem.eql(u8, command, "mesh-dissolve") or std.mem.eql(u8, command, "mesh-extrude") or std.mem.eql(u8, command, "mesh-extrude-region") or std.mem.eql(u8, command, "mesh-planar-dissolve") or std.mem.eql(u8, command, "mesh-subdivide")) {
         var mesh = try buildDerivedMeshCommand(allocator, command);
         defer mesh.deinit();
 
@@ -168,7 +168,7 @@ fn printUsage() !void {
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.writeAll(
-        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+        \\usage: blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
         \\examples:
         \\  zig build run -- sphere
         \\  zig build run -- cylinder zig-out/cylinder.obj
@@ -180,6 +180,7 @@ fn printUsage() !void {
         \\  zig build run -- mesh-roundtrip zig-out/mesh-roundtrip.obj
         \\  zig build run -- mesh-triangulate zig-out/mesh-triangulate.obj
         \\  zig build run -- mesh-bevel-edge zig-out/mesh-bevel-edge.obj
+        \\  zig build run -- mesh-delete-edge zig-out/mesh-delete-edge.obj
         \\  zig build run -- mesh-delete-face zig-out/mesh-delete-face.obj
         \\  zig build run -- mesh-fill-hole zig-out/mesh-fill-hole.obj
         \\  zig build run -- mesh-delete-loose zig-out/mesh-delete-loose.obj
@@ -361,6 +362,13 @@ fn buildDerivedMeshCommand(allocator: std.mem.Allocator, command: []const u8) !b
         return blendzig.geometry.bevelEdges(allocator, &source_mesh, &[_]blendzig.mesh.Edge{
             .{ .a = 1, .b = 2 },
         }, .{ .width = 0.18 });
+    }
+    if (std.mem.eql(u8, command, "mesh-delete-edge")) {
+        var source_mesh = try blendzig.geometry.createGridMesh(allocator, 3, 2, 4.0, 2.0, true);
+        defer source_mesh.deinit();
+        return blendzig.geometry.deleteEdges(allocator, &source_mesh, &[_]blendzig.mesh.Edge{
+            .{ .a = 2, .b = 3 },
+        }, .{});
     }
     if (std.mem.eql(u8, command, "mesh-delete-face")) {
         var source_mesh = try blendzig.geometry.createGridMesh(allocator, 3, 2, 2.0, 1.0, true);
@@ -683,6 +691,16 @@ test "mesh bevel edge command replaces the hinge seam with a chamfer strip" {
     try std.testing.expectEqual(@as(usize, 3), mesh.faceCount());
     try std.testing.expectEqual(@as(usize, 10), mesh.edges.items.len);
     try std.testing.expect(mesh.hasCornerUvs());
+}
+
+test "mesh delete edge command removes the two incident faces and keeps the outer border wire" {
+    var mesh = try buildDerivedMeshCommand(std.testing.allocator, "mesh-delete-edge");
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 6), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 0), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 6), mesh.edges.items.len);
+    try std.testing.expect(!mesh.hasCornerUvs());
 }
 
 test "mesh delete face command opens a hole and keeps the deleted border wire" {

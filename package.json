@@ -6,6 +6,8 @@
   "scripts": {
     "ralph": "bash scripts/ralph-loop.sh",
     "team": "bash scripts/team-loop.sh",
+    "verify:local": "bash scripts/verify-local.sh",
+    "verify:phase16": "bash scripts/verify-phase-16.sh",
     "status:update": "node scripts/update-status.mjs",
     "status:check": "node scripts/update-status.mjs --check",
     "status:live": "node scripts/status-live.mjs",

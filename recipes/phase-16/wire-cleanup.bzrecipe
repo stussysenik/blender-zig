@@ -1,0 +1,6 @@
+# Phase 16 constrained-edit study:
+# delete one shared edge from a two-quad strip and inspect the loose perimeter.
+
+seed=grid:verts-x=3,verts-y=2,size-x=4.0,size-y=2.0,uvs=true
+step=delete-edge
+write=../../zig-out/phase-16-wire-cleanup.obj

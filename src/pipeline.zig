@@ -5,6 +5,7 @@ const cylinder_cone = @import("geometry/primitives/cylinder_cone.zig");
 const grid = @import("geometry/primitives/grid.zig");
 const uv_sphere = @import("geometry/primitives/uv_sphere.zig");
 const mesh_bevel_edge = @import("geometry/mesh_bevel_edge.zig");
+const mesh_delete_edge = @import("geometry/mesh_delete_edge.zig");
 const mesh_delete_faces = @import("geometry/mesh_delete_faces.zig");
 const mesh_fill_hole = @import("geometry/mesh_fill_hole.zig");
 const mesh_delete_loose = @import("geometry/mesh_delete_loose.zig");
@@ -58,6 +59,7 @@ pub const Step = enum {
     inset_region,
     triangulate,
     bevel_edge,
+    delete_edge,
     delete_face,
     fill_hole,
     delete_loose,
@@ -77,6 +79,7 @@ pub const Step = enum {
         if (std.mem.eql(u8, name, "inset-region")) return .inset_region;
         if (std.mem.eql(u8, name, "triangulate")) return .triangulate;
         if (std.mem.eql(u8, name, "bevel-edge")) return .bevel_edge;
+        if (std.mem.eql(u8, name, "delete-edge")) return .delete_edge;
         if (std.mem.eql(u8, name, "delete-face")) return .delete_face;
         if (std.mem.eql(u8, name, "fill-hole")) return .fill_hole;
         if (std.mem.eql(u8, name, "delete-loose")) return .delete_loose;
@@ -263,6 +266,17 @@ fn applyStep(
             }
             return try mesh.clone(allocator);
         },
+        .delete_edge => {
+            if (pickFirstSharedEdge(mesh)) |edge| {
+                const edges = [_]mesh_mod.Edge{edge};
+                return mesh_delete_edge.deleteEdges(allocator, mesh, &edges, .{});
+            }
+            if (pickFirstLooseEdge(mesh)) |edge| {
+                const edges = [_]mesh_mod.Edge{edge};
+                return mesh_delete_edge.deleteEdges(allocator, mesh, &edges, .{});
+            }
+            return try mesh.clone(allocator);
+        },
         .delete_face => {
             const face_index = step_spec.delete_face_index orelse return error.MissingPipelineFaceIndex;
             const faces = [_]usize{face_index};
@@ -421,6 +435,25 @@ fn pickFirstSharedEdge(mesh: *const mesh_mod.Mesh) ?mesh_mod.Edge {
         }
     }
 
+    return null;
+}
+
+fn pickFirstLooseEdge(mesh: *const mesh_mod.Mesh) ?mesh_mod.Edge {
+    var face_edges = std.AutoHashMap(u64, void).init(mesh.allocator);
+    defer face_edges.deinit();
+
+    for (0..mesh.faceCount()) |face_index| {
+        const range = mesh.faceVertexRange(face_index);
+        const face_verts = mesh.corner_verts.items[range.start..range.end];
+        for (face_verts, 0..) |vertex, local_index| {
+            const next_vertex = face_verts[(local_index + 1) % face_verts.len];
+            face_edges.put(packUndirectedEdge(vertex, next_vertex), {}) catch continue;
+        }
+    }
+
+    for (mesh.edges.items) |edge| {
+        if (!face_edges.contains(packUndirectedEdge(edge.a, edge.b))) return edge;
+    }
     return null;
 }
 
@@ -916,6 +949,7 @@ test "pipeline can parse transform and array steps" {
     const extrude_region = try parseStepSpec("extrude-region:distance=0.8");
     const inset_region = try parseStepSpec("inset-region:width=0.2");
     const bevel_edge = try parseStepSpec("bevel-edge:width=0.12,repeat=2");
+    const delete_edge = try parseStepSpec("delete-edge:repeat=3");
     const linear_array = try parseStepSpec("array:count=6,offset-x=1.5,offset-y=0.35,offset-z=0.0");
     const grid_array = try parseStepSpec("array:count-x=4,count-y=3,offset-x=1.35,offset-y=0.95");
 
@@ -938,6 +972,8 @@ test "pipeline can parse transform and array steps" {
     try std.testing.expectEqual(Step.bevel_edge, bevel_edge.step);
     try std.testing.expectEqual(@as(f32, 0.12), bevel_edge.bevel_edge_width.?);
     try std.testing.expectEqual(@as(usize, 2), bevel_edge.repeat);
+    try std.testing.expectEqual(Step.delete_edge, delete_edge.step);
+    try std.testing.expectEqual(@as(usize, 3), delete_edge.repeat);
     try std.testing.expectEqual(Step.array, linear_array.step);
     try std.testing.expectEqual(@as(usize, 6), linear_array.array_count.?);
     try std.testing.expectEqual(@as(f32, 1.5), linear_array.array_offset_x.?);
@@ -1077,6 +1113,27 @@ test "pipeline can bevel one shared grid edge" {
     try std.testing.expect(mesh.hasCornerUvs());
 }
 
+test "pipeline can delete one shared grid edge into a loose perimeter" {
+    const steps = [_]StepSpec{
+        .{ .step = .delete_edge },
+    };
+
+    var mesh = try runMeshPipeline(std.testing.allocator, .{
+        .seed = .grid,
+        .verts_x = 3,
+        .verts_y = 2,
+        .size_x = 4.0,
+        .size_y = 2.0,
+        .with_uvs = true,
+    }, &steps);
+    defer mesh.deinit();
+
+    try std.testing.expectEqual(@as(usize, 6), mesh.vertexCount());
+    try std.testing.expectEqual(@as(usize, 0), mesh.faceCount());
+    try std.testing.expectEqual(@as(usize, 6), mesh.edges.items.len);
+    try std.testing.expect(!mesh.hasCornerUvs());
+}
+
 test "pipeline seed overrides parse equivalently inline and in recipes" {
     const inline_spec = try parseSeedSpec("cylinder:radius=1.25,height=3.0,segments=24,top-cap=true,bottom-cap=false,uvs=true");
     const from_recipe_text =
@@ -1170,6 +1227,7 @@ test "pipeline seed overrides build the same mesh inline and from recipe text" {
 test "pipeline rejects unsupported parameters for a step" {
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("triangulate:distance=1"));
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("bevel-edge:distance=1"));
+    try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("delete-edge:index=1"));
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("delete-loose:distance=1"));
     try std.testing.expectError(error.MissingPipelineFaceIndex, parseStepSpec("delete-face"));
     try std.testing.expectError(error.UnsupportedPipelineParameter, parseStepSpec("fill-hole:index=0"));
