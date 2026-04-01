@@ -21,10 +21,10 @@ The first four unchecked items are intentionally ordered for `scripts/team-loop.
 - [x] refresh generated docs after the first topology-growth op lands
 
 ## Round 3: Constrained Edit Stack
-- [ ] define one constrained selection edit that pairs with delete-face, inset-region, and extrude-region
-- [ ] implement one constrained selection edit that pairs with the current delete/inset/extrude stack
-- [ ] verify the constrained selection edit through tests and real CLI runs
-- [ ] update phase notes after the constrained selection edit lands
+- [x] define one constrained selection edit that pairs with delete-face, inset-region, and extrude-region
+- [x] implement one constrained selection edit that pairs with the current delete/inset/extrude stack
+- [x] verify the constrained selection edit through tests and real CLI runs
+- [x] update phase notes after the constrained selection edit lands
 
 ## Round 4: Authoring Studies
 - [ ] define the edit-heavy recipe and scene study set for the phase-16 stack

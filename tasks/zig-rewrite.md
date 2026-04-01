@@ -115,12 +115,15 @@
 ## Phase 16: Directed modeling and phase execution
 
 Execution surface: [tasks/phase-16.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-16.md)
+Phase charter: [openspec/daily-driver/phases/phase-16-modeling-stack.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-16-modeling-stack.md)
+Constrained-edit spec: [openspec/daily-driver/slices/phase-16-delete-edge.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-16-delete-edge.md)
 
 - [x] define the exact `mesh-fill-hole` scope and regression matrix for one simple planar boundary loop
 - [x] port `mesh-fill-hole` with direct CLI and pipeline coverage
 - [x] define the exact bounded bevel-like growth slice and regression matrix for the current face-corner mesh
 - [x] port one bounded bevel-like topology-growth op with direct CLI and pipeline coverage
-- [ ] port one constrained selection edit that pairs with the current delete/inset/extrude stack
+- [x] define the constrained selection edit contract in `openspec/daily-driver/slices/phase-16-delete-edge.md`
+- [x] port one constrained selection edit that pairs with the current delete/inset/extrude stack
 - [ ] add edit-heavy `.bzrecipe` studies that exercise the new phase-16 stack
 - [ ] add one `.bzscene` composition that reuses the new edit-heavy studies
 - [ ] allow the Ralph/operator workflow to target `tasks/phase-16.md` as an intentional phase run surface

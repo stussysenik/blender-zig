@@ -28,8 +28,7 @@
 
 ## Current Targets
 
-- Port one constrained selection edit that pairs cleanly with the current delete/inset/extrude stack.
-- Add edit-heavy saved studies and one composed scene for the phase-16 stack now that `mesh-bevel-edge` is in.
+- Add edit-heavy saved studies and one composed scene for the phase-16 stack now that `mesh-delete-edge` is landed and verified.
 - Start phase 17 by landing replayable study metadata and mixed-scene packaging from `tasks/phase-17.md`.
 - Add non-OBJ export handling for mixed mesh-plus-curve geometry where the format semantics stay clear.
 - Add notarization only after Apple credentials exist.

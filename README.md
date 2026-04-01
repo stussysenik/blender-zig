@@ -52,11 +52,13 @@ Current status:
 - phase 13 direct mesh ops now includes `mesh-triangulate`, `mesh-bevel-edge`, `mesh-delete-face`, `mesh-fill-hole`, `mesh-delete-loose`, `mesh-merge-by-distance`, `mesh-inset`, `mesh-inset-region`, `mesh-dissolve`, `mesh-extrude`, `mesh-extrude-region`, `mesh-planar-dissolve`, and `mesh-subdivide`
 - phase 14 local authoring now includes parameterized `mesh-pipeline` step specs, persisted recipe files, seed-level primitive overrides, bounded transforms, array composition, multi-part scene composition, part-level scene placement, and multiple checked-in studies
 - phase 15 mesh IO now includes ASCII PLY export, narrow ASCII OBJ mesh import, and narrow mixed OBJ `GeometrySet` import
-- phase 16 is now defined in `docs/phase-16-plan.md` and `tasks/phase-16.md`, and `mesh-fill-hole` plus `mesh-bevel-edge` are the first landed repair/edit recovery and topology-growth slices
-- an OpenSpec-style daily-driver bundle now lives under `openspec/daily-driver/`, and phase task files now exist through phase 20 for the path from the current CLI tool to a realistic local daily driver
+- phase 16 is now defined by `openspec/daily-driver/phases/phase-16-modeling-stack.md` and `tasks/phase-16.md`, and `mesh-fill-hole`, `mesh-bevel-edge`, and `mesh-delete-edge` are the first landed repair/edit recovery, topology-growth, and constrained-edit slices
+- the constrained-edit slice is now specified in `openspec/daily-driver/slices/phase-16-delete-edge.md` as `mesh-delete-edge`, the edge-domain counterpart to `mesh-delete-face`
+- the daily-driver planning surface now has a stronger OpenSpec stack: product contract, system contracts, phase charters, and slice specs under `openspec/daily-driver/`
 - `GeometrySet` OBJ import and export are in for mixed mesh and curve output
 - optimized packaging, reference remote setup, and a macOS CLI artifact workflow are in
-- the next recommended slices are broader direct modeling coverage, deeper mesh-plus-curves IO, and richer saved scene studies, not UI or rendering
+- current local verification is host-safe through `scripts/verify-local.sh` and `scripts/verify-phase-16.sh`, which pin `aarch64-macos.15.0` on arm64 macOS while the native Homebrew Zig 0.15.2 `zig build` runner mislinks against the macOS 26 host target
+- the next recommended slice is the phase-16 edit-heavy study pack and one composed `.bzscene`, not UI or rendering
 <!-- status:auto:status:end -->
 
 This repo is intentionally narrow. It is inspired by Blender subsystems like:
@@ -88,7 +90,8 @@ Reference and distribution helpers:
 
 <!-- status:auto:quick-start:start -->
 ```bash
-zig build test
+bash scripts/verify-local.sh
+bash scripts/verify-phase-16.sh
 zig build run -- sphere
 zig build run -- cylinder zig-out/cylinder.obj
 zig build run -- mesh-import zig-out/cylinder.obj zig-out/cylinder-roundtrip.obj
@@ -133,7 +136,7 @@ CLI usage:
 
 <!-- status:auto:cli-usage:start -->
 ```text
-blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
+blender-zig <line|grid|cuboid|cylinder|cone|sphere|curve-wire|curve-tube|mesh-roundtrip|mesh-triangulate|mesh-bevel-edge|mesh-delete-edge|mesh-delete-face|mesh-fill-hole|mesh-delete-loose|mesh-merge-by-distance|mesh-inset|mesh-inset-region|mesh-dissolve|mesh-extrude|mesh-extrude-region|mesh-planar-dissolve|mesh-subdivide|mesh-pipeline|mesh-scene|mesh-import|geometry-import|mesh-edges|graph-demo> [output-path]
 ```
 <!-- status:auto:cli-usage:end -->
 

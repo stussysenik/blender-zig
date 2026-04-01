@@ -1,18 +1,59 @@
 # Daily-Driver OpenSpec
 
-This folder is the active planning bundle for the path from the current repo state to a realistic daily-driver `blender-zig`.
+This directory is the authoritative planning bundle for the path from the current
+CLI geometry tool to a realistic local daily-driver `blender-zig`.
 
-Use it as the source of truth for the current slice. Keep the broader planning docs aligned to it instead of duplicating the same slice definition in multiple places.
+Keep three layers distinct:
 
-## Files
+- product contract: what daily-driver means
+- system and phase contracts: what each stage must accomplish
+- execution files: what the Ralph/team loop should run next
 
+Generated status docs are dashboards only. They point here; they do not define scope.
+
+## Active Phase
+
+- Phase 16
+- phase charter: [openspec/daily-driver/phases/phase-16-modeling-stack.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-16-modeling-stack.md)
+- active slice: [openspec/daily-driver/slices/phase-16-delete-edge.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-16-delete-edge.md)
+
+## Doc Map
+
+Authoritative product and system contracts:
+
+- [daily-driver-contract.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/daily-driver-contract.md)
 - [vision.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/vision.md)
 - [milestones.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/milestones.md)
 - [execution.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/execution.md)
+- [system/project-state-and-recovery.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/system/project-state-and-recovery.md)
+- [system/verification-and-release-gates.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/system/verification-and-release-gates.md)
+
+Phase charters:
+
+- [phases/phase-16-modeling-stack.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-16-modeling-stack.md)
+- [phases/phase-17-persistence-and-bundles.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-17-persistence-and-bundles.md)
+- [phases/phase-18-app-shell.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-18-app-shell.md)
+- [phases/phase-19-viewport-and-tools.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-19-viewport-and-tools.md)
+- [phases/phase-20-hardening-and-release.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/phases/phase-20-hardening-and-release.md)
+
+Current slice spec:
+
+- [slices/phase-16-delete-edge.md](/Users/s3nik/Desktop/blender-zig/openspec/daily-driver/slices/phase-16-delete-edge.md)
+
+Compatibility pointers kept for older links:
+
+- [docs/phase-16-plan.md](/Users/s3nik/Desktop/blender-zig/docs/phase-16-plan.md)
+- [docs/specs/phase-16-constrained-edit.md](/Users/s3nik/Desktop/blender-zig/docs/specs/phase-16-constrained-edit.md)
+
+## Phase-To-Milestone Map
+
+- Phase 16 -> M1
+- Phase 17 -> M2 and the persistence half of M3
+- Phase 18 -> M4
+- Phase 19 -> M5
+- Phase 20 -> M6 and the recovery half of M3
 
 ## Execution Files
-
-Work the daily-driver path in order through these task files:
 
 - [tasks/phase-16.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-16.md)
 - [tasks/phase-17.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-17.md)
@@ -20,10 +61,15 @@ Work the daily-driver path in order through these task files:
 - [tasks/phase-19.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-19.md)
 - [tasks/phase-20.md](/Users/s3nik/Desktop/blender-zig/tasks/phase-20.md)
 
-Use the milestone file to understand why a phase exists, then use the phase task file to drive the actual loop.
+## Generated Surfaces
+
+- [README.md](/Users/s3nik/Desktop/blender-zig/README.md)
+- [progress.md](/Users/s3nik/Desktop/blender-zig/progress.md)
+- [ROADMAP.md](/Users/s3nik/Desktop/blender-zig/ROADMAP.md)
 
 ## Operating Rules
 
-- If the daily-driver definition changes, update this bundle first.
-- If phase numbering changes, clean up `tasks/zig-rewrite.md` in the same batch.
-- If a slice is not runnable and testable, it is not ready to land.
+- change the contract here before widening implementation scope
+- keep `tasks/*.md` execution-oriented
+- keep generated docs generated
+- keep compatibility pointers small and non-authoritative
